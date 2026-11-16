@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Acesso · Imersão Têxtil Club</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="logo.jpg">
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <img class="logo" src="logo.jpg" alt="Têxtil Club">
+  <div class="evento" id="evento"></div>
+
+  <div class="card">
+    <div class="tabs" id="tabs">
+      <button data-t="entrar" class="on">Entrar</button>
+      <button data-t="cadastro">Criar meu acesso</button>
+    </div>
+
+    <div class="msg" id="msg"></div>
+
+    <!-- ENTRAR -->
+    <form id="fEntrar" autocomplete="on">
+      <h1>Bem-vindo de volta</h1>
+      <p class="sub">Entre para acessar seu painel da imersão: cronograma, atividades e materiais.</p>
+      <div class="field"><label for="le">E-mail</label><input id="le" type="email" required autocomplete="email" inputmode="email"></div>
+      <div class="field"><label for="ls">Senha</label><input id="ls" type="password" required autocomplete="current-password"></div>
+      <button class="btn" type="submit">Entrar no painel</button>
+      <div class="center"><button type="button" class="link" id="bEsqueci">Esqueci minha senha</button></div>
+    </form>
+
+    <!-- CADASTRO -->
+    <form id="fCadastro" class="hide" autocomplete="on" novalidate>
+      <h1>Crie seu acesso</h1>
+      <p class="sub">Cada participante tem seu próprio login. Se você e seu sócio vieram juntos, os dois se cadastram com o <b>mesmo CNPJ</b> e ficam na mesma empresa.</p>
+
+      <div class="step"><span>1</span> Sua empresa</div>
+      <div class="field">
+        <label for="cnpj">CNPJ da empresa</label>
+        <input id="cnpj" inputmode="numeric" placeholder="00.000.000/0000-00" maxlength="18" required>
+        <div class="hint" id="cnpjHint">Digite o CNPJ. A gente busca os dados da empresa pra você.</div>
+      </div>
+      <div class="field"><label for="enome">Nome da empresa</label><input id="enome" required placeholder="Ex.: Confecções Exemplo"></div>
+      <div class="row uf">
+        <div class="field"><label for="ecid">Cidade</label><input id="ecid"></div>
+        <div class="field"><label for="euf">UF</label><input id="euf" maxlength="2" style="text-transform:uppercase"></div>
+      </div>
+
+      <div class="sep"></div>
+      <div class="step"><span>2</span> Seus dados</div>
+      <div class="field"><label for="nome">Nome completo</label><input id="nome" required autocomplete="name"></div>
+      <div class="row">
+        <div class="field">
+          <label for="cargo">Sua função</label>
+          <select id="cargo" required>
+            <option value="">Selecione</option>
+            <option>Sócio(a) / Proprietário(a)</option>
+            <option>Gestor(a)</option>
+            <option>Colaborador(a)</option>
+          </select>
+        </div>
+        <div class="field"><label for="wpp">WhatsApp</label><input id="wpp" inputmode="tel" placeholder="(62) 99999-9999" autocomplete="tel" required></div>
+      </div>
+      <div class="field"><label for="email">E-mail (será seu login)</label><input id="email" type="email" required autocomplete="email" inputmode="email"></div>
+      <div class="row">
+        <div class="field"><label for="senha">Senha</label><input id="senha" type="password" minlength="6" required autocomplete="new-password"></div>
+        <div class="field"><label for="senha2">Repita a senha</label><input id="senha2" type="password" minlength="6" required autocomplete="new-password"></div>
+      </div>
+      <div class="hint">Mínimo de 6 caracteres.</div>
+      <button class="btn" type="submit">Criar meu acesso</button>
+    </form>
+
+    <!-- ESQUECI -->
+    <form id="fEsqueci" class="hide">
+      <h1>Recuperar senha</h1>
+      <p class="sub">Informe seu e-mail e enviaremos um link para criar uma nova senha.</p>
+      <div class="field"><label for="re">E-mail</label><input id="re" type="email" required></div>
+      <button class="btn" type="submit">Enviar link</button>
+      <div class="center"><button type="button" class="link" data-voltar>Voltar para entrar</button></div>
+    </form>
+
+    <!-- NOVA SENHA (vindo do link do e-mail) -->
+    <form id="fNova" class="hide">
+      <h1>Nova senha</h1>
+      <p class="sub">Escolha sua nova senha de acesso.</p>
+      <div class="field"><label for="ns">Nova senha</label><input id="ns" type="password" minlength="6" required autocomplete="new-password"></div>
+      <button class="btn" type="submit">Salvar e entrar</button>
+    </form>
+  </div>
+  <div class="foot" id="foot">Têxtil Club · Área do participante</div>
+</div>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+const C = window.TC_CONFIG;
+const sb = createClient(C.SUPABASE_URL, C.SUPABASE_KEY);
+const $ = id => document.getElementById(id);
+$("evento").textContent = C.EVENTO;
+if (C.WHATSAPP_SUPORTE) $("foot").innerHTML = `Dúvidas? <a href="https://wa.me/${C.WHATSAPP_SUPORTE}" target="_blank">Fale com a equipe no WhatsApp</a>`;
+
+const forms = ["fEntrar","fCadastro","fEsqueci","fNova"];
+function show(id){ forms.forEach(f => $(f).classList.toggle("hide", f!==id)); msg(); }
+function msg(t="", tipo="err"){ const m=$("msg"); m.className="msg"+(t?" show "+tipo:""); m.textContent=t; }
+function busy(form, on){ const b=form.querySelector("button[type=submit]"); if(!b) return; b.disabled=on; if(on){b.dataset.t=b.textContent;b.textContent="Aguarde…"} else if(b.dataset.t){b.textContent=b.dataset.t} }
+
+// abas
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on", x===b));
+  show(b.dataset.t==="entrar" ? "fEntrar" : "fCadastro");
+});
+$("bEsqueci").onclick = () => { $("re").value=$("le").value; show("fEsqueci"); };
+document.querySelectorAll("[data-voltar]").forEach(b=>b.onclick=()=>show("fEntrar"));
+
+// já logado? vai pro painel
+const { data:{ session } } = await sb.auth.getSession();
+if (session && !location.hash.includes("type=recovery")) location.replace("painel.html");
+sb.auth.onAuthStateChange(ev => { if (ev==="PASSWORD_RECOVERY"){ $("tabs").classList.add("hide"); show("fNova"); } });
+
+// máscaras
+const so = v => v.replace(/\D/g,"");
+function mCnpj(v){ v=so(v).slice(0,14); return v.replace(/^(\d{2})(\d)/,"$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/,"$1.$2.$3").replace(/\.(\d{3})(\d)/,".$1/$2").replace(/(\d{4})(\d)/,"$1-$2"); }
+function mTel(v){ v=so(v).slice(0,11); return v.length>10 ? v.replace(/^(\d{2})(\d{5})(\d{0,4})/,"($1) $2-$3") : v.replace(/^(\d{2})(\d{4})(\d{0,4})/,"($1) $2-$3").replace(/[-(]\s*$/,""); }
+$("wpp").oninput = e => e.target.value = mTel(e.target.value);
+
+function cnpjValido(c){
+  c=so(c); if(c.length!==14 || /^(\d)\1+$/.test(c)) return false;
+  const calc = n => { let s=0,p=n-7; for(let i=0;i<n;i++){ s+=+c[i]*p--; if(p<2)p=9 } const r=s%11; return r<2?0:11-r; };
+  return calc(12)===+c[12] && calc(13)===+c[13];
+}
+
+let ultimoCnpj="";
+$("cnpj").oninput = async e => {
+  e.target.value = mCnpj(e.target.value);
+  const c = so(e.target.value), h=$("cnpjHint");
+  ["enome","ecid","euf"].forEach(i=>$(i).readOnly=false);
+  if (c.length<14){ h.className="hint"; h.textContent="Digite o CNPJ. A gente busca os dados da empresa pra você."; ultimoCnpj=""; return; }
+  if (c===ultimoCnpj) return; ultimoCnpj=c;
+  if (!cnpjValido(c)){ h.className="hint err"; h.textContent="CNPJ inválido. Confira os números."; return; }
+  h.className="hint"; h.textContent="Buscando…";
+  // 1) empresa já cadastrada (sócio entrando)?
+  const { data:jaTem } = await sb.rpc("empresa_por_cnpj", { p_cnpj:c });
+  if (jaTem){
+    $("enome").value=jaTem; $("enome").readOnly=true; $("ecid").readOnly=true; $("euf").readOnly=true;
+    h.className="hint ok"; h.textContent=`✓ ${jaTem} já está cadastrada. Você vai entrar como sócio(a)/equipe dessa empresa.`;
+    return;
+  }
+  // 2) busca dados públicos do CNPJ
+  try{
+    const r = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${c}`);
+    if (r.ok){
+      const d = await r.json();
+      $("enome").value = d.nome_fantasia || d.razao_social || "";
+      $("ecid").value = d.municipio ? d.municipio.charAt(0)+d.municipio.slice(1).toLowerCase() : "";
+      $("euf").value = d.uf || "";
+      h.className="hint ok"; h.textContent="✓ Encontramos sua empresa. Confira o nome abaixo e ajuste se quiser.";
+    } else { h.className="hint warn"; h.textContent="Não achamos os dados automaticamente. Preencha o nome da empresa abaixo."; }
+  }catch{ h.className="hint warn"; h.textContent="Preencha o nome da empresa abaixo."; }
+};
+
+// ENTRAR
+$("fEntrar").onsubmit = async e => {
+  e.preventDefault(); busy(e.target,true); msg();
+  const { error } = await sb.auth.signInWithPassword({ email:$("le").value.trim(), password:$("ls").value });
+  busy(e.target,false);
+  if (error) return msg(error.message.includes("Email not confirmed") ? "Confirme seu e-mail pelo link que enviamos antes de entrar." : "E-mail ou senha incorretos.");
+  location.replace("painel.html");
+};
+
+// CADASTRO
+$("fCadastro").onsubmit = async e => {
+  e.preventDefault(); msg();
+  const c=so($("cnpj").value), nome=$("nome").value.trim(), email=$("email").value.trim();
+  if (!cnpjValido(c)) return msg("Informe um CNPJ válido.");
+  if (!$("enome").value.trim()) return msg("Informe o nome da empresa.");
+  if (nome.split(" ").length<2) return msg("Informe seu nome completo.");
+  if (!$("cargo").value) return msg("Selecione sua função.");
+  if (so($("wpp").value).length<10) return msg("Informe um WhatsApp válido com DDD.");
+  if (!/^\S+@\S+\.\S+$/.test(email)) return msg("Informe um e-mail válido.");
+  if ($("senha").value.length<6) return msg("A senha precisa ter pelo menos 6 caracteres.");
+  if ($("senha").value!==$("senha2").value) return msg("As senhas não conferem.");
+  busy(e.target,true);
+  const { data, error } = await sb.auth.signUp({
+    email, password:$("senha").value,
+    options:{
+      emailRedirectTo: location.origin + "/painel.html",
+      data:{ cnpj:c, empresa_nome:$("enome").value.trim(), cidade:$("ecid").value.trim(), uf:$("euf").value.trim(),
+             nome, cargo:$("cargo").value, whatsapp:so($("wpp").value) }
+    }
+  });
+  busy(e.target,false);
+  if (error){
+    if (/registered|already/i.test(error.message)) return msg("Este e-mail já tem acesso. Use a aba Entrar.");
+    return msg("Não foi possível criar o acesso: "+error.message);
+  }
+  if (data.session) return location.replace("painel.html");
+  e.target.reset(); show("fEntrar");
+  msg("Cadastro recebido! Enviamos um link de confirmação para "+email+". Confirme e depois entre aqui.", "ok");
+};
+
+// ESQUECI
+$("fEsqueci").onsubmit = async e => {
+  e.preventDefault(); busy(e.target,true);
+  await sb.auth.resetPasswordForEmail($("re").value.trim(), { redirectTo: location.origin + "/index.html" });
+  busy(e.target,false); show("fEntrar");
+  msg("Se esse e-mail estiver cadastrado, você vai receber um link para criar nova senha.", "ok");
+};
+
+// NOVA SENHA
+$("fNova").onsubmit = async e => {
+  e.preventDefault(); busy(e.target,true);
+  const { error } = await sb.auth.updateUser({ password:$("ns").value });
+  busy(e.target,false);
+  if (error) return msg("Não foi possível salvar: "+error.message);
+  location.replace("painel.html");
+};
+</script>
+</body>
+</html>

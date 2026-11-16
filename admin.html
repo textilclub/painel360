@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Administrador · Imersão Têxtil Club</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="logo.jpg">
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <img src="logo.jpg" alt="Têxtil Club">
+    <div class="who"><div id="quem">…</div><button class="link" id="sair" style="margin-top:4px">Sair</button></div>
+  </div>
+
+  <div class="card wide">
+    <h1>Participantes da imersão</h1>
+    <p class="sub">Aprove quem comprou a imersão. Sócios da mesma empresa aparecem juntos.</p>
+    <div class="msg" id="msg"></div>
+
+    <div class="stats">
+      <div class="stat"><b id="sEmp">–</b><span>Empresas</span></div>
+      <div class="stat"><b id="sTot">–</b><span>Participantes</span></div>
+      <div class="stat"><b id="sPen" style="color:var(--warn)">–</b><span>Aguardando</span></div>
+      <div class="stat"><b id="sApr" style="color:var(--ok)">–</b><span>Liberados</span></div>
+    </div>
+
+    <div class="filters" id="filtros">
+      <button data-f="pendente" class="on">Aguardando</button>
+      <button data-f="aprovado">Liberados</button>
+      <button data-f="bloqueado">Bloqueados</button>
+      <button data-f="">Todos</button>
+    </div>
+
+    <table>
+      <thead><tr><th>Participante</th><th>Empresa</th><th>Contato</th><th>Status</th><th></th></tr></thead>
+      <tbody id="lista"><tr><td colspan="5">Carregando…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+const C = window.TC_CONFIG;
+const sb = createClient(C.SUPABASE_URL, C.SUPABASE_KEY);
+const $ = id => document.getElementById(id);
+const esc = s => String(s??"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fCnpj = c => (c||"").replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,"$1.$2.$3/$4-$5");
+const fTel = t => (t||"").replace(/^(\d{2})(\d{4,5})(\d{4})$/,"($1) $2-$3");
+
+const { data:{ session } } = await sb.auth.getSession();
+if (!session) { location.replace("index.html"); throw new Error("sem sessão"); }
+$("quem").textContent = session.user.email;
+$("sair").onclick = async () => { await sb.auth.signOut(); location.replace("index.html"); };
+const { data:adm } = await sb.rpc("is_admin");
+if (!adm) { location.replace("painel.html"); throw new Error("não admin"); }
+
+let todos=[], filtro="pendente";
+document.querySelectorAll("#filtros button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#filtros button").forEach(x=>x.classList.toggle("on",x===b));
+  filtro=b.dataset.f; render();
+});
+
+async function carregar(){
+  const { data, error } = await sb.from("participantes")
+    .select("id,nome,email,whatsapp,cargo,status,criado_em,empresa_id,empresas(nome,cnpj,cidade,uf)")
+    .order("criado_em",{ascending:false});
+  if (error){ $("msg").className="msg show err"; $("msg").textContent=error.message; return; }
+  todos = data||[];
+  $("sEmp").textContent = new Set(todos.map(p=>p.empresa_id)).size;
+  $("sTot").textContent = todos.length;
+  $("sPen").textContent = todos.filter(p=>p.status==="pendente").length;
+  $("sApr").textContent = todos.filter(p=>p.status==="aprovado").length;
+  render();
+}
+
+function render(){
+  const lista = todos.filter(p=>!filtro||p.status===filtro)
+    .sort((a,b)=> (a.empresas?.nome||"").localeCompare(b.empresas?.nome||"") || a.criado_em.localeCompare(b.criado_em));
+  if (!lista.length){ $("lista").innerHTML=`<tr><td colspan="5" style="color:var(--muted)">Ninguém aqui por enquanto.</td></tr>`; return; }
+  $("lista").innerHTML = lista.map(p=>{
+    const e=p.empresas||{}, socios=todos.filter(x=>x.empresa_id===p.empresa_id).length;
+    const wpp = p.whatsapp ? `<a href="https://wa.me/55${p.whatsapp}" target="_blank">${fTel(p.whatsapp)}</a>` : "";
+    const btn = (st,txt,cls="") => p.status===st ? "" : `<button class="btn sm ${cls}" data-id="${p.id}" data-st="${st}">${txt}</button>`;
+    return `<tr>
+      <td><b>${esc(p.nome)}</b><small>${esc(p.cargo||"")}</small><small>${new Date(p.criado_em).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})}</small></td>
+      <td>${esc(e.nome)}<small>${fCnpj(e.cnpj)}${e.cidade?" · "+esc(e.cidade)+"/"+esc(e.uf||""):""}</small><small>${socios} participante${socios>1?"s":""}</small></td>
+      <td><small style="color:var(--txt)">${esc(p.email)}</small>${wpp}</td>
+      <td><span class="badge ${p.status}">${p.status}</span></td>
+      <td><div class="acts">${btn("aprovado","Liberar")}${btn("bloqueado","Bloquear","ghost")}${p.status!=="pendente"?btn("pendente","Voltar p/ pendente","ghost"):""}</div></td>
+    </tr>`;
+  }).join("");
+  document.querySelectorAll("#lista button[data-id]").forEach(b=>b.onclick=async()=>{
+    b.disabled=true;
+    const st=b.dataset.st;
+    const { error } = await sb.from("participantes")
+      .update({ status:st, aprovado_em: st==="aprovado" ? new Date().toISOString() : null })
+      .eq("id", b.dataset.id);
+    if (error){ alert(error.message); b.disabled=false; return; }
+    carregar();
+  });
+}
+carregar();
+</script>
+</body>
+</html>

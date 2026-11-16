@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meu painel · Imersão Têxtil Club</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="logo.jpg">
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <img src="logo.jpg" alt="Têxtil Club">
+    <div class="who"><div id="quem">…</div>
+      <a href="admin.html" id="lAdmin" class="hide">Painel do administrador</a>
+      <button class="link" id="sair" style="margin-top:4px">Sair</button></div>
+  </div>
+
+  <!-- AGUARDANDO LIBERAÇÃO -->
+  <div class="card hide" id="vPend">
+    <span class="badge pendente">● Aguardando liberação</span>
+    <h1 style="margin-top:14px">Cadastro recebido, <span class="nm"></span>!</h1>
+    <p class="sub">Nossa equipe vai conferir sua inscrição na <b class="ev"></b> e liberar seu painel. Assim que liberar, é só entrar de novo por aqui.</p>
+    <div class="step">Sua empresa</div>
+    <div id="pEmp" style="font-size:15px;font-weight:600"></div>
+  </div>
+
+  <!-- BLOQUEADO -->
+  <div class="card hide" id="vBloq">
+    <span class="badge bloqueado">● Acesso não liberado</span>
+    <h1 style="margin-top:14px">Seu acesso não está ativo</h1>
+    <p class="sub">Fale com a equipe da Têxtil Club para verificar sua inscrição.</p>
+  </div>
+
+  <!-- SEM CADASTRO DE PARTICIPANTE (ex.: admin) -->
+  <div class="card hide" id="vSem">
+    <h1>Login sem cadastro de participante</h1>
+    <p class="sub">Esta conta não está vinculada a nenhuma empresa da imersão.</p>
+  </div>
+
+  <!-- APROVADO -->
+  <div class="card wide hide" id="vOk">
+    <span class="badge aprovado">● Acesso liberado</span>
+    <h1 style="margin-top:14px">Olá, <span class="nm"></span> 👋</h1>
+    <p class="sub">Este é o seu painel da <b class="ev"></b>. Tudo o que for feito durante a imersão fica registrado aqui.</p>
+
+    <div class="step">Sua empresa</div>
+    <div id="oEmp" style="font-size:16px;font-weight:600"></div>
+    <div class="socios" id="socios"></div>
+
+    <div class="grid3">
+      <div class="tile"><b>📅 Cronograma</b>Em breve: a programação completa dos dois dias.</div>
+      <div class="tile"><b>✅ Atividades</b>Em breve: os exercícios da imersão para preencher com seu sócio.</div>
+      <div class="tile"><b>📂 Materiais</b>Em breve: slides, planilhas e arquivos de apoio.</div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+const C = window.TC_CONFIG;
+const sb = createClient(C.SUPABASE_URL, C.SUPABASE_KEY);
+const $ = id => document.getElementById(id);
+const esc = s => String(s??"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+document.querySelectorAll(".ev").forEach(e=>e.textContent=C.EVENTO);
+
+const { data:{ session } } = await sb.auth.getSession();
+if (!session) { location.replace("index.html"); throw new Error("sem sessão"); }
+$("sair").onclick = async () => { await sb.auth.signOut(); location.replace("index.html"); };
+$("quem").textContent = session.user.email;
+
+const { data:adm } = await sb.rpc("is_admin");
+if (adm) $("lAdmin").classList.remove("hide");
+
+const { data:eu } = await sb.from("participantes")
+  .select("id,nome,status,cargo,empresa_id,empresas(nome,cnpj,cidade,uf)")
+  .eq("id", session.user.id).maybeSingle();
+
+if (!eu){ if (adm) location.replace("admin.html"); else $("vSem").classList.remove("hide"); }
+else {
+  const primeiro = eu.nome.split(" ")[0];
+  document.querySelectorAll(".nm").forEach(e=>e.textContent=primeiro);
+  const emp = eu.empresas || {};
+  const empTxt = `${emp.nome||""}${emp.cidade?" · "+emp.cidade+(emp.uf?"/"+emp.uf:""):""}`;
+  if (eu.status==="pendente"){ $("pEmp").textContent=empTxt; $("vPend").classList.remove("hide"); }
+  else if (eu.status==="bloqueado"){ $("vBloq").classList.remove("hide"); }
+  else {
+    $("oEmp").textContent = empTxt;
+    const { data:time } = await sb.from("participantes").select("id,nome,cargo,status").eq("empresa_id", eu.empresa_id).order("criado_em");
+    $("socios").innerHTML = (time||[]).map(p => `<div class="socio"><div>${esc(p.nome)}${p.id===eu.id?" (você)":""}<small>${esc(p.cargo||"")}</small></div><span class="badge ${p.status}">${p.status}</span></div>`).join("");
+    $("vOk").classList.remove("hide");
+  }
+}
+</script>
+</body>
+</html>
