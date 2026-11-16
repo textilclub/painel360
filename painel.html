@@ -50,9 +50,21 @@
     <div id="oEmp" style="font-size:16px;font-weight:600"></div>
     <div class="socios" id="socios"></div>
 
+    <div class="step" style="margin-top:26px">Antes da imersão</div>
+    <a href="exercicio.html" class="excard" id="exCard">
+      <div class="exic">📝</div>
+      <div class="exinfo">
+        <div class="exttl">Exercício de casa: Planejamento 2027 <span class="badge pendente" id="exBadge">Não iniciado</span></div>
+        <div class="exsub" id="exSub">Preencha com seu sócio antes do dia 19. Leva cerca de 30 minutos e salva sozinho.</div>
+        <div class="exbar"><i id="exProg" style="width:0%"></i></div>
+        <div class="exres" id="exRes"></div>
+      </div>
+      <div class="exbtn" id="exBtn">Começar →</div>
+    </a>
+
     <div class="grid3">
       <div class="tile"><b>📅 Cronograma</b>Em breve: a programação completa dos dois dias.</div>
-      <div class="tile"><b>✅ Atividades</b>Em breve: os exercícios da imersão para preencher com seu sócio.</div>
+      <div class="tile"><b>✅ Atividades da imersão</b>Em breve: os exercícios feitos durante o evento.</div>
       <div class="tile"><b>📂 Materiais</b>Em breve: slides, planilhas e arquivos de apoio.</div>
     </div>
   </div>
@@ -91,6 +103,18 @@ else {
     const { data:time } = await sb.from("participantes").select("id,nome,cargo,status").eq("empresa_id", eu.empresa_id).order("criado_em");
     $("socios").innerHTML = (time||[]).map(p => `<div class="socio"><div>${esc(p.nome)}${p.id===eu.id?" (você)":""}<small>${esc(p.cargo||"")}</small></div><span class="badge ${p.status}">${p.status}</span></div>`).join("");
     $("vOk").classList.remove("hide");
+    const { data:ex } = await sb.from("exercicios").select("status,regime,resumo,atualizado_em,atualizado_por_nome").eq("empresa_id", eu.empresa_id).maybeSingle();
+    if (ex){
+      const etapa = (ex.resumo?.etapa ?? 0), done = ex.status === "concluido";
+      $("exProg").style.width = (done ? 100 : Math.round(etapa/8*100)) + "%";
+      $("exBadge").className = "badge " + (done ? "aprovado" : "pendente");
+      $("exBadge").textContent = done ? "Concluído" : "Em andamento";
+      $("exBtn").textContent = done ? "Ver resultado →" : "Continuar →";
+      const quem = ex.atualizado_por_nome ? " por " + ex.atualizado_por_nome.split(" ")[0] : "";
+      $("exSub").textContent = `${ex.regime === "presumido" ? "Lucro Presumido" : ex.regime === "simples" ? "Simples Nacional" : ""} · atualizado em ${new Date(ex.atualizado_em).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})}${quem}`;
+      const r = ex.resumo || {}, brl = v => "R$ " + Math.round(v||0).toLocaleString("pt-BR");
+      if (r.receita) $("exRes").innerHTML = `<span>Faturamento/ano <b>${brl(r.receita)}</b></span><span>Lucro/ano <b style="color:${r.resultado>=0?"var(--ok)":"var(--err)"}">${brl(r.resultado)}</b></span>`;
+    }
   }
 }
 </script>

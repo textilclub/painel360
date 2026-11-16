@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Exercício · Planejamento 2027 · Têxtil Club</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="logo.jpg">
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+<script src="calc.js"></script>
+<style>
+  .wrap{padding-bottom:120px}
+  .ex{width:100%;max-width:860px}
+  .exhead{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+  .exhead img{width:56px;height:56px}
+  .exhead h1{font-size:20px;margin:0}
+  .exhead .s{font-size:13px;color:var(--muted)}
+  .exhead .salvo{margin-left:auto;font-size:12px;color:var(--muted);white-space:nowrap}
+  .exhead .salvo.ok{color:var(--ok)}
+  .steps{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:16px;scrollbar-width:none}
+  .steps::-webkit-scrollbar{display:none}
+  .steps button{flex:0 0 auto;display:flex;align-items:center;gap:8px;background:#0d0d0d;border:1px solid var(--line);color:var(--muted);font:600 13px Poppins;padding:9px 14px;border-radius:999px;cursor:pointer}
+  .steps button .d{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:11px;background:#222;color:var(--muted)}
+  .steps button.on{border-color:var(--gold);color:var(--txt)}
+  .steps button.on .d{background:var(--gold);color:#000}
+  .steps button.ok .d{background:#14532d;color:#86efac}
+  .lead{font-size:15px;color:#d4d4d4;line-height:1.6;margin-bottom:20px}
+  .lead b{color:var(--gold2)}
+  .regimes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .reg{border:2px solid var(--line2);border-radius:18px;padding:22px;cursor:pointer;background:#0d0d0d;transition:.15s;text-align:left;color:var(--txt);font-family:Poppins}
+  .reg:hover{border-color:#555}
+  .reg.on{border-color:var(--gold);background:#1a1508}
+  .reg .ic{font-size:30px}
+  .reg h3{font-size:18px;margin:10px 0 6px}
+  .reg p{font-size:13px;color:var(--muted);line-height:1.5}
+  .reg .tag{display:inline-block;margin-top:12px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gold2)}
+  .q{background:#0d0d0d;border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:12px}
+  .q .t{font-weight:600;font-size:15px;margin-bottom:4px}
+  .q .h{font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.5}
+  .money,.pctin,.numin{position:relative}
+  .money input{padding-left:42px}
+  .money::before{content:"R$";position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none}
+  .pctin input{padding-right:36px}
+  .pctin::after{content:"%";position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+  .numin[data-suf]::after{content:attr(data-suf);position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .prod{border:1px solid var(--line2);border-radius:16px;padding:16px;margin-bottom:12px;background:#0d0d0d}
+  .prod .top1{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+  .prod .num{width:30px;height:30px;border-radius:50%;background:var(--gold);color:#000;font-weight:800;display:grid;place-items:center;flex:0 0 auto}
+  .prod .rm{margin-left:auto;background:none;border:0;color:#737373;font-size:20px;cursor:pointer}
+  .prod label{font-size:12px;color:var(--muted)}
+  .prod .res{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:13px}
+  .chip{padding:6px 10px;border-radius:999px;background:#1a1a1a;border:1px solid var(--line2)}
+  .chip.good{color:var(--ok);border-color:#1f5b33;background:#0f2a17}
+  .chip.mid{color:var(--warn);border-color:#5b4a0f;background:#2a230a}
+  .chip.bad{color:var(--err);border-color:#5b1f1f;background:#2a0f0f}
+  .add{width:100%;border:1px dashed var(--line2);background:none;color:var(--gold2);font:600 14px Poppins;padding:14px;border-radius:14px;cursor:pointer}
+  .saz{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+  .mes{background:#0d0d0d;border:1px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center}
+  .mes .nm{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+  .mes .bar{height:80px;display:flex;align-items:flex-end;justify-content:center;margin:8px 0}
+  .mes .bar i{display:block;width:26px;border-radius:6px 6px 2px 2px;background:var(--gold);transition:height .2s}
+  .mes .v{font-weight:700;font-size:15px}
+  .mes .lbl{font-size:11px;color:var(--muted);height:16px}
+  .mes .pm{display:flex;gap:4px;justify-content:center;margin-top:6px}
+  .mes .pm button{width:30px;height:30px;border-radius:8px;border:1px solid var(--line2);background:#161616;color:var(--txt);font-size:16px;cursor:pointer}
+  .presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .presets button{background:#0d0d0d;border:1px solid var(--line2);color:var(--txt);font:500 13px Poppins;padding:8px 12px;border-radius:999px;cursor:pointer}
+  .grp{border:1px solid var(--line);border-radius:16px;margin-bottom:10px;background:#0d0d0d;overflow:hidden}
+  .grp summary{list-style:none;display:flex;align-items:center;gap:12px;padding:16px;cursor:pointer}
+  .grp summary::-webkit-details-marker{display:none}
+  .grp summary .ic{font-size:22px}
+  .grp summary .nm{font-weight:600}
+  .grp summary .sub{font-size:12px;color:var(--muted)}
+  .grp summary .tot{margin-left:auto;font-weight:700;color:var(--gold2);white-space:nowrap}
+  .grp summary .chev{color:var(--muted);transition:.2s}
+  .grp[open] summary .chev{transform:rotate(90deg)}
+  .grp .body{padding:0 16px 16px}
+  .linha{display:grid;grid-template-columns:1fr 190px;gap:12px;align-items:center;padding:8px 0;border-top:1px solid #1c1c1c}
+  .linha span{font-size:14px}
+  .linha input{padding:10px 12px}
+  .linha .money input{padding-left:40px}
+  .extra{display:grid;grid-template-columns:1fr 190px 32px;gap:8px;align-items:center;padding:8px 0;border-top:1px solid #1c1c1c}
+  .extra button{background:none;border:0;color:#737373;font-size:18px;cursor:pointer}
+  .addline{background:none;border:0;color:var(--gold2);font:600 13px Poppins;cursor:pointer;margin-top:8px}
+  .totbar{display:flex;justify-content:space-between;align-items:center;padding:16px;border-radius:14px;background:#1a1508;border:1px solid #5b4a0f;margin-top:14px;font-weight:600}
+  .totbar b{font-size:20px;color:var(--gold2)}
+  .soma{font-size:13px;margin-top:10px}
+  .adv{margin-top:6px}
+  .adv summary{cursor:pointer;color:var(--gold2);font-size:13px;font-weight:600;list-style:none}
+  .nav{position:fixed;left:0;right:0;bottom:0;background:rgba(0,0,0,.92);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:10px 16px;z-index:10}
+  .nav .in{max-width:860px;margin:0 auto;display:flex;align-items:center;gap:12px}
+  .nav .live{flex:1;display:flex;gap:18px;font-size:12px;color:var(--muted);overflow:hidden}
+  .nav .live b{display:block;font-size:15px;color:var(--txt)}
+  .nav .live .neg{color:var(--err)} .nav .live .pos{color:var(--ok)}
+  .nav .btn{width:auto;margin:0;padding:12px 22px;min-height:46px}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+  .kpi{background:#0d0d0d;border:1px solid var(--line);border-radius:16px;padding:16px}
+  .kpi span{font-size:12px;color:var(--muted);display:block}
+  .kpi b{font-size:22px;display:block;margin-top:4px}
+  .kpi small{font-size:12px;color:var(--muted)}
+  .kpi.hl{border-color:var(--gold);background:#1a1508}
+  .pos{color:var(--ok)} .neg{color:var(--err)}
+  .alert{padding:12px 14px;border-radius:12px;font-size:14px;margin-bottom:8px;line-height:1.5}
+  .alert.err{background:#2a0f0f;border:1px solid #5b1f1f;color:#fca5a5}
+  .alert.warn{background:#2a230a;border:1px solid #5b4a0f;color:#fde68a}
+  .alert.ok{background:#0f2a17;border:1px solid #1f5b33;color:#86efac}
+  .chart{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;align-items:end;height:180px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .chart .c{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:2px;position:relative}
+  .chart .c i{display:block;width:70%;border-radius:4px 4px 0 0}
+  .chart .lb{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;font-size:11px;color:var(--muted);text-align:center;margin-top:6px}
+  .legend{display:flex;gap:16px;font-size:12px;color:var(--muted);margin-top:8px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+  .sec{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold2);margin:26px 0 12px}
+  table.t{font-size:14px}
+  table.t td,table.t th{padding:10px 8px}
+  table.t td.r,table.t th.r{text-align:right}
+  .ro .add,.ro .rm,.ro .addline,.ro .pm,.ro .presets,.ro .extra button{display:none!important}
+  .banner{background:#1a1508;border:1px solid #5b4a0f;color:#fde68a;border-radius:12px;padding:10px 14px;font-size:13px;margin-bottom:14px}
+  .done{text-align:center;padding:10px 0 4px}
+  @media (max-width:700px){
+    .regimes,.g2,.g3,.kpis{grid-template-columns:1fr}
+    .saz{grid-template-columns:repeat(3,1fr)}
+    .linha,.extra{grid-template-columns:1fr}
+    .extra{grid-template-columns:1fr 32px}
+    .extra .money{grid-column:1/2}
+    .nav .live div:nth-child(n+2){display:none}
+    .exhead h1{font-size:17px}
+  }
+  @media print{.nav,.steps,.exhead .salvo{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="ex">
+    <div class="exhead">
+      <a href="painel.html"><img src="logo.jpg" alt="Têxtil Club"></a>
+      <div><h1>Planejamento 2027</h1><div class="s" id="empNome">…</div></div>
+      <div class="salvo" id="salvo"></div>
+    </div>
+    <div id="banner"></div>
+    <div class="steps" id="steps"></div>
+    <div class="card wide" id="conteudo" style="max-width:none"></div>
+  </div>
+</div>
+
+<div class="nav"><div class="in">
+  <button class="btn ghost" id="bVoltar">← Voltar</button>
+  <div class="live" id="live"></div>
+  <button class="btn" id="bProx">Próximo →</button>
+</div></div>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+const C = window.TC_CONFIG, K = window.TC_CALC;
+const sb = createClient(C.SUPABASE_URL, C.SUPABASE_KEY);
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const brl = (v, dec=0) => "R$ " + (Number(v)||0).toLocaleString("pt-BR",{minimumFractionDigits:dec,maximumFractionDigits:dec});
+const pctf = v => ((Number(v)||0)*100).toLocaleString("pt-BR",{maximumFractionDigits:1}) + "%";
+const fmtN = (v, dec=2) => (v===null||v===undefined||v==="") ? "" : Number(v).toLocaleString("pt-BR",{minimumFractionDigits:0,maximumFractionDigits:dec});
+const parse = s => { s = String(s ?? "").trim(); if (!s) return null; s = s.replace(/[^\d,.-]/g,""); if (s.includes(",")) s = s.replace(/\./g,"").replace(",","."); const v = parseFloat(s); return isNaN(v) ? null : v; };
+
+// ---------- sessão / contexto ----------
+const { data:{ session } } = await sb.auth.getSession();
+if (!session) { location.replace("index.html"); throw new Error("sem sessão"); }
+const params = new URLSearchParams(location.search);
+const { data:adm } = await sb.rpc("is_admin");
+const { data:eu } = await sb.from("participantes").select("id,nome,status,empresa_id").eq("id", session.user.id).maybeSingle();
+let empresaId = params.get("empresa") || eu?.empresa_id;
+if (!empresaId) { location.replace(adm ? "admin.html" : "painel.html"); throw new Error("sem empresa"); }
+const souMembro = eu && eu.empresa_id === empresaId && eu.status === "aprovado";
+if (!souMembro && !adm) { location.replace("painel.html"); throw new Error("sem acesso"); }
+const RO = !souMembro; // admin vendo empresa de outro = só leitura
+if (RO) { document.body.classList.add("ro"); $("banner").innerHTML = `<div class="banner">👁️ Você está vendo como <b>administrador</b> (somente leitura). <a href="admin.html">Voltar ao painel do administrador</a></div>`; }
+
+const { data:emp } = await sb.from("empresas").select("nome,cidade,uf").eq("id", empresaId).maybeSingle();
+$("empNome").textContent = emp ? emp.nome + (emp.cidade ? " · " + emp.cidade + (emp.uf ? "/" + emp.uf : "") : "") : "";
+
+const { data:reg } = await sb.from("exercicios").select("*").eq("empresa_id", empresaId).maybeSingle();
+let D = Object.assign(K.novo(), reg?.dados || {});
+D.presumido = Object.assign({ ...K.PRESUMIDO_PADRAO }, D.presumido || {});
+D.caixa = Object.assign(K.novo().caixa, D.caixa || {});
+D.fixos = Object.assign(K.novo().fixos, D.fixos || {});
+let etapa = Math.min(D.etapa || 0, 7);
+if (reg?.atualizado_em) setSalvo(`Salvo ${quando(reg.atualizado_em)}${reg.atualizado_por_nome ? " por " + reg.atualizado_por_nome.split(" ")[0] : ""}`, true);
+
+// ---------- salvar ----------
+let tSave = null;
+function quando(iso){ const d=new Date(iso); return d.toLocaleDateString("pt-BR")===new Date().toLocaleDateString("pt-BR") ? "às "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}) : "em "+d.toLocaleDateString("pt-BR"); }
+function setSalvo(t, ok){ const s=$("salvo"); s.textContent=t; s.className="salvo"+(ok?" ok":""); }
+function salvar(imediato=false){
+  if (RO) return;
+  clearTimeout(tSave); setSalvo("Salvando…");
+  tSave = setTimeout(async () => {
+    const r = K.calcular(D);
+    const { error } = await sb.from("exercicios").upsert({
+      empresa_id: empresaId, regime: D.regime, dados: D, status: D.concluido ? "concluido" : "rascunho",
+      resumo: { receita: r.receita, resultado: r.resultado, margem: r.margem, pe: r.pe, menorSaldo: r.menorSaldo, etapa: D.etapa },
+      atualizado_por: session.user.id, atualizado_por_nome: eu?.nome || session.user.email, atualizado_em: new Date().toISOString()
+    });
+    setSalvo(error ? "⚠ Não salvou — verifique a internet" : "✓ Salvo automaticamente", !error);
+  }, imediato ? 0 : 700);
+}
+
+// ---------- etapas ----------
+const ETAPAS = [
+  { t:"Tributação", f:() => !!D.regime },
+  { t:"Operação", f:() => D.operacao.capacidade > 0 },
+  { t:"Produtos", f:() => D.produtos.some(p => p.qtd > 0 && p.preco > 0) },
+  { t:"Meses do ano", f:() => true },
+  { t:"Impostos e taxas", f:() => D.regime === "presumido" ? true : D.percentuais.simples > 0 },
+  { t:"Custos fixos", f:() => Object.values(D.fixos).some(v => v > 0) },
+  { t:"Caixa", f:() => D.caixa.saldo_inicial !== null && D.caixa.saldo_inicial !== undefined },
+  { t:"Resultado", f:() => D.concluido },
+];
+function renderSteps(){
+  $("steps").innerHTML = ETAPAS.map((e,i) => `<button data-i="${i}" class="${i===etapa?"on":""} ${e.f()&&i!==etapa?"ok":""}"><span class="d">${e.f()&&i!==etapa?"✓":i+1}</span>${e.t}</button>`).join("");
+  $("steps").querySelectorAll("button").forEach(b => b.onclick = () => ir(+b.dataset.i));
+  $("steps").querySelector(".on")?.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"});
+}
+function ir(i){
+  if (i>0 && !D.regime) { alertMsg("Escolha primeiro o regime de tributação da sua empresa."); i = 0; }
+  etapa = Math.max(0, Math.min(7, i));
+  if (!RO && etapa > (D.etapa||0)) { D.etapa = etapa; salvar(); }
+  render(); window.scrollTo({top:0,behavior:"smooth"});
+}
+function alertMsg(t){ const c=$("conteudo"); const d=document.createElement("div"); d.className="alert warn"; d.textContent=t; c.prepend(d); setTimeout(()=>d.remove(),4000); }
+$("bVoltar").onclick = () => ir(etapa-1);
+$("bProx").onclick = () => { if (etapa===7){ location.href = RO ? "admin.html" : "painel.html"; } else ir(etapa+1); };
+
+// ---------- campos ----------
+// data-k="caminho.no.objeto" data-t="money|pct|num"
+function campo(path, tipo="money", attrs=""){
+  const v = get(path); const cls = tipo==="money"?"money":tipo==="pct"?"pctin":"numin";
+  const dec = tipo==="num"?0:2;
+  return `<div class="${cls}" ${attrs}><input inputmode="decimal" data-k="${path}" data-t="${tipo}" value="${v===null||v===undefined?"":fmtN(v,dec)}" ${RO?"disabled":""}></div>`;
+}
+function get(path){ return path.split(".").reduce((o,k)=>o?.[k], D); }
+function set(path, v){ const ks=path.split("."); let o=D; ks.slice(0,-1).forEach(k=>o=o[k]); o[ks.at(-1)]=v; }
+function ligarCampos(root){
+  root.querySelectorAll("input[data-k]").forEach(inp => {
+    inp.addEventListener("input", () => { set(inp.dataset.k, parse(inp.value)); atualizarVivo(); salvar(); });
+    inp.addEventListener("blur", () => { const v=get(inp.dataset.k); inp.value = v===null?"":fmtN(v, inp.dataset.t==="num"?0:2); });
+    inp.addEventListener("focus", () => inp.select());
+  });
+  root.querySelectorAll("input[data-txt]").forEach(inp => {
+    inp.addEventListener("input", () => { set(inp.dataset.txt, inp.value); salvar(); });
+  });
+}
+
+// ---------- telas ----------
+function render(){
+  renderSteps();
+  const c = $("conteudo");
+  c.innerHTML = [tRegime,tOperacao,tProdutos,tSaz,tPerc,tFixos,tCaixa,tResultado][etapa]();
+  ligarCampos(c);
+  ({0:posRegime,2:posProdutos,3:posSaz,5:posFixos,7:posResultado})[etapa]?.(c);
+  $("bVoltar").style.visibility = etapa===0 ? "hidden" : "visible";
+  $("bProx").textContent = etapa===7 ? (RO ? "Voltar ao admin" : "Ir para o painel") : etapa===6 ? "Ver meu resultado →" : "Próximo →";
+  atualizarVivo();
+}
+
+function tRegime(){
+  return `<h1>Qual é o regime de tributação da sua empresa?</h1>
+  <p class="lead">Isso muda o cálculo dos impostos. Se não souber, confira na <b>guia de impostos</b> que você paga ou pergunte ao seu contador.</p>
+  <div class="regimes">
+    <button class="reg ${D.regime==="simples"?"on":""}" data-r="simples" ${RO?"disabled":""}><div class="ic">🟢</div><h3>Simples Nacional</h3>
+      <p>Você paga uma guia única por mês (o <b>DAS</b>), com uma alíquota sobre o faturamento.</p><span class="tag">Mais comum em pequenas confecções</span></button>
+    <button class="reg ${D.regime==="presumido"?"on":""}" data-r="presumido" ${RO?"disabled":""}><div class="ic">🔵</div><h3>Lucro Presumido</h3>
+      <p>Impostos separados: <b>PIS, COFINS, ICMS, IRPJ e CSLL</b>, além de encargos sobre a folha.</p><span class="tag">Empresas maiores ou fora do Simples</span></button>
+  </div>`;
+}
+function posRegime(c){ c.querySelectorAll(".reg").forEach(b => b.onclick = () => { D.regime=b.dataset.r; salvar(); render(); setTimeout(()=>ir(1),350); }); }
+
+function tOperacao(){
+  return `<h1>Sua operação</h1><p class="lead">Três números rápidos sobre o tamanho da sua fábrica.</p>
+  <div class="q"><div class="t">Quantas peças sua fábrica consegue produzir por mês?</div><div class="h">Capacidade máxima, com a equipe e as máquinas que você tem hoje.</div>${campo("operacao.capacidade","num",'data-suf="peças/mês"')}</div>
+  <div class="g2">
+    <div class="q"><div class="t">Dias úteis por mês</div><div class="h">Dias em que a produção trabalha.</div>${campo("operacao.dias_uteis","num",'data-suf="dias"')}</div>
+    <div class="q"><div class="t">Peças por cliente (média)</div><div class="h">Em média, quantas peças cada cliente compra por pedido.</div>${campo("operacao.pecas_cliente","num",'data-suf="peças"')}</div>
+  </div>`;
+}
+
+function tProdutos(){
+  return `<h1>O que você vende</h1>
+  <p class="lead">Cadastre seus <b>principais produtos</b> (ou famílias de produto). Para cada um: quanto vende num <b>mês normal</b>, o <b>preço</b> e quanto custa para fazer <b>uma peça</b>.</p>
+  <div id="prods">${D.produtos.map(cardProd).join("")}</div>
+  <button class="add" id="addProd">+ Adicionar produto</button>
+  <div class="totbar" id="prodTot"></div>`;
+}
+function cardProd(p,i){
+  return `<div class="prod" data-i="${i}">
+    <div class="top1"><span class="num">${i+1}</span>
+      <input data-txt="produtos.${i}.nome" value="${esc(p.nome)}" placeholder="Nome do produto (ex.: Camiseta Dry Fit)" ${RO?"disabled":""} style="font-weight:600">
+      <button class="rm" data-rm="${i}" title="Remover">×</button></div>
+    <div class="g2" style="margin-bottom:12px">
+      <div><label>Linha / categoria (opcional)</label><input data-txt="produtos.${i}.linha" value="${esc(p.linha)}" placeholder="Ex.: Esportiva" ${RO?"disabled":""}></div>
+      <div><label>Quantas vende num mês normal?</label>${campo(`produtos.${i}.qtd`,"num",'data-suf="peças"')}</div>
+    </div>
+    <div class="g3">
+      <div><label>Preço de venda (por peça)</label>${campo(`produtos.${i}.preco`)}</div>
+      <div><label>Custo da matéria-prima (por peça)</label>${campo(`produtos.${i}.custo_mp`)}</div>
+      <div><label>Custo terceirizado (por peça)</label>${campo(`produtos.${i}.custo_terc`)}</div>
+    </div>
+    <div class="res" id="pres${i}"></div>
+  </div>`;
+}
+function posProdutos(c){
+  c.querySelector("#addProd").onclick = () => { D.produtos.push({nome:"",linha:"",qtd:null,preco:null,custo_mp:null,custo_terc:null}); salvar(); render(); setTimeout(()=>document.querySelector(`.prod[data-i="${D.produtos.length-1}"] input`)?.focus(),50); };
+  c.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { if (D.produtos.length===1) return; if (!confirm("Remover este produto?")) return; D.produtos.splice(+b.dataset.rm,1); salvar(); render(); });
+}
+function vivoProdutos(){
+  let rec=0, pecas=0;
+  D.produtos.forEach((p,i) => {
+    const el = $("pres"+i); if (!el) return;
+    const preco=p.preco||0, custo=(p.custo_mp||0)+(p.custo_terc||0), m=preco-custo, mp = preco? m/preco : 0;
+    rec += (p.qtd||0)*preco; pecas += p.qtd||0;
+    el.innerHTML = preco ? `<span class="chip">Custo por peça: <b>${brl(custo,2)}</b></span>
+      <span class="chip ${mp>=.5?"good":mp>=.3?"mid":"bad"}">Sobra por peça: <b>${brl(m,2)}</b> (${pctf(mp)})</span>
+      ${p.qtd?`<span class="chip">Faturamento/mês: <b>${brl((p.qtd||0)*preco)}</b></span>`:""}` : `<span class="chip">Preencha o preço para ver a margem</span>`;
+  });
+  const t=$("prodTot"); if (t) t.innerHTML = `<span>Num mês normal: ${pecas.toLocaleString("pt-BR")} peças</span><b>${brl(rec)}/mês</b>`;
+}
+
+const PRESETS = {
+  "Tudo igual": [1,1,1,1,1,1,1,1,1,1,1,1],
+  "Volta às aulas / esportivo": [0.8,1.3,1.3,1,0.9,0.9,1,1.1,1,1,0.9,0.8],
+  "Forte no fim de ano": [0.8,0.8,0.9,0.9,1,1,1,1,1.1,1.2,1.3,1.3],
+};
+function tSaz(){
+  return `<h1>Como suas vendas variam no ano?</h1>
+  <p class="lead"><b>1,0</b> = mês normal. <b>1,3</b> = vende 30% a mais. <b>0,8</b> = vende 20% a menos. Use os botões <b>−</b> e <b>+</b> ou escolha um modelo pronto.</p>
+  <div class="presets">${Object.keys(PRESETS).map(k=>`<button data-p="${k}">${k}</button>`).join("")}</div>
+  <div class="saz">${K.MESES.map((m,i)=>`<div class="mes"><div class="nm">${m}</div><div class="bar"><i id="sb${i}"></i></div><div class="v" id="sv${i}"></div><div class="lbl" id="sl${i}"></div>
+    <div class="pm"><button data-d="-1" data-i="${i}">−</button><button data-d="1" data-i="${i}">+</button></div></div>`).join("")}</div>
+  <p class="hint" style="margin-top:14px">Média do ano: <b id="smed"></b>. O ideal é ficar perto de 1,0, pois a "venda num mês normal" já foi informada nos produtos.</p>`;
+}
+function posSaz(c){
+  c.querySelectorAll(".pm button").forEach(b => b.onclick = () => { const i=+b.dataset.i; D.sazonalidade[i]=Math.max(0,Math.round((D.sazonalidade[i]+b.dataset.d*0.1)*10)/10); vivoSaz(); atualizarVivo(); salvar(); });
+  c.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { D.sazonalidade=[...PRESETS[b.dataset.p]]; vivoSaz(); atualizarVivo(); salvar(); });
+  vivoSaz();
+}
+function vivoSaz(){
+  D.sazonalidade.forEach((v,i)=>{ const b=$("sb"+i); if(!b) return; b.style.height=Math.min(100,v/1.6*100)+"%"; b.style.background = v>1.05?"var(--ok)":v<0.95?"#b45309":"var(--gold)";
+    $("sv"+i).textContent=v.toLocaleString("pt-BR",{minimumFractionDigits:1}); $("sl"+i).textContent = v>1.05?"forte":v<0.95?"fraco":"normal"; });
+  const m=$("smed"); if(m) m.textContent=(D.sazonalidade.reduce((a,b)=>a+b,0)/12).toLocaleString("pt-BR",{maximumFractionDigits:2});
+}
+
+function tPerc(){
+  const pres = D.regime==="presumido";
+  const linha = (k,t,h) => `<div class="q"><div class="t">${t}</div><div class="h">${h}</div>${campo(k,"pct")}</div>`;
+  return `<h1>Impostos e taxas sobre a venda</h1>
+  <p class="lead">Aqui entram os custos que <b>sobem junto com o faturamento</b>. Tudo em <b>% sobre o valor vendido</b>.</p>
+  ${pres ? `<div class="q"><div class="t">🔵 Lucro Presumido</div><div class="h">Já deixamos preenchido com as alíquotas mais comuns para confecção em Goiás. <b>Confira com seu contador</b> e ajuste se precisar.</div>
+    <div class="g3">
+      <div><label>ICMS sobre vendas</label>${campo("presumido.icms","pct")}</div>
+      <div><label>Crédito de ICMS na matéria-prima</label>${campo("presumido.icms_credito","pct")}</div>
+      <div><label>Encargos sobre a folha</label>${campo("presumido.encargos_folha","pct")}</div>
+    </div>
+    <details class="adv"><summary>Ver PIS, COFINS, IRPJ e CSLL ▸</summary><div class="g3" style="margin-top:12px">
+      <div><label>PIS</label>${campo("presumido.pis","pct")}</div><div><label>COFINS</label>${campo("presumido.cofins","pct")}</div>
+      <div><label>INSS sobre pró-labore</label>${campo("presumido.inss_prolabore","pct")}</div>
+      <div><label>IRPJ: presunção</label>${campo("presumido.irpj_presuncao","pct")}</div><div><label>IRPJ: alíquota</label>${campo("presumido.irpj_aliq","pct")}</div>
+      <div><label>IRPJ: adicional</label>${campo("presumido.irpj_adicional","pct")}</div>
+      <div><label>CSLL: presunção</label>${campo("presumido.csll_presuncao","pct")}</div><div><label>CSLL: alíquota</label>${campo("presumido.csll_aliq","pct")}</div>
+      <div><label>Limite mensal do adicional</label>${campo("presumido.irpj_limite")}</div>
+    </div></details></div>`
+  : linha("percentuais.simples","🟢 Alíquota efetiva do Simples Nacional","Divida o valor do último DAS pelo faturamento do mês. Ex.: DAS de R$ 9.000 ÷ faturamento de R$ 100.000 = <b>9%</b>.")}
+  <div class="g2">
+    ${linha("percentuais.comissoes","Comissões de vendedores","% pago de comissão sobre as vendas.")}
+    ${linha("percentuais.fretes","Fretes de entrega","Quanto o frete representa sobre o valor vendido.")}
+    ${linha("percentuais.cartao","Taxa da maquininha / cartão","Média das taxas sobre o que entra por cartão.")}
+    ${linha("percentuais.devolucoes","Devoluções","Quanto costuma voltar em devoluções.")}
+  </div>
+  ${linha("percentuais.descontos","Descontos comerciais","Desconto médio concedido nas vendas (se você já informou o preço com desconto, deixe 0).")}`;
+}
+
+function totalGrupo(g){ return g.itens.reduce((s,[k])=>s+(D.fixos[k]||0),0) + D.fixos_extra.filter(x=>x.grupo===g.id).reduce((s,x)=>s+(x.valor||0),0); }
+function tFixos(){
+  return `<h1>Custos fixos do mês</h1>
+  <p class="lead">Quanto você gasta <b>por mês</b> para manter a empresa aberta, <b>vendendo ou não</b>. Abra cada grupo e preencha o que tiver. O que não tiver, deixe em branco.</p>
+  ${K.GRUPOS.map(g=>`<details class="grp" data-g="${g.id}"><summary><span class="ic">${g.icon}</span><div><div class="nm">${g.nome}</div><div class="sub">${g.dica}</div></div><span class="tot" id="gt_${g.id}"></span><span class="chev">▸</span></summary>
+    <div class="body">${g.itens.map(([k,t])=>`<div class="linha"><span>${t}</span>${campo("fixos."+k)}</div>`).join("")}
+      <div id="ex_${g.id}">${D.fixos_extra.map((x,i)=>x.grupo===g.id?linhaExtra(x,i):"").join("")}</div>
+      <button class="addline" data-addg="${g.id}">+ Outra despesa em ${g.nome}</button></div></details>`).join("")}
+  <div class="q" style="margin-top:14px"><div class="t">💰 Rendimentos de aplicações (dinheiro que entra)</div><div class="h">Se você tem dinheiro aplicado, quanto rende por mês. Isso ajuda a cobrir os custos.</div>${campo("rendimentos")}</div>
+  <div class="totbar"><span>Total de custos fixos por mês</span><b id="fixTot"></b></div>`;
+}
+function linhaExtra(x,i){ return `<div class="extra"><input data-txt="fixos_extra.${i}.nome" value="${esc(x.nome)}" placeholder="Nome da despesa" ${RO?"disabled":""}>${campo(`fixos_extra.${i}.valor`)}<button data-rmx="${i}">×</button></div>`; }
+function posFixos(c){
+  c.querySelectorAll("[data-addg]").forEach(b => b.onclick = () => { D.fixos_extra.push({grupo:b.dataset.addg,nome:"",valor:null}); salvar(); const open=b.closest("details").dataset.g; render(); const d=document.querySelector(`details[data-g="${open}"]`); d.open=true; d.querySelector(".extra:last-child input")?.focus(); });
+  c.querySelectorAll("[data-rmx]").forEach(b => b.onclick = () => { const open=b.closest("details").dataset.g; D.fixos_extra.splice(+b.dataset.rmx,1); salvar(); render(); document.querySelector(`details[data-g="${open}"]`).open=true; });
+  const first = c.querySelector("details.grp"); if (first && !Object.values(D.fixos).some(v=>v>0)) first.open=true;
+}
+function vivoFixos(){
+  K.GRUPOS.forEach(g=>{ const e=$("gt_"+g.id); if(e){ const t=totalGrupo(g); e.textContent = t? brl(t):""; } });
+  const t=$("fixTot"); if(t){ const r=K.calcular(D); t.textContent = brl(r.fixoMes); }
+}
+
+function tCaixa(){
+  return `<h1>Caixa e prazos</h1><p class="lead">Último passo! Isso mostra se vai <b>faltar dinheiro</b> em algum mês, mesmo com lucro.</p>
+  <div class="q"><div class="t">Como seus clientes pagam?</div><div class="h">Do total vendido, quanto entra à vista, em 30 e em 60 dias. <b>Tem que somar 100%.</b></div>
+    <div class="g3"><div><label>À vista</label>${campo("caixa.vista","pct")}</div><div><label>Em 30 dias</label>${campo("caixa.d30","pct")}</div><div><label>Em 60 dias</label>${campo("caixa.d60","pct")}</div></div>
+    <div class="soma" id="somaRec"></div></div>
+  <div class="g2">
+    <div class="q"><div class="t">Saldo em caixa no início do ano</div><div class="h">Quanto terá na conta em 1º de janeiro (pode ser uma estimativa).</div>${campo("caixa.saldo_inicial")}</div>
+    <div class="q"><div class="t">Reserva mínima desejada</div><div class="h">Valor que você não quer que o caixa fique abaixo.</div>${campo("caixa.reserva")}</div>
+    <div class="q"><div class="t">Prazo para pagar a matéria-prima</div><div class="h">0 = à vista, 1 = em 30 dias, 2 = em 60 dias.</div>${campo("caixa.prazo_mp","num",'data-suf="meses"')}</div>
+    <div class="q"><div class="t">Distribuição de lucros</div><div class="h">Quanto do lucro do ano vai para os sócios.</div>${campo("caixa.distribuicao","pct")}</div>
+  </div>
+  <details class="q adv"><summary>Tem valores do ano anterior a receber ou a pagar? ▸</summary>
+    <div class="g3" style="margin-top:12px"><div><label>A receber em janeiro</label>${campo("caixa.receber_jan")}</div><div><label>A receber em fevereiro</label>${campo("caixa.receber_fev")}</div><div><label>A pagar em janeiro</label>${campo("caixa.pagar_jan")}</div></div></details>`;
+}
+function vivoCaixa(){ const s=$("somaRec"); if(!s) return; const t=(D.caixa.vista||0)+(D.caixa.d30||0)+(D.caixa.d60||0); s.innerHTML = Math.round(t)===100 ? `<span class="pos">✓ Soma 100%</span>` : `<span class="neg">Soma ${fmtN(t)}%: ajuste para fechar 100%</span>`; }
+
+function tResultado(){
+  const S = K.cenarios(D), r = S.base, al = K.alertas(r);
+  if (!r.receita) return `<h1>Seu resultado</h1><p class="lead">Preencha pelo menos os <b>produtos</b> para ver o resultado.</p>`;
+  const max = Math.max(...r.meses.map(m=>m.receita), 1);
+  const cls = v => v>=0?"pos":"neg";
+  return `<h1>Seu Planejamento 2027</h1>
+  <p class="lead">Com base no que você preencheu (${D.regime==="presumido"?"Lucro Presumido":"Simples Nacional"}), este é o retrato do seu ano.</p>
+  <div class="kpis">
+    <div class="kpi"><span>Faturamento no ano</span><b>${brl(r.receita)}</b><small>${brl(r.receita/12)} por mês</small></div>
+    <div class="kpi hl"><span>Lucro líquido no ano</span><b class="${cls(r.resultado)}">${brl(r.resultado)}</b><small>Margem de ${pctf(r.margem)}</small></div>
+    <div class="kpi"><span>Ponto de equilíbrio</span><b>${brl(r.peMes)}</b><small>por mês, ≈ ${Math.round(r.pePecasMes).toLocaleString("pt-BR")} peças</small></div>
+    <div class="kpi"><span>Margem de contribuição</span><b>${pctf(r.mcPct)}</b><small>sobra de cada R$ 100 vendidos para pagar os fixos</small></div>
+    <div class="kpi"><span>Uso da capacidade</span><b class="${r.utilizacao>1?"neg":""}">${r.capacidade?pctf(r.utilizacao):"–"}</b><small>${Math.round(r.pecasMes).toLocaleString("pt-BR")} de ${Math.round(r.capacidade).toLocaleString("pt-BR")} peças/mês</small></div>
+    <div class="kpi"><span>Menor saldo de caixa</span><b class="${cls(r.menorSaldo)}">${brl(r.menorSaldo)}</b><small>em ${r.mesMenorSaldo} · dezembro: ${brl(r.saldoDez)}</small></div>
+  </div>
+  <div class="sec">Alertas</div>${al.map(([t,m])=>`<div class="alert ${t}">${t==="ok"?"✅":t==="warn"?"⚠️":"🚨"} ${esc(m)}</div>`).join("")}
+  <div class="sec">Mês a mês</div>
+  <div class="chart">${r.meses.map(m=>`<div class="c" title="${m.nome}: venda ${brl(m.receita)} · resultado ${brl(m.resultado)}"><i style="height:${m.receita/max*100}%;background:#3f3f46"></i></div>`).join("")}</div>
+  <div class="chart" style="height:90px;border:0;padding-top:0">${r.meses.map(m=>`<div class="c" title="${m.nome}: ${brl(m.resultado)}"><i style="height:${Math.min(100,Math.abs(m.resultado)/ (Math.max(...r.meses.map(x=>Math.abs(x.resultado)),1))*100)}%;background:${m.resultado>=0?"var(--ok)":"var(--err)"}"></i></div>`).join("")}</div>
+  <div class="lb">${K.MESES.map(m=>`<span>${m}</span>`).join("")}</div>
+  <div class="legend"><span><i style="background:#3f3f46"></i>Faturamento</span><span><i style="background:var(--ok)"></i>Lucro</span><span><i style="background:var(--err)"></i>Prejuízo</span></div>
+  <div class="sec">E se o ano for diferente?</div>
+  <table class="t"><thead><tr><th></th><th class="r">Pessimista</th><th class="r">Base</th><th class="r">Otimista</th></tr></thead><tbody>
+    <tr><td>Faturamento</td>${["pessimista","base","otimista"].map(k=>`<td class="r">${brl(S[k].receita)}</td>`).join("")}</tr>
+    <tr><td>Lucro líquido</td>${["pessimista","base","otimista"].map(k=>`<td class="r ${cls(S[k].resultado)}"><b>${brl(S[k].resultado)}</b></td>`).join("")}</tr>
+    <tr><td>Margem</td>${["pessimista","base","otimista"].map(k=>`<td class="r">${pctf(S[k].margem)}</td>`).join("")}</tr>
+  </tbody></table>
+  <p class="hint">Pessimista: vende 15% menos, preço 3% menor e matéria-prima 8% mais cara. Otimista: vende 10% mais, preço 3% maior e matéria-prima 3% mais barata.</p>
+  <div class="sec">Seus produtos (do que mais dá lucro ao que menos dá)</div>
+  <table class="t"><thead><tr><th>Produto</th><th class="r">Faturamento/ano</th><th class="r">Sobra por peça</th><th class="r">Margem</th></tr></thead><tbody>
+    ${r.produtos.map(p=>`<tr><td>${esc(p.nome)}</td><td class="r">${brl(p.receita)}</td><td class="r">${brl(p.unit,2)}</td><td class="r"><span class="chip ${p.margemPct>=.5?"good":p.margemPct>=.3?"mid":"bad"}">${pctf(p.margemPct)}</span></td></tr>`).join("")}
+  </tbody></table>
+  <div class="sec">Para onde vai cada R$ 100 vendidos</div>
+  ${barraDestino(r)}
+  ${RO ? "" : `<div class="done">${D.concluido ? `<div class="alert ok">✅ Exercício marcado como concluído. Você ainda pode voltar e ajustar o que quiser.</div>` : `<button class="btn" id="bConcluir">✅ Concluir meu exercício</button><p class="hint">Você ainda poderá editar depois.</p>`}</div>`}`;
+}
+function barraDestino(r){
+  const t = r.receita, z = k => r.meses.reduce((s,m)=>s+m[k],0);
+  const partes = [["Impostos",z("impostos")+z("irpjcsll"),"#b45309"],["Matéria-prima e terceirizados",z("mp")+z("terc"),"#7c3aed"],["Comissões, fretes e cartão",z("comerciais")+z("deducoes"),"#0e7490"],["Custos fixos",r.fixos,"#52525b"],[r.resultado>=0?"Lucro":"Prejuízo",Math.abs(r.resultado),r.resultado>=0?"#16a34a":"#dc2626"]];
+  return `<div style="display:flex;height:34px;border-radius:10px;overflow:hidden;margin-bottom:10px">${partes.map(([n,v,c])=>`<div title="${n}" style="width:${Math.max(0,v/t*100)}%;background:${c}"></div>`).join("")}</div>
+   <div class="legend" style="flex-wrap:wrap">${partes.map(([n,v,c])=>`<span><i style="background:${c}"></i>${n}: <b style="color:var(--txt)">R$ ${(v/t*100).toLocaleString("pt-BR",{maximumFractionDigits:1})}</b></span>`).join("")}</div>`;
+}
+function posResultado(c){
+  const b=c.querySelector("#bConcluir"); if(b) b.onclick=()=>{ D.concluido=true; salvar(true); render(); window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"}); };
+}
+
+function atualizarVivo(){
+  if (etapa===2) vivoProdutos(); if (etapa===5) vivoFixos(); if (etapa===6) vivoCaixa();
+  const r = K.calcular(D);
+  $("live").innerHTML = r.receita ? `<div>Faturamento/mês<b>${brl(r.receita/12)}</b></div><div>Lucro/mês<b class="${r.resultado>=0?"pos":"neg"}">${brl(r.resultado/12)}</b></div><div>Margem<b>${pctf(r.margem)}</b></div>` : `<div>Preencha os produtos para ver o resultado ao vivo</div>`;
+}
+
+render();
+</script>
+</body>
+</html>

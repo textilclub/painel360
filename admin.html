@@ -40,6 +40,21 @@
       <tbody id="lista"><tr><td colspan="5">Carregando…</td></tr></tbody>
     </table>
   </div>
+
+  <div class="card wide" style="margin-top:18px">
+    <h1>📝 Exercício de casa: Planejamento 2027</h1>
+    <p class="sub">Como está cada empresa. Clique em <b>Abrir</b> para ver o exercício completo e o resultado.</p>
+    <div class="stats">
+      <div class="stat"><b id="eTot">–</b><span>Empresas liberadas</span></div>
+      <div class="stat"><b id="eNao" style="color:var(--err)">–</b><span>Não começaram</span></div>
+      <div class="stat"><b id="eAnd" style="color:var(--warn)">–</b><span>Em andamento</span></div>
+      <div class="stat"><b id="eOk" style="color:var(--ok)">–</b><span>Concluíram</span></div>
+    </div>
+    <table>
+      <thead><tr><th>Empresa</th><th>Regime</th><th>Andamento</th><th>Faturamento/ano</th><th>Lucro/ano</th><th></th></tr></thead>
+      <tbody id="exLista"><tr><td colspan="6">Carregando…</td></tr></tbody>
+    </table>
+  </div>
 </div>
 
 <script type="module">
@@ -104,6 +119,31 @@ function render(){
   });
 }
 carregar();
+
+async function carregarEx(){
+  const { data:emps } = await sb.from("empresas").select("id,nome,cidade,uf,participantes(status),exercicios(status,regime,resumo,atualizado_em,atualizado_por_nome)").order("nome");
+  const lib = (emps||[]).filter(e => (e.participantes||[]).some(p => p.status==="aprovado"));
+  const ex = e => Array.isArray(e.exercicios) ? e.exercicios[0] : e.exercicios;
+  const brl = v => "R$ " + Math.round(v||0).toLocaleString("pt-BR");
+  $("eTot").textContent = lib.length;
+  $("eNao").textContent = lib.filter(e=>!ex(e)).length;
+  $("eAnd").textContent = lib.filter(e=>ex(e) && ex(e).status!=="concluido").length;
+  $("eOk").textContent = lib.filter(e=>ex(e)?.status==="concluido").length;
+  if (!lib.length){ $("exLista").innerHTML = `<tr><td colspan="6" style="color:var(--muted)">Nenhuma empresa liberada ainda.</td></tr>`; return; }
+  $("exLista").innerHTML = lib.map(e => {
+    const x = ex(e), r = x?.resumo || {}, etapa = r.etapa ?? 0, done = x?.status==="concluido";
+    const prog = !x ? `<span class="badge bloqueado">Não começou</span>` : done ? `<span class="badge aprovado">Concluído</span>` : `<span class="badge pendente">Etapa ${Math.min(etapa+1,8)} de 8</span>`;
+    return `<tr>
+      <td><b>${esc(e.nome)}</b><small>${esc(e.cidade||"")}${e.uf?"/"+esc(e.uf):""}</small>${x?`<small>Atualizado ${new Date(x.atualizado_em).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})}${x.atualizado_por_nome?" por "+esc(x.atualizado_por_nome.split(" ")[0]):""}</small>`:""}</td>
+      <td>${x?.regime==="presumido"?"Lucro Presumido":x?.regime==="simples"?"Simples Nacional":"–"}</td>
+      <td>${prog}</td>
+      <td>${r.receita?brl(r.receita):"–"}</td>
+      <td>${r.receita?`<b style="color:${r.resultado>=0?"var(--ok)":"var(--err)"}">${brl(r.resultado)}</b><small>margem ${((r.margem||0)*100).toLocaleString("pt-BR",{maximumFractionDigits:1})}%</small>`:"–"}</td>
+      <td>${x?`<a class="btn sm" href="exercicio.html?empresa=${e.id}" style="text-decoration:none;display:inline-block">Abrir</a>`:""}</td>
+    </tr>`;
+  }).join("");
+}
+carregarEx();
 </script>
 </body>
 </html>
