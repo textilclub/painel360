@@ -96,6 +96,23 @@
       </table>
     </div>
   </section>
+  <section class="bloco-a" id="visitas">
+    <div class="eyebrow">Visita técnica · 18/11</div>
+    <h1 style="font-size:clamp(1.4rem,1.1rem + 1.4vw,1.9rem);margin-top:8px">Matriz: o que vi × minha empresa</h1>
+    <p class="sub">Uma matriz por participante. <b>Ver</b> abre a matriz completa em modo leitura.</p>
+    <div class="stats">
+      <div class="stat"><b id="vTot">–</b><span>Participantes liberados</span></div>
+      <div class="stat"><b id="vNao" style="color:var(--err)">–</b><span>Não começaram</span></div>
+      <div class="stat"><b id="vAnd" style="color:var(--warn)">–</b><span>Em andamento</span></div>
+      <div class="stat"><b id="vOk" style="color:var(--ok)">–</b><span>Concluíram</span></div>
+    </div>
+    <div class="tabela">
+      <table>
+        <thead><tr><th>Participante</th><th>Empresa</th><th>Andamento</th><th>Maiores distâncias</th><th><span class="sr">Ações</span></th></tr></thead>
+        <tbody id="vLista"><tr><td colspan="5" class="vazio">Carregando…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
 </div>
 </main>
 
@@ -188,6 +205,34 @@ async function carregarEx(){
   }).join("");
 }
 carregarEx();
+const AREAS_V = {fluxo:"Fluxo e layout",["5s"]:"Organização",pcp:"PCP",visual:"Gestão visual",qualidade:"Qualidade",pessoas:"Pessoas",maquinas:"Máquinas",estoque:"Estoque"};
+async function carregarVisitas(){
+  const [{ data:ps }, { data:ats }] = await Promise.all([
+    sb.from("participantes").select("id,nome,status,empresas(nome)").eq("status","aprovado").order("nome"),
+    sb.from("atividades").select("participante_id,status,dados,atualizado_em").eq("tipo","visita")
+  ]);
+  const m = Object.fromEntries((ats||[]).map(a => [a.participante_id, a]));
+  const lista = ps||[];
+  $("vTot").textContent = lista.length;
+  $("vNao").textContent = lista.filter(p=>!m[p.id]).length;
+  $("vAnd").textContent = lista.filter(p=>m[p.id] && m[p.id].status!=="concluido").length;
+  $("vOk").textContent = lista.filter(p=>m[p.id]?.status==="concluido").length;
+  if (!lista.length){ $("vLista").innerHTML = `<tr><td colspan="5" class="vazio">Nenhum participante liberado ainda.</td></tr>`; return; }
+  $("vLista").innerHTML = lista.map(p => {
+    const a = m[p.id], ar = a?.dados?.areas || {};
+    const feitas = Object.values(ar).filter(v => (v.vi||v.eu) && v.nivel!=null).length;
+    const gaps = Object.entries(ar).filter(([k,v]) => v.nivel!=null && v.nivel<=1).sort((x,y)=>x[1].nivel-y[1].nivel).slice(0,3).map(([k,v]) => (v.foco?"★ ":"")+(AREAS_V[k]||k));
+    const prog = !a ? `<span class="badge bloqueado">Não começou</span>` : a.status==="concluido" ? `<span class="badge aprovado">Concluído</span>` : `<span class="badge pendente">${feitas} de 8 áreas</span>`;
+    return `<tr>
+      <td data-l="Participante"><b>${esc(p.nome)}</b>${a?`<small>Atualizado ${new Date(a.atualizado_em).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})}</small>`:""}</td>
+      <td data-l="Empresa">${esc(p.empresas?.nome||"")}</td>
+      <td data-l="Andamento">${prog}${a?`<div class="fita mini-fita" aria-hidden="true"><i style="width:${a.status==="concluido"?100:feitas/8*100}%"></i></div>`:""}</td>
+      <td data-l="Maiores distâncias">${gaps.length?esc(gaps.join(", ")):"–"}</td>
+      <td data-l="">${a?`<div class="acts"><a class="btn sm" href="visita.html?p=${p.id}">Ver</a></div>`:""}</td>
+    </tr>`;
+  }).join("");
+}
+carregarVisitas();
 </script>
 </body>
 </html>

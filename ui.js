@@ -61,8 +61,8 @@
   const wa = C.WHATSAPP_SUPORTE ? `https://wa.me/${C.WHATSAPP_SUPORTE}` : "#";
 
   const links = page === "admin"
-    ? [["participantes", "#participantes", "Participantes"], ["exercicios", "#exercicios", "Exercício das empresas"]]
-    : [["painel", "painel.html", "Início"], ["exercicio", "exercicio.html", "Exercício"], ["cronograma", "cronograma.html", "Cronograma"], ["palestrantes", "palestrantes.html", "Palestrantes"], ["local", "local.html", "Local"]];
+    ? [["participantes", "#participantes", "Participantes"], ["exercicios", "#exercicios", "Exercício das empresas"], ["visitas", "#visitas", "Visita técnica"]]
+    : [["painel", "painel.html", "Início"], ["exercicio", "exercicio.html", "Exercício"], ["visita", "visita.html", "Visita"], ["cronograma", "cronograma.html", "Cronograma"], ["palestrantes", "palestrantes.html", "Palestrantes"], ["local", "local.html", "Local"]];
   const nav = cls => `<nav class="${cls}" aria-label="Navegação principal">${links.map(([k, h, t]) =>
     `<a class="nl"${k === page ? ' aria-current="page"' : ""} href="${h}">${t}</a>`).join("")}${page === "admin" ? "" : `<a class="nl nl-admin hide" href="admin.html">Administração</a>`}</nav>`;
 

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Visita técnica · O que vi × minha empresa · Têxtil Club</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+<style>
+  .vh h1{font-size:clamp(2rem,1.3rem + 3.2vw,3.2rem);letter-spacing:-.035em;margin:10px 0 10px}
+  .vh h1 em{font-style:normal;color:var(--gold-hi)}
+  .vh .sub{font-size:17px;max-width:54ch}
+  .vh .faixa-in{padding-bottom:88px}
+  .vh .meta{display:flex;gap:10px 18px;flex-wrap:wrap;margin-top:18px;color:var(--muted-dark);font-size:14.5px}
+  .vh .meta span{display:inline-flex;align-items:center;gap:8px}
+  .vh .meta .i{color:var(--gold-hi)}
+  .corpo{position:relative;z-index:2;margin-top:-56px;max-width:980px}
+
+  /* barra de status fixa */
+  .status{position:sticky;top:62px;z-index:20;background:var(--surface);border:1.5px solid var(--ink);border-radius:var(--r-lg);padding:14px 16px;box-shadow:5px 5px 0 var(--gold);display:grid;gap:10px;margin-bottom:26px}
+  @media (max-width:899px){.status{top:110px}}
+  .status .l1{display:flex;align-items:center;justify-content:space-between;gap:12px;font:600 14px var(--f-body)}
+  .status .salvo{font-weight:500;color:var(--muted);font-size:13.5px}
+  .status .salvo.ok{color:var(--ok)}
+  .status .fita{--seg:12.5%}
+
+  .como{display:grid;gap:10px;grid-template-columns:repeat(3,1fr);margin-bottom:6px}
+  .como div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14.5px;line-height:1.45}
+  .como b{display:flex;align-items:center;gap:8px;font:700 13px var(--f-display);letter-spacing:.02em;text-transform:uppercase;color:var(--gold-ink);margin-bottom:4px}
+  @media (max-width:700px){.como{grid-template-columns:1fr}}
+
+  /* cabeçalho das colunas da matriz (desktop) */
+  .mx-head{display:none}
+  @media (min-width:860px){
+    .mx-head{display:grid;grid-template-columns:200px 1fr 1fr;gap:14px;padding:0 18px 8px;font:600 12.5px var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+    .mx-head span:nth-child(2){color:var(--ink)}
+  }
+
+  .area{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px;margin-bottom:14px;transition:border-color .2s}
+  .area.feita{border-color:var(--ink)}
+  .area .top{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start}
+  .area .n{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;font:700 14px var(--f-display);background:var(--paper)}
+  .area.feita .n{background:var(--ink);color:var(--gold-hi)}
+  .area h3{font:700 18px/1.25 var(--f-display);letter-spacing:-.02em}
+  .area .dica{font-size:14px;color:var(--muted);margin-top:3px;line-height:1.45}
+  .estrela{min-width:44px;min-height:44px;border-radius:12px;border:1.5px solid var(--line-2);background:var(--surface);display:grid;place-items:center;color:var(--muted);font-size:20px;line-height:1}
+  .estrela[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#0b0b0a}
+  .lados{display:grid;gap:12px;margin-top:14px}
+  @media (min-width:860px){.lados{grid-template-columns:1fr 1fr}}
+  .lado label{display:flex;align-items:center;gap:8px;font:600 13.5px var(--f-body);color:var(--ink-2);margin-bottom:6px}
+  .lado label .tag{font:700 11px var(--f-body);letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:999px}
+  .lado.vi label .tag{background:var(--ink);color:#fff}
+  .lado.eu label .tag{background:var(--gold-soft);color:var(--gold-ink);border:1px solid var(--warn-line)}
+  textarea{width:100%;min-height:96px;resize:vertical;background:var(--paper);border:1.5px solid var(--line-2);border-radius:var(--r);padding:12px 14px;font:500 16px/1.5 var(--f-body);color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s}
+  textarea::placeholder{color:#968E7A;font-weight:400}
+  textarea:focus{border-color:var(--ink);box-shadow:0 0 0 4px rgba(184,145,47,.38);background:var(--surface)}
+  textarea:disabled,input:disabled{background:var(--paper-2);color:var(--ink-2)}
+  .escala{margin-top:14px}
+  .escala .q{font:600 13.5px var(--f-body);color:var(--ink-2);margin-bottom:8px}
+  .chips{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  @media (max-width:560px){.chips{grid-template-columns:1fr 1fr}}
+  .chips button{min-height:46px;border-radius:10px;border:1.5px solid var(--line-2);background:var(--surface);font:600 13.5px/1.2 var(--f-body);color:var(--ink-2);padding:6px 8px}
+  .chips button[aria-pressed="true"][data-v="0"]{background:var(--err-bg);border-color:var(--err);color:var(--err)}
+  .chips button[aria-pressed="true"][data-v="1"]{background:var(--warn-bg);border-color:var(--warn);color:var(--warn)}
+  .chips button[aria-pressed="true"][data-v="2"]{background:var(--gold-soft);border-color:var(--gold-ink);color:var(--gold-ink)}
+  .chips button[aria-pressed="true"][data-v="3"]{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+
+  /* resumo da matriz */
+  .mapa{background:#000;color:var(--on-dark);border-radius:var(--r-lg);padding:20px;margin:6px 0 10px}
+  .mapa h3{color:#fff;font-size:17px;margin-bottom:4px}
+  .mapa p{color:var(--muted-dark);font-size:14px;margin-bottom:14px}
+  .barras{display:grid;gap:10px}
+  .barra{display:grid;grid-template-columns:minmax(120px,190px) 1fr 26px;gap:12px;align-items:center;font-size:14px}
+  .barra .nm{color:#e7e2d6;display:flex;gap:6px;align-items:center}
+  .barra .nm .s{color:var(--gold-hi)}
+  .barra .tr{height:12px;border-radius:999px;background:#24221d;overflow:hidden}
+  .barra .tr i{display:block;height:100%;border-radius:999px;background:var(--gold-hi);transition:width .35s}
+  .barra .v{color:var(--muted-dark);font:600 13px var(--f-display);text-align:right}
+  .barra.vazia .tr i{background:#3a372f}
+
+  /* entrega */
+  .entrega{background:var(--surface);border:1.5px solid var(--ink);border-radius:var(--r-lg);padding:22px 18px;box-shadow:6px 6px 0 var(--gold)}
+  .entrega h2{font-size:clamp(1.3rem,1.1rem + 1vw,1.6rem);letter-spacing:-.025em;margin:8px 0 4px}
+  .bloco3{margin-top:22px}
+  .bloco3 h3{display:flex;align-items:center;gap:10px;font:700 16px var(--f-display);margin-bottom:10px}
+  .bloco3 h3 .ct{font:600 12px var(--f-body);color:var(--muted);letter-spacing:.06em;margin-left:auto}
+  .item{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start;margin-bottom:10px}
+  .item .k{width:30px;height:30px;border-radius:8px;background:var(--paper-2);display:grid;place-items:center;font:700 13px var(--f-display);margin-top:10px}
+  .item textarea{min-height:56px}
+  .acao{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+  .acao .lin{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .acao label{font-size:13px;margin-bottom:6px}
+  .acao textarea{background:var(--surface);min-height:60px}
+  .acao input,.acao select{min-height:46px;font-size:15px}
+  @media (max-width:520px){.acao .lin{grid-template-columns:1fr}}
+  .sug{display:flex;flex-wrap:wrap;gap:6px;margin:-2px 0 10px}
+  .sug button{min-height:36px;border-radius:999px;border:1px dashed var(--line-2);background:transparent;font:600 13px var(--f-body);color:var(--ink-2);padding:0 12px}
+  .sug button:hover{border-color:var(--ink);color:var(--ink)}
+  .compromisso{margin-top:24px;padding-top:20px;border-top:2px solid var(--ink)}
+  .check{display:flex;gap:12px;align-items:flex-start;font-size:16px;line-height:1.5;cursor:pointer;margin-bottom:16px}
+  .check input{width:24px;height:24px;min-height:24px;padding:0;border-radius:6px;margin-top:2px;flex:0 0 auto;appearance:auto;-webkit-appearance:checkbox;accent-color:var(--ink)}
+  .feito{display:flex;gap:12px;align-items:center;background:var(--ok-bg);border:1px solid var(--ok-line);color:var(--ok);border-radius:12px;padding:14px 16px;font-weight:600}
+  .ro .estrela,.ro .sug,.ro .compromisso .btn{display:none!important}
+  .banner{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn);border-radius:12px;padding:12px 16px;font-size:14.5px;margin-bottom:16px;font-weight:500}
+  .socio{background:var(--paper);border:1px dashed var(--line-2);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--ink-2);margin-top:12px}
+  .socio b{color:var(--ink)}
+</style>
+</head>
+<body>
+<script src="ui.js" data-page="visita"></script>
+<main class="wrap">
+  <section class="faixa vh"><div class="faixa-in">
+    <div class="eyebrow">Visita técnica · Quarta, 18/11</div>
+    <h1>O que vi <em>×</em> minha empresa</h1>
+    <p class="sub">Compare o que você observou na fábrica com a realidade da sua confecção, área por área. No fim, escolha o que vai levar para casa.</p>
+    <div class="meta"><span id="mLocal"></span><span id="mQuem"></span></div>
+  </div></section>
+
+  <div class="page corpo">
+    <div id="banner"></div>
+    <div class="status" aria-live="polite">
+      <div class="l1"><span id="stTxt">0 de 8 áreas comparadas</span><span class="salvo" id="salvo"></span></div>
+      <div class="fita"><i id="stBar" style="width:0%"></i></div>
+    </div>
+
+    <div class="como">
+      <div><b><span data-ic="factory"></span>1. Observe</b>Anote o que você viu lá: como fazem, o que chamou atenção.</div>
+      <div><b><span data-ic="building"></span>2. Compare</b>Escreva como isso funciona hoje na sua empresa e marque a distância.</div>
+      <div><b><span data-ic="target"></span>3. Escolha</b>Toque na estrela das áreas em que você quer agir.</div>
+    </div>
+
+    <div class="sec"><span data-ic="layers"></span>A matriz</div>
+    <div class="mx-head"><span>Área</span><span>O que vi lá</span><span>Na minha empresa</span></div>
+    <div id="areas"></div>
+
+    <div class="sec"><span data-ic="trend"></span>Sua distância, área por área</div>
+    <div class="mapa">
+      <h3>Onde a sua empresa está mais longe do que você viu</h3>
+      <p>Quanto maior a barra, maior a oportunidade. A estrela marca onde você quer agir.</p>
+      <div class="barras" id="barras"></div>
+    </div>
+
+    <div class="sec"><span data-ic="clip"></span>Sua entrega</div>
+    <div class="entrega" id="entrega">
+      <div class="eyebrow">Compromisso da visita</div>
+      <h2>3 + 3 + 3: o que você leva para casa</h2>
+      <p class="sub">Use a matriz acima como base. Toque nas sugestões para puxar o que você já escreveu.</p>
+
+      <div class="bloco3">
+        <h3><span data-ic="check"></span>3 pontos fortes que você observou<span class="ct" id="ctF"></span></h3>
+        <div class="sug" id="sugF"></div>
+        <div id="fortes"></div>
+      </div>
+      <div class="bloco3">
+        <h3><span data-ic="refresh"></span>3 oportunidades de melhoria na sua empresa<span class="ct" id="ctO"></span></h3>
+        <div class="sug" id="sugO"></div>
+        <div id="oport"></div>
+      </div>
+      <div class="bloco3">
+        <h3><span data-ic="target"></span>3 ações práticas para implementar<span class="ct" id="ctA"></span></h3>
+        <div id="acoes"></div>
+      </div>
+
+      <div class="compromisso" id="compromisso"></div>
+    </div>
+    <div id="dosSocios"></div>
+  </div>
+</main>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+const C = window.TC_CONFIG; const sb = createClient(C.SUPABASE_URL, C.SUPABASE_KEY);
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ic = (n, c) => (window.IC ? IC(n, c) : "");
+document.querySelectorAll("[data-ic]").forEach(e => e.outerHTML = ic(e.dataset.ic, "sm"));
+$("mLocal").innerHTML = ic("pin","sm") + "Siqueira Gaipo";
+
+const AREAS = [
+  { k:"fluxo", t:"Fluxo e layout da produção", d:"Como o material anda do corte à expedição. Tem vai e volta? Gente esperando?" },
+  { k:"5s", t:"Organização e limpeza", d:"Cada coisa no seu lugar, setores identificados, chão livre, ferramentas à mão." },
+  { k:"pcp", t:"Planejamento e controle da produção", d:"Como decidem o que produzir, em que ordem, e como acompanham os prazos." },
+  { k:"visual", t:"Gestão visual e indicadores", d:"Quadros, metas, produção do dia à vista. Todo mundo sabe se está indo bem?" },
+  { k:"qualidade", t:"Qualidade", d:"Onde e como conferem as peças. O que fazem quando acham defeito." },
+  { k:"pessoas", t:"Pessoas e liderança", d:"Treinamento, clima, papel do líder no chão de fábrica, rotatividade." },
+  { k:"maquinas", t:"Máquinas e tecnologia", d:"Equipamentos, manutenção, sistemas e o que é automatizado." },
+  { k:"estoque", t:"Estoque e expedição", d:"Matéria-prima e produto pronto: controle, organização, separação e envio." },
+];
+const ESCALA = [ [0,"Não faço"], [1,"Faço pouco"], [2,"Faço parecido"], [3,"Igual ou melhor"] ];
+
+const { data:{ session } } = await sb.auth.getSession();
+if (!session) { location.replace("index.html"); throw new Error("sem sessão"); }
+const { data:adm } = await sb.rpc("is_admin"); if (adm && window.TC_UI) window.TC_UI.mostrarAdmin();
+const { data:eu } = await sb.from("participantes").select("id,nome,status,empresa_id,empresas(nome)").eq("id", session.user.id).maybeSingle();
+const alvoId = new URLSearchParams(location.search).get("p") || eu?.id;
+if (!alvoId) { location.replace(adm ? "admin.html" : "painel.html"); throw new Error("sem participante"); }
+const RO = !(eu && eu.id === alvoId && eu.status === "aprovado");
+if (RO && !adm && !(eu && eu.status === "aprovado")) { location.replace("painel.html"); throw new Error("sem acesso"); }
+
+let alvo = eu;
+if (alvoId !== eu?.id) { const { data } = await sb.from("participantes").select("id,nome,empresa_id,empresas(nome)").eq("id", alvoId).maybeSingle(); alvo = data; }
+if (!alvo) { location.replace("painel.html"); throw new Error("não encontrado"); }
+$("mQuem").innerHTML = ic("building","sm") + esc(alvo.nome) + (alvo.empresas?.nome ? " · " + esc(alvo.empresas.nome) : "");
+if (RO) { document.body.classList.add("ro"); $("banner").innerHTML = `<div class="banner">Você está vendo a matriz de <b>${esc(alvo.nome)}</b> (somente leitura).${adm ? ` <a href="admin.html#visitas">Voltar ao administrador</a>` : ""}</div>`; }
+
+const { data:reg } = await sb.from("atividades").select("dados,status,atualizado_em").eq("participante_id", alvoId).eq("tipo","visita").maybeSingle();
+const D = Object.assign({ areas:{}, fortes:["","",""], oport:["","",""], acoes:[{},{},{}], compromisso:false }, reg?.dados || {});
+AREAS.forEach(a => D.areas[a.k] = Object.assign({ vi:"", eu:"", nivel:null, foco:false }, D.areas[a.k] || {}));
+if (reg?.atualizado_em) status(`Salvo em ${new Date(reg.atualizado_em).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})}`, true);
+
+// ---------- salvar ----------
+let t = null;
+function status(txt, ok){ const s=$("salvo"); s.textContent=txt; s.className="salvo"+(ok?" ok":""); }
+function salvar(imediato=false){
+  if (RO) return; clearTimeout(t); status("Salvando…");
+  t = setTimeout(async () => {
+    const { error } = await sb.from("atividades").upsert({ participante_id: eu.id, tipo:"visita", empresa_id: eu.empresa_id, dados: D,
+      status: D.compromisso ? "concluido" : "rascunho", atualizado_em: new Date().toISOString() });
+    status(error ? "Não salvou: verifique a internet" : "Salvo automaticamente", !error);
+  }, imediato ? 0 : 700);
+}
+
+// ---------- matriz ----------
+const feita = a => (D.areas[a.k].vi.trim() || D.areas[a.k].eu.trim()) && D.areas[a.k].nivel !== null;
+function renderAreas(){
+  $("areas").innerHTML = AREAS.map((a,i) => { const v = D.areas[a.k]; return `
+    <article class="area ${feita(a)?"feita":""}" data-k="${a.k}">
+      <div class="top">
+        <span class="n">${i+1}</span>
+        <div><h3>${a.t}</h3><p class="dica">${a.d}</p></div>
+        <button class="estrela" type="button" data-foco="${a.k}" aria-pressed="${v.foco}" aria-label="Quero agir nesta área" title="Quero agir nesta área">★</button>
+      </div>
+      <div class="lados">
+        <div class="lado vi"><label for="vi_${a.k}"><span class="tag">Lá</span>O que eu vi</label>
+          <textarea id="vi_${a.k}" data-k="${a.k}" data-c="vi" placeholder="Ex.: cada setor com a meta do dia no quadro" ${RO?"disabled":""}>${esc(v.vi)}</textarea></div>
+        <div class="lado eu"><label for="eu_${a.k}"><span class="tag">Aqui</span>Como é na minha empresa</label>
+          <textarea id="eu_${a.k}" data-k="${a.k}" data-c="eu" placeholder="Ex.: só eu sei a meta; a equipe não acompanha" ${RO?"disabled":""}>${esc(v.eu)}</textarea></div>
+      </div>
+      <div class="escala"><div class="q">Comparando, a minha empresa…</div>
+        <div class="chips" role="group" aria-label="Distância da minha empresa">${ESCALA.map(([n,txt]) => `<button type="button" data-nv="${a.k}" data-v="${n}" aria-pressed="${v.nivel===n}" ${RO?"disabled":""}>${txt}</button>`).join("")}</div>
+      </div>
+    </article>`; }).join("");
+  $("areas").querySelectorAll("textarea").forEach(ta => ta.addEventListener("input", () => { D.areas[ta.dataset.k][ta.dataset.c] = ta.value; marcar(ta.dataset.k); salvar(); }));
+  $("areas").querySelectorAll("[data-nv]").forEach(b => b.onclick = () => {
+    const k = b.dataset.nv, v = +b.dataset.v; D.areas[k].nivel = D.areas[k].nivel === v ? null : v;
+    b.parentElement.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(+x.dataset.v === D.areas[k].nivel)));
+    marcar(k); salvar(); });
+  $("areas").querySelectorAll("[data-foco]").forEach(b => b.onclick = () => {
+    const k = b.dataset.foco; D.areas[k].foco = !D.areas[k].foco; b.setAttribute("aria-pressed", String(D.areas[k].foco)); marcar(k); salvar(); });
+}
+function marcar(k){
+  const a = AREAS.find(x => x.k === k); document.querySelector(`.area[data-k="${k}"]`)?.classList.toggle("feita", !!feita(a));
+  resumo(); sugestoes();
+}
+function resumo(){
+  const n = AREAS.filter(feita).length;
+  $("stTxt").textContent = D.compromisso ? "Matriz concluída" : `${n} de 8 áreas comparadas`;
+  $("stBar").style.width = (D.compromisso ? 100 : n/8*100) + "%";
+  const ord = [...AREAS].sort((a,b) => { const ga = D.areas[a.k].nivel===null?-1:3-D.areas[a.k].nivel, gb = D.areas[b.k].nivel===null?-1:3-D.areas[b.k].nivel; return gb-ga || (D.areas[b.k].foco-D.areas[a.k].foco); });
+  $("barras").innerHTML = ord.map(a => { const v = D.areas[a.k], g = v.nivel===null ? null : 3 - v.nivel;
+    return `<div class="barra ${g===null?"vazia":""}"><span class="nm">${v.foco?`<span class="s">★</span>`:""}${a.t}</span><span class="tr"><i style="width:${g===null?4:Math.max(6,g/3*100)}%"></i></span><span class="v">${g===null?"–":g}</span></div>`; }).join("");
+}
+
+// ---------- entrega ----------
+function lista(id, arr, ph){
+  $(id).innerHTML = arr.map((v,i) => `<div class="item"><span class="k">${i+1}</span><textarea data-l="${id}" data-i="${i}" placeholder="${ph[i]}" ${RO?"disabled":""}>${esc(v)}</textarea></div>`).join("");
+}
+function renderEntrega(){
+  lista("fortes", D.fortes, ["Ex.: produção do dia exposta em cada setor","Ex.: corte separado e etiquetado por ordem","Ex.: líder conversa com a equipe no início do turno"]);
+  lista("oport", D.oport, ["Ex.: nossa equipe não sabe a meta do dia","Ex.: estoque de tecido sem controle","Ex.: retrabalho alto na costura"]);
+  $("acoes").innerHTML = D.acoes.map((a,i) => `<div class="acao"><div class="item" style="margin:0"><span class="k">${i+1}</span>
+      <textarea data-ac="${i}" data-c="o" placeholder="O que vou fazer? Ex.: colocar quadro de produção na costura" ${RO?"disabled":""}>${esc(a.o||"")}</textarea></div>
+      <div class="lin"><div><label for="q${i}">Quem cuida</label><input id="q${i}" data-ac="${i}" data-c="q" value="${esc(a.q||"")}" placeholder="Nome do responsável" ${RO?"disabled":""}></div>
+      <div><label for="p${i}">Até quando</label><select id="p${i}" data-ac="${i}" data-c="p" ${RO?"disabled":""}><option value="">Escolha</option>${["30 dias","60 dias","90 dias"].map(x=>`<option ${a.p===x?"selected":""}>${x}</option>`).join("")}</select></div></div></div>`).join("");
+  document.querySelectorAll("#entrega [data-l]").forEach(ta => ta.addEventListener("input", () => { D[ta.dataset.l][+ta.dataset.i] = ta.value; contar(); salvar(); }));
+  document.querySelectorAll("#entrega [data-ac]").forEach(el => el.addEventListener(el.tagName==="SELECT"?"change":"input", () => { D.acoes[+el.dataset.ac][el.dataset.c] = el.value; contar(); salvar(); }));
+  contar(); sugestoes(); renderCompromisso();
+}
+function contar(){
+  const c = arr => arr.filter(x => String(x||"").trim()).length;
+  $("ctF").textContent = `${c(D.fortes)} de 3`; $("ctO").textContent = `${c(D.oport)} de 3`; $("ctA").textContent = `${D.acoes.filter(a=>(a.o||"").trim()).length} de 3`;
+}
+function sugestoes(){
+  if (RO) return;
+  const fortes = AREAS.filter(a => D.areas[a.k].vi.trim()).map(a => [a.t, D.areas[a.k].vi.trim()]);
+  const oport = AREAS.filter(a => D.areas[a.k].eu.trim() && (D.areas[a.k].foco || (D.areas[a.k].nivel!==null && D.areas[a.k].nivel<=1))).map(a => [a.t, D.areas[a.k].eu.trim()]);
+  const chip = (id, itens, alvo) => { $(id).innerHTML = itens.slice(0,6).map(([t,txt],i)=>`<button type="button" data-s="${i}">+ ${esc(t)}</button>`).join("");
+    $(id).querySelectorAll("button").forEach(b => b.onclick = () => { const txt = itens[+b.dataset.s][1]; const i = D[alvo].findIndex(x => !String(x||"").trim()); if (i<0) return alert("As 3 posições já estão preenchidas.");
+      D[alvo][i] = txt; renderEntrega(); salvar(); }); };
+  chip("sugF", fortes, "fortes"); chip("sugO", oport, "oport");
+}
+function renderCompromisso(){
+  const pronto = () => D.fortes.filter(x=>x.trim()).length===3 && D.oport.filter(x=>x.trim()).length===3 && D.acoes.filter(a=>(a.o||"").trim()).length===3;
+  if (D.compromisso) { $("compromisso").innerHTML = `<div class="feito">${ic("check")}Compromisso assumido. Você ainda pode ajustar o que escreveu.</div>`; return; }
+  if (RO) { $("compromisso").innerHTML = `<p class="sub">Ainda não concluiu o compromisso da visita.</p>`; return; }
+  $("compromisso").innerHTML = `<label class="check"><input type="checkbox" id="ck"> <span>Assumo o compromisso de colocar essas <b>3 ações</b> em prática na minha empresa.</span></label>
+    <button class="btn" id="bOk" type="button">Concluir minha matriz</button><p class="hint" id="hOk"></p>`;
+  $("bOk").onclick = () => {
+    if (!pronto()) { $("hOk").className="hint warn"; $("hOk").textContent = "Preencha os 3 pontos fortes, as 3 oportunidades e as 3 ações antes de concluir."; return; }
+    if (!$("ck").checked) { $("hOk").className="hint warn"; $("hOk").textContent = "Marque a caixa do compromisso para concluir."; return; }
+    D.compromisso = true; salvar(true); renderCompromisso(); resumo();
+  };
+}
+
+// ---------- matriz dos sócios (somente leitura) ----------
+if (!RO && eu?.empresa_id) {
+  const { data:outros } = await sb.from("atividades").select("participante_id,status,participantes(nome)").eq("empresa_id", eu.empresa_id).eq("tipo","visita").neq("participante_id", eu.id);
+  if (outros?.length) $("dosSocios").innerHTML = outros.map(o => `<div class="socio">Seu sócio <b>${esc(o.participantes?.nome||"")}</b> também fez a matriz${o.status==="concluido"?" e concluiu":""}. <a href="visita.html?p=${o.participante_id}">Ver a matriz dele</a></div>`).join("");
+}
+
+renderAreas(); resumo(); renderEntrega();
+</script>
+</body>
+</html>
