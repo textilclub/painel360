@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Palestrantes · Imersão Método Confecção 360°</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+<style>
+  .pl h1{font-size:clamp(2.2rem,1.4rem + 3.6vw,3.6rem);letter-spacing:-.035em;margin:10px 0 10px}
+  .pl .faixa-in{padding-bottom:84px}
+  .pl p.sub{font-size:17px;line-height:1.55;max-width:52ch}
+  .corpo{position:relative;z-index:2;margin-top:-52px;max-width:1000px}
+  .grade{display:grid;grid-template-columns:1fr;gap:16px}
+  @media (min-width:760px){.grade{grid-template-columns:1fr 1fr}}
+  .pa{display:grid;grid-template-columns:96px 1fr;gap:18px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px}
+  .pa.destaque{border:1.5px solid var(--ink);box-shadow:5px 5px 0 var(--gold)}
+  .foto{width:96px;height:96px;border-radius:50%;object-fit:cover;border:2px solid var(--ink);background:var(--paper-2)}
+  .ini{width:96px;height:96px;border-radius:50%;border:2px dashed var(--line-2);background:var(--paper);display:grid;place-items:center;font:700 28px var(--f-display);color:var(--gold-ink);letter-spacing:-.02em}
+  .pa h3{font:700 19px/1.25 var(--f-display);letter-spacing:-.02em}
+  .pa .cargo{font-size:14.5px;color:var(--gold-ink);font-weight:600;margin-top:4px;line-height:1.4}
+  .pa .bio{font-size:15px;line-height:1.6;color:var(--ink-2);margin-top:10px}
+  .pa details{margin-top:8px}
+  .pa summary{cursor:pointer;font-weight:600;font-size:14.5px;min-height:44px;display:inline-flex;align-items:center;gap:6px;list-style:none;color:var(--ink)}
+  .pa summary::-webkit-details-marker{display:none}
+  .pa summary::after{content:"+";font:700 18px var(--f-display);color:var(--gold-ink)}
+  .pa details[open] summary::after{content:"−"}
+  .pa details p{font-size:14.5px;line-height:1.65;color:var(--ink-2)}
+  .pa .breve{font-size:14px;color:var(--muted);margin-top:8px}
+  @media (max-width:420px){.pa{grid-template-columns:72px 1fr;gap:14px}.foto,.ini{width:72px;height:72px;font-size:22px}}
+</style>
+</head>
+<body>
+<script src="ui.js" data-page="palestrantes"></script>
+<main class="wrap">
+  <section class="faixa pl"><div class="faixa-in">
+    <div class="eyebrow">Imersão Método Confecção 360°</div>
+    <h1>Quem vai estar com você</h1>
+    <p class="sub">Empresários, consultores e especialistas que vivem o dia a dia da confecção e vão conduzir os módulos da imersão.</p>
+  </div></section>
+  <div class="page corpo">
+    <div class="grade" id="grade"></div>
+  </div>
+</main>
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+const C = window.TC_CONFIG; const sb = createClient(C.SUPABASE_URL, C.SUPABASE_KEY);
+const { data:{ session } } = await sb.auth.getSession(); if (!session) { location.replace("index.html"); throw new Error("sem sessão"); }
+const { data: adm } = await sb.rpc("is_admin"); if (adm && window.TC_UI) window.TC_UI.mostrarAdmin();
+
+// Palestrantes: preencha foto, cargo e bio conforme chegarem
+const P = [
+  { nome:"Tarcísio Gaipo" },
+  { nome:"Carlos Ribeiro" },
+  { nome:"Thaissa Siqueira" },
+  { nome:"Claudinei" },
+  { nome:"Matheus Eller" },
+  { nome:"Meire Tranjan", foto:"palestrante-meire-tranjan.jpg",
+    cargo:"Empresária, fundadora da WebPic e do Vestuar",
+    bio:"Fundou a WebPic e o Vestuar, empresas de tecnologia voltadas ao ramo de confecção. Apaixonada por gestão, inovação e pessoas, acredita que a tecnologia, aliada a uma visão estratégica e à liderança, é fundamental para transformar negócios e gerar oportunidades." },
+  { nome:"Magda de Paula", foto:"palestrante-magda-de-paula.jpg",
+    cargo:"Psicóloga, consultora organizacional e CEO da EXPLAIN",
+    bio:"Mestre em Gestão da Qualidade pela UNICAMP e Professional Certified Coach (PCC) pela ICF. Atua desde 1984 em estratégia de negócios, desenvolvimento de pessoas, liderança e gestão organizacional, com palestras, treinamentos e projetos em todo o Brasil.",
+    completa:"Psicóloga e consultora organizacional. Mestre em Gestão da Qualidade pela Faculdade de Engenharia Mecânica da UNICAMP/SP, com especialização em Gestão da Qualidade Total pela FIEG/CNI/SEBRAE. Pós-graduada em Psicologia Positiva e Coaching, com MBA Executivo em Gestão Empresarial e Coaching e MBA Executivo em Gestão de Pessoas & Coaching. Professional Certified Coach (PCC) pela ICF – International Coach Federation. Consultora Sistêmica Organizacional certificada pelo Infosyon da Alemanha e Executive Coach com certificações internacionais pelo Behavioral Coaching Institute (BCI), Global Coaching Community (GCC), European Coaching Association (ECA) e International Association of Coaching (IAC). Lead Assessor pela MCG Qualidade para ISO 9000 e ISO 14000 (associada à PE Batalas, da Inglaterra) e auditora de terceira parte para certificação ISO 9000 durante 14 anos. Atua desde 1984 na área de estratégia de negócios, desenvolvimento de pessoas, liderança e gestão organizacional, com palestras, treinamentos, projetos e workshops em todo o Brasil para empresas públicas e privadas. Certificada como Especialista Nível III pela FNQ – Fundação Nacional da Qualidade. Autora do livro “Aprendendo a Jogar – Jogos para Seleção, Workshop e Palestras” (Editora Kelps). Founder e CEO da EXPLAIN." },
+];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ini = n => n.split(" ").filter(Boolean).slice(0,2).map(p=>p[0]).join("").toUpperCase();
+const ordem = [...P.filter(p=>p.bio), ...P.filter(p=>!p.bio)];
+document.getElementById("grade").innerHTML = ordem.map(p => `
+  <article class="pa ${p.bio ? "destaque" : ""}">
+    ${p.foto ? `<img class="foto" src="${p.foto}" alt="Foto de ${esc(p.nome)}" width="96" height="96" loading="lazy">` : `<div class="ini" aria-hidden="true">${ini(p.nome)}</div>`}
+    <div>
+      <h3>${esc(p.nome)}</h3>
+      ${p.cargo ? `<div class="cargo">${esc(p.cargo)}</div>` : ""}
+      ${p.bio ? `<p class="bio">${esc(p.bio)}</p>` : `<p class="breve">Apresentação em breve.</p>`}
+      ${p.completa ? `<details><summary>Ver currículo completo</summary><p>${esc(p.completa)}</p></details>` : ""}
+    </div>
+  </article>`).join("");
+</script>
+</body>
+</html>
