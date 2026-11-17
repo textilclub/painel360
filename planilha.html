@@ -5,64 +5,84 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Minha planilha · Planejamento 2027 · Têxtil Club</title>
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
 <link rel="icon" href="logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script src="config.js"></script>
+<script src="ui.js" data-page="planilha" data-footer="0"></script>
 <script src="https://cdn.jsdelivr.net/npm/hyperformula@3.1.0/dist/hyperformula.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="motor.js"></script>
 <script src="exportar.js"></script>
 <style>
-  body{background:#000}
-  .bar{position:sticky;top:0;z-index:5;background:#000;border-bottom:1px solid var(--line);padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-  .bar img{width:42px;height:42px}
-  .bar h1{font-size:16px;margin:0}
-  .bar .s{font-size:12px;color:var(--muted)}
-  .bar .sp{flex:1}
-  .bar .salvo{font-size:12px;color:var(--muted)} .bar .salvo.ok{color:var(--ok)}
-  .tbtn{background:#141414;border:1px solid var(--line2);color:var(--txt);font:600 13px Poppins;padding:9px 14px;border-radius:10px;cursor:pointer;text-decoration:none;white-space:nowrap}
-  .tbtn.gold{background:var(--gold);color:#000;border-color:var(--gold)}
+  body{background:#fff;height:100vh;height:100dvh;overflow:hidden}
+  .pbar{background:#000;color:var(--on-dark);display:flex;align-items:center;gap:12px;padding:8px var(--gut);flex-wrap:wrap;border-bottom:1px solid var(--line-dark)}
+  .pbar .marca{width:104px;height:40px}
+  .pbar h1{font:700 16px/1.2 var(--f-display);letter-spacing:-.01em;color:#fff}
+  .pbar .s{font-size:13px;color:var(--muted-dark)}
+  .pbar .sp{flex:1}
+  .pbar .salvo{font-size:12.5px;color:var(--muted-dark);font-weight:500}
+  .pbar .salvo.ok{color:#8fe0a8}
+  .tbtn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:10px;border:1.5px solid #5a554a;background:transparent;color:#fff;font:600 14px var(--f-body);text-decoration:none;white-space:nowrap}
+  .tbtn:hover{background:#fff;color:#000;border-color:#fff}
+  .tbtn.gold{background:var(--gold);color:#0b0b0a;border-color:var(--gold);box-shadow:inset 0 -3px 0 rgba(0,0,0,.2)}
+  .tbtn.gold:hover{background:var(--gold-hi);border-color:var(--gold-hi)}
   .tbtn:disabled{opacity:.6}
-  .abas{display:flex;gap:4px;overflow-x:auto;padding:10px 14px 0;background:#000;position:sticky;top:63px;z-index:4;border-bottom:1px solid var(--line)}
-  .abas button{flex:0 0 auto;background:#111;border:1px solid var(--line);border-bottom:0;color:var(--muted);font:600 13px Poppins;padding:9px 16px;border-radius:10px 10px 0 0;cursor:pointer}
-  .abas button.on{background:#fff;color:#000;border-color:#fff}
-  .dica{font-size:12px;color:var(--muted);padding:8px 14px;background:#0a0a0a}
-  .dica b{background:#FFF2CC;color:#000;padding:1px 6px;border-radius:4px}
-  .grade{overflow:auto;height:calc(100vh - 150px);background:#fff}
+  .abas{display:flex;gap:4px;overflow-x:auto;padding:8px var(--gut) 0;background:#1a1915;scrollbar-width:thin}
+  .abas button{flex:0 0 auto;min-height:44px;background:#2a2823;border:0;color:#c9c2b0;font:600 14px var(--f-body);padding:0 18px;border-radius:10px 10px 0 0}
+  .abas button:hover{color:#fff}
+  .abas button.on{background:#fff;color:#000}
+  .dica{font-size:13.5px;color:var(--ink-2);padding:9px var(--gut);background:var(--paper);border-bottom:1px solid var(--line)}
+  .dica b{background:#FFF2CC;color:#000;padding:1px 7px;border-radius:4px;border:1px solid #e6d28a}
+  .grade{overflow:auto;flex:1;min-height:0;background:#fff;-webkit-overflow-scrolling:touch}
+  .main-p{display:flex;flex-direction:column;height:100vh;height:100dvh}
   table.xl{border-collapse:separate;border-spacing:0;font:12px/1.35 Arial,Helvetica,sans-serif;color:#000;background:#fff;table-layout:fixed}
-  table.xl td{border-right:1px solid #e5e5e5;border-bottom:1px solid #e5e5e5;padding:2px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:20px;vertical-align:middle}
+  table.xl td{border-right:1px solid #e5e5e5;border-bottom:1px solid #e5e5e5;padding:2px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:20px;vertical-align:middle;background-clip:padding-box}
   table.xl td.wr{white-space:normal}
-  table.xl th{position:sticky;top:0;background:#f3f3f3;color:#666;font-weight:400;font-size:11px;border-right:1px solid #ddd;border-bottom:1px solid #ccc;z-index:2;height:20px}
+  table.xl th{position:sticky;top:0;background:#f3f3f3;color:#666;font-weight:400;font-size:11px;border-right:1px solid #ddd;border-bottom:1px solid #ccc;z-index:2;height:20px;text-align:center;text-transform:none;letter-spacing:0;padding:0}
   table.xl td.rn{position:sticky;left:0;background:#f3f3f3;color:#666;font-size:11px;text-align:center;z-index:1;border-right:1px solid #ccc}
   table.xl td.in{background:#FFF2CC;padding:0}
-  table.xl td.in input{width:100%;height:100%;border:0;background:transparent;font:inherit;color:#0000ff;padding:2px 5px;border-radius:0;text-align:inherit}
-  table.xl td.in input:focus{outline:2px solid #1a73e8;background:#fff}
-  table.xl td.in input:disabled{color:#000}
+  table.xl td.in input{width:100%;height:100%;min-height:0;border:0;background:transparent;font:inherit;color:#0000ff;padding:2px 5px;border-radius:0;text-align:inherit;box-shadow:none}
+  table.xl td.in input:focus{outline:2px solid #1a73e8;outline-offset:-2px;background:#fff;box-shadow:none}
+  table.xl td.in input:disabled{color:#000;background:transparent}
   table.xl td.r{text-align:right} table.xl td.c{text-align:center}
   table.xl td.tx{overflow:visible;text-overflow:clip;position:relative}
-  .carregando{color:#000;padding:40px;font:14px Poppins}
-  @media (max-width:640px){ .bar h1{font-size:14px} .abas{top:0;position:relative} }
+  table.xl tbody tr:hover td{background-color:inherit}
+  .carregando{color:#000;padding:40px var(--gut);font:15px var(--f-body)}
+  @media (max-width:640px){
+    .pbar .s{display:none}
+    .pbar h1{font-size:14.5px}
+    .tbtn{padding:0 12px;font-size:13.5px}
+    table.xl,table.xl tbody,table.xl tr,table.xl td{display:revert}
+    table.xl{display:table}table.xl thead{display:table-header-group}table.xl tbody{display:table-row-group}table.xl tr{display:table-row;background:none;border:0;margin:0;padding:0}
+    table.xl td{display:table-cell;width:auto}
+  }
 </style>
 </head>
 <body>
-<div class="bar">
-  <a href="exercicio.html" id="lVolta"><img src="logo.jpg" alt="Têxtil Club"></a>
+<div class="main-p">
+<header class="pbar">
+  <a class="marca" href="exercicio.html" id="lVolta" aria-label="Voltar"><img src="logo.jpg" alt="Têxtil Club" width="104" height="40"></a>
   <div><h1>Minha planilha · Planejamento 2027</h1><div class="s" id="empNome"></div></div>
   <div class="sp"></div>
-  <span class="salvo" id="salvo"></span>
-  <a class="tbtn" id="lGuiado" href="exercicio.html">✍️ Preenchimento guiado</a>
-  <button class="tbtn gold" id="bBaixar">⬇️ Baixar Excel</button>
-</div>
-<div class="abas" id="abas"></div>
-<div class="dica" id="dica">Células <b>amarelas</b> são de preenchimento: clique e digite. O resto é calculado pelas fórmulas da planilha.</div>
+  <span class="salvo" id="salvo" role="status" aria-live="polite"></span>
+  <a class="tbtn" id="lGuiado" href="exercicio.html"></a>
+  <button class="tbtn gold" id="bBaixar" type="button"></button>
+</header>
+<nav class="abas" id="abas" aria-label="Abas da planilha"></nav>
+<div class="dica" id="dica">Células <b>amarelas</b> são de preenchimento: toque e digite. O resto é calculado pelas fórmulas da planilha.</div>
 <div class="grade" id="grade"><div class="carregando">Carregando sua planilha…</div></div>
+</div>
 
 <script type="module">
 import { $, esc, parse, fmtExcel, contexto, carregarModelo, salvarDepois, baixar } from "./app.js";
 const ctx = await contexto(); const D = ctx.D, RO = ctx.RO;
 $("empNome").textContent = (ctx.emp?.nome || "") + (D.regime ? " · " + (D.regime === "presumido" ? "Lucro Presumido" : "Simples Nacional") : "");
 const q = RO ? `?empresa=${ctx.empresaId}` : ""; $("lGuiado").href = "exercicio.html" + q; $("lVolta").href = RO ? "admin.html" : "painel.html";
-if (RO) $("dica").innerHTML = "👁️ Visualização do administrador (somente leitura).";
+if (RO) $("dica").innerHTML = IC("eye","sm")+" Visualização do administrador (somente leitura).";
 function status(t, ok){ const s=$("salvo"); s.textContent=t; s.className="salvo"+(ok?" ok":""); }
 if (!D.regime) { $("grade").innerHTML = `<div class="carregando">Escolha primeiro o regime de tributação no <a href="exercicio.html${q}">preenchimento guiado</a>.</div>`; throw new Error("sem regime"); }
 
@@ -74,7 +94,8 @@ let aba = new URLSearchParams(location.search).get("aba") || "Painel";
 
 $("abas").innerHTML = M.sheets.map(s => `<button data-s="${esc(s.name)}">${esc(s.name)}</button>`).join("");
 $("abas").querySelectorAll("button").forEach(b => b.onclick = () => { aba = b.dataset.s; render(); });
-$("bBaixar").onclick = async () => { const b=$("bBaixar"); b.disabled=true; b.textContent="Gerando…"; try { await baixar(ctx, motor, M); } catch(e){ alert(e.message); } b.disabled=false; b.textContent="⬇️ Baixar Excel"; };
+$("lGuiado").innerHTML = IC("pen","sm")+"Preenchimento guiado"; const rotBaixar = () => { $("bBaixar").innerHTML = IC("download","sm")+"Baixar Excel"; }; rotBaixar();
+$("bBaixar").onclick = async () => { const b=$("bBaixar"); b.disabled=true; b.textContent="Gerando…"; try { await baixar(ctx, motor, M); } catch(e){ alert(e.message); } b.disabled=false; rotBaixar(); };
 
 const pxw = w => Math.round((w || 9) * 7.2 + 6);
 function render(){

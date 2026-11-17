@@ -5,71 +5,173 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Meu painel · Imersão Têxtil Club</title>
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
 <link rel="icon" href="logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script src="config.js"></script>
+<style>
+  .hero h1{margin:10px 0 6px;font-size:clamp(2rem,1.3rem + 3vw,3rem);letter-spacing:-.03em}
+  .hero .emp{display:flex;align-items:center;gap:8px;color:var(--muted-dark);font-size:16px}
+  .hero .emp .i{color:var(--gold-hi)}
+  .corpo{margin-top:-52px;position:relative;z-index:2;display:grid;gap:18px;padding-bottom:8px}
+  .estado{max-width:640px;margin:-52px auto 0;position:relative;z-index:2;padding:0 var(--gut)}
+  .estado .card{padding:26px 22px}
+  .estado h2{font-size:1.35rem;margin:14px 0 8px}
+
+  /* card do exercício */
+  .excard{display:block;text-decoration:none;color:var(--ink);background:var(--surface);border:1.5px solid var(--ink);border-radius:var(--r-lg);padding:24px 22px 22px;box-shadow:6px 6px 0 var(--gold);transition:transform .12s,box-shadow .12s}
+  .excard:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--gold);color:var(--ink)}
+  .excard:active{transform:translate(2px,2px);box-shadow:3px 3px 0 var(--gold)}
+  .ex-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .excard h2{font-size:clamp(1.35rem,1.1rem + 1.2vw,1.75rem);margin:10px 0 6px;letter-spacing:-.025em}
+  .exsub{color:var(--muted);font-size:15px;margin-bottom:18px;max-width:52ch}
+  .ex-prog{display:grid;gap:8px;margin-bottom:18px}
+  .ex-prog .lbl{display:flex;justify-content:space-between;font:600 13.5px var(--f-body);color:var(--ink-2)}
+  .exres{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+  .exres:empty{display:none}
+  .exres span{display:block;font-size:13px;color:var(--muted);padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+  .exres b{display:block;font:700 clamp(1.05rem,.9rem + .8vw,1.35rem)/1.2 var(--f-display);color:var(--ink);margin-top:2px;letter-spacing:-.02em}
+  .exbtn{display:flex;align-items:center;justify-content:center;gap:10px;min-height:54px;border-radius:var(--r);background:var(--gold);color:#0b0b0a;font:700 16px var(--f-display);box-shadow:inset 0 -3px 0 rgba(0,0,0,.2)}
+
+  /* atalhos */
+  .atalhos{list-style:none;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+  .atalhos li+li{border-top:1px solid var(--line)}
+  .at{display:flex;align-items:center;gap:16px;min-height:76px;padding:14px 18px;text-decoration:none;color:var(--ink)}
+  a.at:hover{background:rgba(184,145,47,.08);color:var(--ink)}
+  .at .ico{width:46px;height:46px;border-radius:12px;border:1.5px solid var(--ink);display:grid;place-items:center;flex:0 0 auto;background:var(--paper)}
+  .at b{display:block;font:600 16px var(--f-display);letter-spacing:-.01em}
+  .at small{display:block;color:var(--muted);font-size:14px;line-height:1.4;margin-top:2px}
+  .at .go{margin-left:auto;color:var(--ink)}
+  .at.off{opacity:.72}
+  .at.off .ico{border-style:dashed;border-color:var(--line-2);background:transparent;color:var(--muted)}
+  .em-breve{margin-left:auto;font:600 12px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border:1px dashed var(--line-2);border-radius:999px;padding:5px 10px;white-space:nowrap}
+
+  /* lateral */
+  .bloco{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px 20px}
+  .bloco h3{margin-bottom:12px;display:flex;align-items:center;gap:10px}
+  .bloco h3 .i{color:var(--gold-ink)}
+  .emp-n{font:600 17px var(--f-display);letter-spacing:-.01em}
+  .socios{display:grid;gap:0;margin-top:10px}
+  .socio{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--line);font-weight:600;font-size:15.5px}
+  .socio small{display:block;color:var(--muted);font-size:13.5px;font-weight:400}
+  .dias{display:grid;gap:0}
+  .dia{display:grid;grid-template-columns:62px 1fr;gap:12px;padding:12px 0;border-top:1px solid var(--line);align-items:center;text-decoration:none;color:var(--ink)}
+  .dia:first-of-type{border-top:0;padding-top:0}
+  .dia .d{font:700 22px/1 var(--f-display);letter-spacing:-.03em;text-align:center;border:1.5px solid var(--ink);border-radius:10px;padding:8px 0 6px}
+  .dia .d small{display:block;font:600 11px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+  .dia b{display:block;font-size:15.5px}
+  .dia span{color:var(--muted);font-size:14px}
+  a.dia:hover b{color:var(--gold-ink)}
+  .adm{margin-top:4px}
+
+  @media (min-width:900px){
+    .corpo{grid-template-columns:minmax(0,7fr) minmax(300px,4fr);align-items:start;gap:26px}
+    .col-a{display:grid;gap:22px}
+    .col-b{display:grid;gap:18px}
+    .excard{padding:30px 32px 28px}
+    .exbtn{width:fit-content;padding:0 28px}
+  }
+</style>
 </head>
 <body>
-<div class="wrap">
-  <div class="top">
-    <img src="logo.jpg" alt="Têxtil Club">
-    <div class="who"><div id="quem">…</div>
-      <a href="admin.html" id="lAdmin" class="hide">Painel do administrador</a>
-      <button class="link" id="sair" style="margin-top:4px">Sair</button></div>
-  </div>
+<script src="ui.js" data-page="painel"></script>
+<main class="wrap">
 
   <!-- AGUARDANDO LIBERAÇÃO -->
-  <div class="card hide" id="vPend">
-    <span class="badge pendente">● Aguardando liberação</span>
-    <h1 style="margin-top:14px">Cadastro recebido, <span class="nm"></span>!</h1>
-    <p class="sub">Nossa equipe vai conferir sua inscrição na <b class="ev"></b> e liberar seu painel. Assim que liberar, é só entrar de novo por aqui.</p>
-    <div class="step">Sua empresa</div>
-    <div id="pEmp" style="font-size:15px;font-weight:600"></div>
+  <div class="hide" id="vPend">
+    <section class="faixa hero"><div class="faixa-in" style="padding-bottom:84px">
+      <div class="eyebrow"><span class="ev"></span></div>
+      <h1>Cadastro recebido, <span class="nm"></span>.</h1>
+    </div></section>
+    <div class="estado"><div class="card">
+      <span class="badge pendente">Aguardando liberação</span>
+      <h2>Estamos conferindo sua inscrição</h2>
+      <p class="sub">Nossa equipe confere sua inscrição na <b class="ev"></b> e libera o painel. Assim que liberar, é só entrar de novo por aqui.</p>
+      <div class="sec" style="margin-top:24px">Sua empresa</div>
+      <div class="emp-n" id="pEmp"></div>
+      <div class="acoes" style="margin-top:24px"><a class="btn" id="aSupPend" href="#" target="_blank" rel="noopener">Falar com o suporte</a></div>
+    </div></div>
   </div>
 
   <!-- BLOQUEADO -->
-  <div class="card hide" id="vBloq">
-    <span class="badge bloqueado">● Acesso não liberado</span>
-    <h1 style="margin-top:14px">Seu acesso não está ativo</h1>
-    <p class="sub">Fale com a equipe da Têxtil Club para verificar sua inscrição.</p>
+  <div class="hide" id="vBloq">
+    <section class="faixa hero"><div class="faixa-in" style="padding-bottom:84px">
+      <div class="eyebrow"><span class="ev"></span></div>
+      <h1>Seu acesso não está ativo</h1>
+    </div></section>
+    <div class="estado"><div class="card">
+      <span class="badge bloqueado">Acesso não liberado</span>
+      <h2>Vamos resolver isso juntos</h2>
+      <p class="sub">Fale com a equipe da Têxtil Club para verificar sua inscrição.</p>
+      <div class="acoes" style="margin-top:24px"><a class="btn" id="aSupBloq" href="#" target="_blank" rel="noopener">Falar com o suporte</a></div>
+    </div></div>
   </div>
 
   <!-- SEM CADASTRO DE PARTICIPANTE (ex.: admin) -->
-  <div class="card hide" id="vSem">
-    <h1>Login sem cadastro de participante</h1>
-    <p class="sub">Esta conta não está vinculada a nenhuma empresa da imersão.</p>
+  <div class="hide" id="vSem">
+    <section class="faixa hero"><div class="faixa-in" style="padding-bottom:84px">
+      <div class="eyebrow"><span class="ev"></span></div>
+      <h1>Login sem cadastro de participante</h1>
+    </div></section>
+    <div class="estado"><div class="card">
+      <p class="sub">Esta conta não está vinculada a nenhuma empresa da imersão.</p>
+    </div></div>
   </div>
 
   <!-- APROVADO -->
-  <div class="card wide hide" id="vOk">
-    <span class="badge aprovado">● Acesso liberado</span>
-    <h1 style="margin-top:14px">Olá, <span class="nm"></span> 👋</h1>
-    <p class="sub">Este é o seu painel da <b class="ev"></b>. Tudo o que for feito durante a imersão fica registrado aqui.</p>
+  <div class="hide" id="vOk">
+    <section class="faixa hero"><div class="faixa-in">
+      <div class="eyebrow"><span class="ev"></span></div>
+      <h1>Olá, <span class="nm"></span></h1>
+      <p class="emp"><span id="icEmp"></span><span id="oEmp"></span></p>
+    </div></section>
 
-    <div class="step">Sua empresa</div>
-    <div id="oEmp" style="font-size:16px;font-weight:600"></div>
-    <div class="socios" id="socios"></div>
+    <div class="page corpo">
+      <div class="col-a">
+        <!-- 1 ação principal -->
+        <a href="exercicio.html" class="excard" id="exCard">
+          <div class="ex-top">
+            <div class="eyebrow">Antes da imersão · Exercício de casa</div>
+            <span class="badge pendente" id="exBadge">Não iniciado</span>
+          </div>
+          <h2>Planejamento 2027</h2>
+          <p class="exsub" id="exSub">Preencha com seu sócio antes do dia 19. Leva cerca de 30 minutos e salva sozinho.</p>
+          <div class="ex-prog">
+            <div class="fita" role="img" aria-label="Progresso do exercício"><i id="exProg" style="width:0%"></i></div>
+            <div class="lbl"><span id="exEtapa">8 etapas simples</span><span id="exPct"></span></div>
+          </div>
+          <div class="exres" id="exRes"></div>
+          <div class="exbtn"><span id="exBtn">Começar</span><span id="icBtn"></span></div>
+        </a>
 
-    <div class="step" style="margin-top:26px">Antes da imersão</div>
-    <a href="exercicio.html" class="excard" id="exCard">
-      <div class="exic">📝</div>
-      <div class="exinfo">
-        <div class="exttl">Exercício de casa: Planejamento 2027 <span class="badge pendente" id="exBadge">Não iniciado</span></div>
-        <div class="exsub" id="exSub">Preencha com seu sócio antes do dia 19. Leva cerca de 30 minutos e salva sozinho.</div>
-        <div class="exbar"><i id="exProg" style="width:0%"></i></div>
-        <div class="exres" id="exRes"></div>
+        <ul class="atalhos">
+          <li><a class="at" href="cronograma.html"><span class="ico" data-ic="calendar"></span><span><b>Cronograma</b><small>O que acontece em cada módulo e o que muda na sua confecção.</small></span><span class="go" data-ic="chev"></span></a></li>
+          <li><a class="at" href="local.html"><span class="ico" data-ic="pin"></span><span><b>Local, hotéis e restaurantes</b><small>Aporta Hall, Setor Serrinha. Onde comer e onde ficar por perto.</small></span><span class="go" data-ic="chev"></span></a></li>
+          <li><div class="at off"><span class="ico" data-ic="clip"></span><span><b>Atividades da imersão</b><small>Os exercícios feitos durante o evento.</small></span><span class="em-breve">Em breve</span></div></li>
+          <li><div class="at off"><span class="ico" data-ic="folder"></span><span><b>Materiais</b><small>Slides, planilhas e arquivos de apoio.</small></span><span class="em-breve">Em breve</span></div></li>
+        </ul>
       </div>
-      <div class="exbtn" id="exBtn">Começar →</div>
-    </a>
 
-    <div class="grid3">
-      <a class="tile" href="cronograma.html" style="text-decoration:none;color:inherit;border-style:solid;border-color:var(--gold)"><b>📅 Cronograma</b>O que acontece em cada módulo da imersão e o que muda na sua confecção. <span style="color:var(--gold2);font-weight:600">Ver →</span></a>
-      <div class="tile"><b>✅ Atividades da imersão</b>Em breve: os exercícios feitos durante o evento.</div>
-      <div class="tile"><b>📂 Materiais</b>Em breve: slides, planilhas e arquivos de apoio.</div>
-      <a class="tile" href="local.html" style="text-decoration:none;color:inherit;border-style:solid;border-color:var(--gold)"><b>📍 Local, hotéis e restaurantes</b>Aporta Hall · Setor Serrinha, Goiânia. Onde comer e onde ficar por perto. <span style="color:var(--gold2);font-weight:600">Ver →</span></a>
+      <aside class="col-b">
+        <section class="bloco" aria-labelledby="hDatas">
+          <h3 id="hDatas"><span data-ic="calendar"></span>Datas</h3>
+          <div class="dias">
+            <a class="dia" href="cronograma.html"><span class="d"><small>Qua</small>18</span><span><b>Visita técnica</b><span>Siqueira Gaipo</span></span></a>
+            <a class="dia" href="cronograma.html"><span class="d"><small>Qui</small>19</span><span><b>1º dia da imersão</b><span>Aporta Hall</span></span></a>
+            <a class="dia" href="cronograma.html"><span class="d"><small>Sex</small>20</span><span><b>2º dia da imersão</b><span>Aporta Hall</span></span></a>
+          </div>
+        </section>
+        <section class="bloco" aria-labelledby="hEquipe">
+          <h3 id="hEquipe"><span data-ic="users"></span>Sua empresa</h3>
+          <div class="socios" id="socios"></div>
+        </section>
+      </aside>
     </div>
   </div>
-</div>
+</main>
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
@@ -77,15 +179,18 @@ const C = window.TC_CONFIG;
 const sb = createClient(C.SUPABASE_URL, C.SUPABASE_KEY);
 const $ = id => document.getElementById(id);
 const esc = s => String(s??"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ROT = { pendente:"Aguardando", aprovado:"Liberado", bloqueado:"Bloqueado" };
 document.querySelectorAll(".ev").forEach(e=>e.textContent=C.EVENTO);
+document.querySelectorAll("[data-ic]").forEach(e=>e.innerHTML=IC(e.dataset.ic, e.classList.contains("ico")?"lg":""));
+$("icEmp").innerHTML = IC("building","sm"); $("icBtn").innerHTML = IC("chev2");
+["aSupPend","aSupBloq"].forEach(i => $(i).href = "https://wa.me/" + C.WHATSAPP_SUPORTE);
 
 const { data:{ session } } = await sb.auth.getSession();
 if (!session) { location.replace("index.html"); throw new Error("sem sessão"); }
-$("sair").onclick = async () => { await sb.auth.signOut(); location.replace("index.html"); };
 $("quem").textContent = session.user.email;
 
 const { data:adm } = await sb.rpc("is_admin");
-if (adm) $("lAdmin").classList.remove("hide");
+if (adm) window.TC_UI.mostrarAdmin();
 
 const { data:eu } = await sb.from("participantes")
   .select("id,nome,status,cargo,empresa_id,empresas(nome,cnpj,cidade,uf)")
@@ -102,15 +207,18 @@ else {
   else {
     $("oEmp").textContent = empTxt;
     const { data:time } = await sb.from("participantes").select("id,nome,cargo,status").eq("empresa_id", eu.empresa_id).order("criado_em");
-    $("socios").innerHTML = (time||[]).map(p => `<div class="socio"><div>${esc(p.nome)}${p.id===eu.id?" (você)":""}<small>${esc(p.cargo||"")}</small></div><span class="badge ${p.status}">${p.status}</span></div>`).join("");
+    $("socios").innerHTML = (time||[]).map(p => `<div class="socio"><div>${esc(p.nome)}${p.id===eu.id?" (você)":""}<small>${esc(p.cargo||"")}</small></div><span class="badge ${p.status}">${ROT[p.status]||p.status}</span></div>`).join("");
     $("vOk").classList.remove("hide");
     const { data:ex } = await sb.from("exercicios").select("status,regime,resumo,atualizado_em,atualizado_por_nome").eq("empresa_id", eu.empresa_id).maybeSingle();
     if (ex){
       const etapa = (ex.resumo?.etapa ?? 0), done = ex.status === "concluido";
-      $("exProg").style.width = (done ? 100 : Math.round(etapa/8*100)) + "%";
+      const pct = done ? 100 : Math.round(etapa/8*100);
+      $("exProg").style.width = pct + "%";
+      $("exEtapa").textContent = done ? "Exercício concluído" : `Etapa ${Math.min(etapa+1,8)} de 8`;
+      $("exPct").textContent = pct + "%";
       $("exBadge").className = "badge " + (done ? "aprovado" : "pendente");
       $("exBadge").textContent = done ? "Concluído" : "Em andamento";
-      $("exBtn").textContent = done ? "Ver resultado →" : "Continuar →";
+      $("exBtn").textContent = done ? "Ver resultado" : "Continuar";
       const quem = ex.atualizado_por_nome ? " por " + ex.atualizado_por_nome.split(" ")[0] : "";
       $("exSub").textContent = `${ex.regime === "presumido" ? "Lucro Presumido" : ex.regime === "simples" ? "Simples Nacional" : ""} · atualizado em ${new Date(ex.atualizado_em).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})}${quem}`;
       const r = ex.resumo || {}, brl = v => "R$ " + Math.round(v||0).toLocaleString("pt-BR");

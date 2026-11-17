@@ -5,7 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Exercício · Planejamento 2027 · Têxtil Club</title>
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
 <link rel="icon" href="logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="exercicio.css">
 <script src="config.js"></script>
@@ -15,26 +19,37 @@
 <script src="exportar.js"></script>
 </head>
 <body>
-<div class="wrap">
+<script src="ui.js" data-page="exercicio" data-footer="0"></script>
+<main class="wrap ex-wrap">
   <div class="ex">
-    <div class="exhead">
-      <a href="painel.html"><img src="logo.jpg" alt="Têxtil Club"></a>
-      <div><h1>Planejamento 2027</h1><div class="s" id="empNome">Carregando…</div></div>
-      <div class="salvo" id="salvo"></div>
+    <div class="ex-cab">
+      <div>
+        <div class="eyebrow">Exercício de casa</div>
+        <div class="ex-nome">Planejamento 2027</div>
+        <div class="s" id="empNome">Carregando…</div>
+      </div>
+      <div class="salvo ok" id="salvo" role="status" aria-live="polite">Salva sozinho</div>
     </div>
     <div id="banner"></div>
-    <div class="tools">
-      <a class="tbtn" id="lPlanilha" href="planilha.html">📊 Ver minha planilha (7 abas)</a>
-      <button class="tbtn" id="bBaixar">⬇️ Baixar planilha Excel</button>
+    <div class="prog">
+      <div class="prog-t"><b id="etapaTit">Etapa 1 de 8</b><span id="etapaNome">Tributação</span></div>
+      <div class="fita" role="img" aria-label="Progresso do exercício"><i id="fita" style="width:12.5%"></i></div>
+      <div class="steps" id="steps"></div>
     </div>
-    <div class="steps" id="steps"></div>
-    <div class="card wide" id="conteudo" style="max-width:none"><p class="sub">Carregando sua planilha…</p></div>
+    <div class="ex-body" id="conteudo"><p class="sub">Carregando sua planilha…</p></div>
+    <div class="mais">
+      <p><b>Prefere o formato Excel?</b>Veja sua planilha completa ou baixe o arquivo preenchido.</p>
+      <div class="tools">
+        <a class="tbtn" id="lPlanilha" href="planilha.html"></a>
+        <button class="tbtn" id="bBaixar" type="button"></button>
+      </div>
+    </div>
   </div>
-</div>
+</main>
 <div class="nav"><div class="in">
-  <button class="btn ghost" id="bVoltar">← Voltar</button>
-  <div class="live" id="live"></div>
-  <button class="btn" id="bProx">Próximo →</button>
+  <button class="btn ghost" id="bVoltar" type="button"></button>
+  <div class="live" id="live" aria-live="polite"></div>
+  <button class="btn" id="bProx" type="button"></button>
 </div></div>
 
 <script type="module">
@@ -43,13 +58,16 @@ import { sb, $, esc, brl, num, parse, MESES, COLS, COLS_FC, fmtExcel, contexto, 
 const ctx = await contexto();
 const D = ctx.D, RO = ctx.RO;
 $("empNome").textContent = ctx.emp ? ctx.emp.nome + (ctx.emp.cidade ? " · " + ctx.emp.cidade + (ctx.emp.uf ? "/" + ctx.emp.uf : "") : "") : "";
-if (RO) { document.body.classList.add("ro"); $("banner").innerHTML = `<div class="banner">👁️ Você está vendo como <b>administrador</b> (somente leitura). <a href="admin.html">Voltar ao painel do administrador</a></div>`; }
+if (RO) { document.body.classList.add("ro"); $("banner").innerHTML = `<div class="banner">${IC("eye")}<span>Você está vendo como <b>administrador</b> (somente leitura).</span> <a href="admin.html">Voltar ao painel do administrador</a></div>`; }
 const q = ctx.empresaId && RO ? `?empresa=${ctx.empresaId}` : "";
 $("lPlanilha").href = "planilha.html" + q;
+$("lPlanilha").innerHTML = IC("sheet") + "Ver minha planilha";
+const rotBaixar = () => { $("bBaixar").innerHTML = IC("download") + "Baixar planilha Excel"; }; rotBaixar();
+$("bVoltar").innerHTML = IC("back") + "Voltar";
 if (ctx.reg?.atualizado_em) status(`Salvo em ${new Date(ctx.reg.atualizado_em).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})}${ctx.reg.atualizado_por_nome ? " por " + ctx.reg.atualizado_por_nome.split(" ")[0] : ""}`, true);
 
 let M = null, motor = null, etapa = Math.min(D.etapa || 0, 7), prodVisiveis = 1;
-function status(t, ok){ const s=$("salvo"); s.textContent=t; s.className="salvo"+(ok?" ok":""); }
+function status(t, ok){ const s=$("salvo"); s.textContent=t.replace(/^[✓⚠]\s*/,""); s.className="salvo"+(ok?" ok":"")+(/^⚠/.test(t)?" err":""); }
 const salvar = (imed=false) => salvarDepois(ctx, motor, status, imed);
 
 async function prepararMotor() {
@@ -82,7 +100,8 @@ function okEtapa(i){
   return D.concluido;
 }
 function renderSteps(){
-  $("steps").innerHTML = ETAPAS.map((t,i)=>{ const ok=okEtapa(i)&&i!==etapa; return `<button data-i="${i}" class="${i===etapa?"on":""} ${ok?"ok":""}"><span class="d">${ok?"✓":i+1}</span>${t}</button>`; }).join("");
+  $("fita").style.width = ((etapa+1)/8*100)+"%"; $("etapaTit").textContent = `Etapa ${etapa+1} de 8`; $("etapaNome").textContent = ETAPAS[etapa];
+  $("steps").innerHTML = ETAPAS.map((t,i)=>{ const ok=okEtapa(i)&&i!==etapa; return `<button type="button" data-i="${i}" aria-label="Etapa ${i+1}: ${t}" ${i===etapa?'aria-current="step"':""} class="${i===etapa?"on":""} ${ok?"ok":""}"><span class="d">${ok?IC("check"):i+1}</span><span class="t">${t}</span></button>`; }).join("");
   $("steps").querySelectorAll("button").forEach(b=>b.onclick=()=>ir(+b.dataset.i));
   $("steps").querySelector(".on")?.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"});
 }
@@ -95,7 +114,7 @@ function ir(i){
 function aviso(t){ const d=document.createElement("div"); d.className="alert warn"; d.textContent=t; $("conteudo").prepend(d); setTimeout(()=>d.remove(),4000); }
 $("bVoltar").onclick=()=>ir(etapa-1);
 $("bProx").onclick=()=>{ if(etapa===7) location.href = RO ? "admin.html" : "painel.html"; else ir(etapa+1); };
-$("bBaixar").onclick=async()=>{ if(!D.regime) return aviso("Escolha o regime de tributação primeiro."); const b=$("bBaixar"); b.disabled=true; b.textContent="Gerando planilha…"; try{ await baixar(ctx, motor, M); } catch(e){ alert("Não foi possível gerar: "+e.message); } b.disabled=false; b.textContent="⬇️ Baixar planilha Excel"; };
+$("bBaixar").onclick=async()=>{ if(!D.regime) return aviso("Escolha o regime de tributação primeiro."); const b=$("bBaixar"); b.disabled=true; b.textContent="Gerando planilha…"; try{ await baixar(ctx, motor, M); } catch(e){ alert("Não foi possível gerar: "+e.message); } b.disabled=false; rotBaixar(); };
 
 // ---------- campos ligados a células ----------
 // tipo: money | pct (célula guarda fração) | num | mult (índice) | txt ; sinal: -1 guarda negativo
@@ -125,7 +144,7 @@ async function render(){
   ligar(c);
   ({0:posRegime,2:posProdutos,3:posSaz,5:posCustos,7:posResultado})[etapa]?.(c);
   $("bVoltar").style.visibility = etapa===0?"hidden":"visible";
-  $("bProx").textContent = etapa===7 ? (RO?"Voltar ao admin":"Ir para o painel") : etapa===6 ? "Ver meu resultado →" : "Próximo →";
+  $("bProx").innerHTML = (etapa===7 ? (RO?"Voltar ao admin":"Ir para o painel") : etapa===6 ? "Ver meu resultado" : "Próximo") + IC("chev2");
   vivoEtapa(); atualizarVivo();
 }
 
@@ -133,9 +152,9 @@ function tRegime(){
   return `<h1>Qual é o regime de tributação da sua empresa?</h1>
   <p class="lead">Isso define qual planilha você vai preencher. Se não souber, confira na <b>guia de impostos</b> que você paga ou pergunte ao seu contador.</p>
   <div class="regimes">
-    <button class="reg ${D.regime==="simples"?"on":""}" data-r="simples" ${RO?"disabled":""}><div class="ic">🟢</div><h3>Simples Nacional</h3>
+    <button type="button" class="reg ${D.regime==="simples"?"on":""}" data-r="simples" aria-pressed="${D.regime==="simples"}" ${RO?"disabled":""}><div class="ic">${IC("receipt","lg")}</div><span class="rd">${IC("check")}</span><h3>Simples Nacional</h3>
       <p>Você paga uma guia única por mês (o <b>DAS</b>), com uma alíquota sobre o faturamento.</p><span class="tag">Mais comum em pequenas confecções</span></button>
-    <button class="reg ${D.regime==="presumido"?"on":""}" data-r="presumido" ${RO?"disabled":""}><div class="ic">🔵</div><h3>Lucro Presumido</h3>
+    <button type="button" class="reg ${D.regime==="presumido"?"on":""}" data-r="presumido" aria-pressed="${D.regime==="presumido"}" ${RO?"disabled":""}><div class="ic">${IC("layers","lg")}</div><span class="rd">${IC("check")}</span><h3>Lucro Presumido</h3>
       <p>Impostos separados: <b>PIS, COFINS, ICMS, IRPJ e CSLL</b>, além de encargos sobre a folha.</p><span class="tag">Empresas maiores ou fora do Simples</span></button>
   </div>`;
 }
@@ -162,13 +181,13 @@ function tProdutos(){
   return `<h1>O que você vende</h1>
   <p class="lead">Cadastre seus produtos (até <b>${M.N}</b>). Para cada um: quanto vende num <b>mês normal</b>, o <b>preço</b> e quanto custa fazer <b>uma peça</b>.</p>
   <div id="prods">${Array.from({length:prodVisiveis},(_,i)=>cardProd(i)).join("")}</div>
-  ${prodVisiveis<M.N?`<button class="add" id="addProd">+ Adicionar produto (${prodVisiveis} de ${M.N})</button>`:""}
+  ${prodVisiveis<M.N?`<button type="button" class="add" id="addProd">${IC("plus")}Adicionar produto (${prodVisiveis} de ${M.N})</button>`:""}
   <div class="totbar" id="prodTot"></div>`;
 }
 function cardProd(i){
   const r=M.QTD0+i, rc=M.CUSTO0+i, P="Projeção de Vendas!";
   return `<div class="prod" data-i="${i}">
-    <div class="top1"><span class="num">${i+1}</span>${campo(P+"B"+r,"txt",{ph:"Nome do produto (ex.: Camiseta Dry Fit)"})}<button class="rm" data-rm="${i}" title="Limpar">×</button></div>
+    <div class="top1"><span class="num">${i+1}</span>${campo(P+"B"+r,"txt",{ph:"Nome do produto (ex.: Camiseta Dry Fit)"})}<button type="button" class="rm" data-rm="${i}" title="Limpar este produto" aria-label="Limpar produto ${i+1}">${IC("trash")}</button></div>
     <div class="g2" style="margin-bottom:12px">
       <div><label>Linha / categoria (opcional)</label>${campo(P+"A"+r,"txt",{ph:"Ex.: Esportiva"})}</div>
       <div><label>Quantas vende num mês normal?</label>${campo(P+"C"+r,"num",{suf:"peças"})}</div>
@@ -203,7 +222,7 @@ function tSaz(){
   <p class="lead"><b>1,0</b> = mês normal. <b>1,3</b> = vende 30% a mais. <b>0,8</b> = vende 20% a menos. Use <b>−</b> e <b>+</b> ou escolha um modelo pronto.</p>
   <div class="presets">${Object.keys(PRESETS).map(k=>`<button data-p="${k}">${k}</button>`).join("")}</div>
   <div class="saz">${MESES.map((m,i)=>`<div class="mes"><div class="nm">${m}</div><div class="bar"><i id="sb${i}"></i></div><div class="v" id="sv${i}"></div><div class="lbl" id="sl${i}"></div>
-    <div class="pm"><button data-d="-1" data-i="${i}">−</button><button data-d="1" data-i="${i}">+</button></div></div>`).join("")}</div>
+    <div class="pm"><button type="button" data-d="-1" data-i="${i}" aria-label="Diminuir ${m}">−</button><button type="button" data-d="1" data-i="${i}" aria-label="Aumentar ${m}">+</button></div></div>`).join("")}</div>
   <p class="hint" style="margin-top:14px">Média do ano: <b id="smed"></b>. O ideal é ficar perto de 1,0.</p>`;
 }
 function posSaz(c){
@@ -222,12 +241,12 @@ function tTaxas(){
   const q=(k,t,h,tipo="pct")=>`<div class="q"><div class="t">${t}</div><div class="h">${h}</div>${campo(k,tipo)}</div>`;
   const pres = D.regime==="presumido";
   return `<h1>Impostos e taxas sobre a venda</h1><p class="lead">Custos que <b>sobem junto com o faturamento</b>, em <b>% sobre o valor vendido</b>.</p>
-  ${pres?`<div class="q"><div class="t">🔵 Tributos do Lucro Presumido</div><div class="h">Já vêm com as alíquotas mais comuns para confecção em Goiás. <b>Confira com seu contador.</b></div>
+  ${pres?`<div class="q"><div class="t">${IC("layers")}Tributos do Lucro Presumido</div><div class="h">Já vêm com as alíquotas mais comuns para confecção em Goiás. <b>Confira com seu contador.</b></div>
     <div class="g3">${["B49","B50","B57"].map(a=>`<div><label>${L(a)}</label>${campo("Premissas!"+a,"pct")}</div>`).join("")}</div>
-    <details class="adv"><summary>Ver PIS, COFINS, IRPJ e CSLL ▸</summary><div class="g3" style="margin-top:12px">
+    <details class="adv"><summary>Ver PIS, COFINS, IRPJ e CSLL</summary><div class="g3" style="margin-top:12px">
       ${["B47","B48","B58","B51","B52","B53","B55","B56"].map(a=>`<div><label>${L(a)}</label>${campo("Premissas!"+a,"pct")}</div>`).join("")}
       <div><label>${L("B54")}</label>${campo("Premissas!B54","money")}</div></div></details></div>`
-  : q("Premissas!B17","🟢 Alíquota efetiva do Simples Nacional","Divida o valor do último DAS pelo faturamento do mês. Ex.: DAS de R$ 9.000 ÷ faturamento de R$ 100.000 = <b>9%</b>.")}
+  : q("Premissas!B17","Alíquota efetiva do Simples Nacional","Divida o valor do último DAS pelo faturamento do mês. Ex.: DAS de R$ 9.000 ÷ faturamento de R$ 100.000 = <b>9%</b>.")}
   <div class="g2">
     ${q("Premissas!B18","Comissões sobre vendas","% pago de comissão sobre as vendas.")}
     ${q("Premissas!B19","Fretes sobre vendas","Quanto o frete representa sobre o valor vendido.")}
@@ -237,10 +256,10 @@ function tTaxas(){
   ${q("Premissas!B21","Descontos comerciais","Desconto médio concedido (se o preço já tem desconto, deixe 0).")}`;
 }
 
-const GRUPOS={ "IMPOSTOS SOBRE VENDAS":["🧾","Outros impostos fixos"], "CUSTO DOS PRODUTOS VENDIDOS":["🧵","Produção"], "DESPESAS COMERCIAIS":["🤝","Comercial e vendas"],
-  "DESPESAS COM MARKETING":["📣","Marketing"], "DESPESAS COM INFRAESTRUTURA":["🏭","Estrutura"], "DESPESAS COM PESSOAL":["👥","Pessoas"], "DESPESAS ADMINISTRATIVAS":["🗂️","Administrativo"],
-  "DESPESAS COM TI":["💻","Tecnologia e telefone"], "DESPESAS TRIBUTÁRIAS":["🏛️","Taxas"], "DEPRECIAÇÕES":["⚙️","Desgaste das máquinas"], "RECEITAS FINANCEIRAS":["💰","Rendimentos (dinheiro que entra)"],
-  "DESPESAS FINANCEIRAS":["🏦","Banco e financeiro"], "ENCARGOS":["📑","Encargos"] };
+const GRUPOS={ "IMPOSTOS SOBRE VENDAS":["receipt","Outros impostos fixos"], "CUSTO DOS PRODUTOS VENDIDOS":["scissors","Produção"], "DESPESAS COMERCIAIS":["target","Comercial e vendas"],
+  "DESPESAS COM MARKETING":["mega","Marketing"], "DESPESAS COM INFRAESTRUTURA":["factory","Estrutura"], "DESPESAS COM PESSOAL":["users","Pessoas"], "DESPESAS ADMINISTRATIVAS":["folder","Administrativo"],
+  "DESPESAS COM TI":["monitor","Tecnologia e telefone"], "DESPESAS TRIBUTÁRIAS":["bank","Taxas"], "DEPRECIAÇÕES":["gear","Desgaste das máquinas"], "RECEITAS FINANCEIRAS":["trend","Rendimentos (dinheiro que entra)"],
+  "DESPESAS FINANCEIRAS":["card","Banco e financeiro"], "ENCARGOS":["file","Encargos"] };
 const bonito=s=>String(s||"").toLowerCase().replace(/(^|[\s/(])([a-zà-ú])/g,(m,a,b)=>a+b.toUpperCase()).replace(/\bPj\b/g,"PJ").replace(/\bTi\b/g,"TI").replace(/\bIptu\b/g,"IPTU").replace(/\bDifal\b/g,"DIFAL").replace(/\bDoc\b/g,"DOC").replace(/\bTed\b/g,"TED").replace(/\bPix\b/g,"PIX");
 const contasFixas=()=>M.contas.filter(c=>c.fixo);
 function porMes(c){ const vs=COLS.map(col=>val(`Orçamento!${col}${c.r}`)); return {vs, iguais: vs.every(v=>(v||0)===(vs[0]||0))}; }
@@ -249,7 +268,7 @@ function tCustos(){
   return `<h1>Custos e despesas do mês</h1>
   <p class="lead">Quanto você gasta <b>por mês</b> para manter a empresa aberta, <b>vendendo ou não</b>. Abra cada grupo e preencha o que tiver.
   Se o valor <b>muda em algum mês</b> (13º, férias, IPTU parcelado), toque em <b>"valores por mês"</b>.</p>
-  ${Object.entries(grupos).map(([g,cs])=>{ const [ic,nm]=GRUPOS[g]||["📌",bonito(g)]; return `<details class="grp" data-g="${esc(g)}"><summary><span class="ic">${ic}</span><div><div class="nm">${esc(nm)}</div><div class="sub">${esc(bonito(g))}</div></div><span class="tot" data-gt="${esc(g)}"></span><span class="chev">▸</span></summary>
+  ${Object.entries(grupos).map(([g,cs])=>{ const [ic,nm]=GRUPOS[g]||["pin",bonito(g)]; return `<details class="grp" data-g="${esc(g)}"><summary><span class="ic">${IC(ic)}</span><div><div class="nm">${esc(nm)}</div><div class="sub">${esc(bonito(g))}</div></div><span class="tot" data-gt="${esc(g)}"></span><span class="chev">${IC("chevDown")}</span></summary>
     <div class="body">${cs.map(c=>linhaConta(c)).join("")}</div></details>`; }).join("")}
   <div class="totbar"><span>Total de custos e despesas fixos (média por mês)</span><b id="fixTot"></b></div>`;
 }
@@ -258,8 +277,8 @@ function linhaConta(c){
   const {iguais}=porMes(c); const mensal = !iguais || abertosMes.has(c.r); const ks=COLS.map(col=>`Orçamento!${col}${c.r}`);
   return `<div class="conta" data-r="${c.r}">
     <div class="linha"><span>${esc(bonito(c.conta))}${c.obs?`<small class="hint" style="display:block">${esc(c.obs)}</small>`:""}</span>
-      ${mensal?`<div class="hint">valores por mês ↓</div>`:campo(ks.join("|"),"money",{sinal:c.sinal})}</div>
-    <div class="opts">${RO?"":`<button class="mini" data-pm="${c.r}">${mensal?"↺ mesmo valor todo mês":"📅 valores diferentes por mês"}</button>`}
+      ${mensal?`<div class="hint" style="margin:0">Preencha mês a mês abaixo</div>`:campo(ks.join("|"),"money",{sinal:c.sinal})}</div>
+    <div class="opts">${RO?"":`<button type="button" class="mini" data-pm="${c.r}">${mensal?IC("refresh","sm")+"Mesmo valor todo mês":IC("calendar","sm")+"Valores diferentes por mês"}</button>`}
       ${c.prazo?`<label class="mini">Paga em <select data-pz="${c.r}" ${RO?"disabled":""}>${[0,1,2].map(n=>`<option value="${n}" ${(val(`Orçamento!S${c.r}`)||0)==n?"selected":""}>${n===0?"no próprio mês":n===1?"30 dias":"60 dias"}</option>`).join("")}</select></label>`:""}</div>
     ${mensal?`<div class="mgrid">${COLS.map((col,i)=>`<div><label>${MESES[i]}</label>${campo(`Orçamento!${col}${c.r}`,"money",{sinal:c.sinal})}</div>`).join("")}</div>`:""}
   </div>`;
@@ -285,7 +304,7 @@ function vivoCustos(){
 
 function tCaixa(){
   const L=k=>esc(M.labels[k]||"");
-  const fluxo=(r,t,h,sinal)=>`<details class="q adv"><summary>${t} ▸</summary><div class="h" style="margin-top:8px">${h}</div><div class="mgrid">${COLS_FC.map((col,i)=>`<div><label>${MESES[i]}</label>${campo(`Fluxo de Caixa!${col}${r}`,"money",{sinal})}</div>`).join("")}</div></details>`;
+  const fluxo=(r,t,h,sinal)=>`<details class="q adv"><summary>${t}</summary><div class="h" style="margin-top:8px">${h}</div><div class="mgrid">${COLS_FC.map((col,i)=>`<div><label>${MESES[i]}</label>${campo(`Fluxo de Caixa!${col}${r}`,"money",{sinal})}</div>`).join("")}</div></details>`;
   return `<h1>Caixa e prazos</h1><p class="lead">Último passo! Isso mostra se vai <b>faltar dinheiro</b> em algum mês, mesmo com lucro.</p>
   <div class="q"><div class="t">Como seus clientes pagam?</div><div class="h">Do total vendido, quanto entra à vista, em 30 e em 60 dias. <b>Tem que somar 100%.</b></div>
     <div class="g3"><div><label>À vista</label>${campo("Premissas!B30","pct")}</div><div><label>Em 30 dias</label>${campo("Premissas!B31","pct")}</div><div><label>Em 60 dias</label>${campo("Premissas!B32","pct")}</div></div><div class="soma" id="somaRec"></div></div>
@@ -295,7 +314,7 @@ function tCaixa(){
     <div class="q"><div class="t">Prazo para pagar a matéria-prima</div><div class="h">0 = à vista, 1 = em 30 dias, 2 = em 60 dias.</div>${campo("Premissas!B33","num",{suf:"meses"})}</div>
     <div class="q"><div class="t">Distribuição de lucros</div><div class="h">Quanto do lucro positivo vai para os sócios.</div>${campo("Premissas!B44","pct")}</div>
   </div>
-  <details class="q adv"><summary>Valores do ano anterior a receber ou a pagar ▸</summary>
+  <details class="q adv"><summary>Valores do ano anterior a receber ou a pagar</summary>
     <div class="g3" style="margin-top:12px"><div><label>${L("B36")}</label>${campo("Premissas!B36")}</div><div><label>${L("B37")}</label>${campo("Premissas!B37")}</div><div><label>${L("B38")}</label>${campo("Premissas!B38")}</div></div></details>
   ${fluxo(11,"Investimentos previstos (máquinas, reforma…)","Valor que vai sair do caixa em cada mês.",-1)}
   ${fluxo(12,"Aportes de sócios ou empréstimos","Dinheiro que vai entrar no caixa em cada mês.",1)}
@@ -303,16 +322,17 @@ function tCaixa(){
 }
 function vivoCaixa(){ const s=$("somaRec"); if(!s) return; const t=((val("Premissas!B30")||0)+(val("Premissas!B31")||0)+(val("Premissas!B32")||0))*100; s.innerHTML = Math.round(t)===100?`<span class="pos">✓ Soma 100%</span>`:`<span class="neg">Soma ${num(t)}%: ajuste para fechar 100%</span>`; }
 
+
 function linha(sheet, r, c1="C", c2="N"){ const out=[]; for(let i=c1.charCodeAt(0);i<=c2.charCodeAt(0);i++) out.push(motor.get(sheet, String.fromCharCode(i)+r)||0); return out; }
 function graficoLinha(a,b,la,lb){
   const W=600,H=200,max=Math.max(...a,...b,1),min=Math.min(0,...a,...b), y=v=>H-20-(v-min)/(max-min)*(H-40), x=i=>30+i*(W-50)/11;
   const path=arr=>arr.map((v,i)=>`${i?"L":"M"}${x(i)},${y(v)}`).join("");
-  return `<svg viewBox="0 0 ${W} ${H}" class="svgc"><path d="${path(a)}" fill="none" stroke="var(--gold)" stroke-width="3"/><path d="${path(b)}" fill="none" stroke="#a3a3a3" stroke-width="2" stroke-dasharray="6 5"/>
-   ${MESES.map((m,i)=>`<text x="${x(i)}" y="${H-4}" text-anchor="middle">${m}</text>`).join("")}</svg><div class="legend"><span><i style="background:var(--gold)"></i>${la}</span><span><i style="background:#a3a3a3"></i>${lb}</span></div>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="svgc" role="img" aria-label="${la} e ${lb} mês a mês"><path d="${path(a)}" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/><path d="${path(b)}" fill="none" stroke="var(--gold)" stroke-width="3" stroke-dasharray="7 5"/>
+   ${MESES.map((m,i)=>`<text x="${x(i)}" y="${H-4}" text-anchor="middle">${m}</text>`).join("")}</svg><div class="legend"><span><i style="background:var(--ink)"></i>${la}</span><span><i style="background:var(--gold)"></i>${lb}</span></div>`;
 }
 function graficoBarras(a){
   const W=600,H=200,max=Math.max(...a.map(Math.abs),1), base=H/2, bw=(W-60)/12-8;
-  return `<svg viewBox="0 0 ${W} ${H}" class="svgc"><line x1="20" x2="${W}" y1="${base}" y2="${base}" stroke="#333"/>
+  return `<svg viewBox="0 0 ${W} ${H}" class="svgc" role="img" aria-label="Saldo final de caixa mês a mês"><line x1="20" x2="${W}" y1="${base}" y2="${base}" stroke="var(--ink)" stroke-width="1.5"/>
    ${a.map((v,i)=>{ const h=Math.abs(v)/max*(H/2-24); const x=30+i*(W-60)/12; return `<rect x="${x}" y="${v>=0?base-h:base}" width="${bw}" height="${h}" rx="3" fill="${v>=0?"var(--ok)":"var(--err)"}"/><text x="${x+bw/2}" y="${H-4}" text-anchor="middle">${MESES[i]}</text>`; }).join("")}</svg>`;
 }
 function tResultado(){
@@ -323,18 +343,16 @@ function tResultado(){
   const cen=r=>["E","F","G"].map(c=>{ const v=P(c+r), nf=cel(c+r).s?.nf; return `<td class="r ${typeof v==="number"&&v<0?"neg":""}">${esc(fmtExcel(v,nf))}</td>`; }).join("");
   return `<h1>Seu Planejamento 2027</h1>
   <p class="lead">Este é o <b>Painel</b> da sua planilha (${D.regime==="presumido"?"Lucro Presumido":"Simples Nacional"}), calculado com as mesmas fórmulas do Excel.</p>
-  <div class="tools" style="margin-bottom:16px"><a class="tbtn" href="planilha.html${q}">📊 Ver as 7 abas da planilha</a><button class="tbtn" id="bBaixar2">⬇️ Baixar planilha Excel</button></div>
   <div class="kpis">${kpi("B5")}${kpi("B6",null,true)}${kpi("B7")}${kpi("B10")}${kpi("B11")}${kpi("B9")}${kpi("B12")}${kpi("B14")}${kpi("B15")}${kpi("B16")}${kpi("B18")}${kpi("B8")}</div>
   <div class="sec">Alertas automáticos</div>${alertas.map(t=>`<div class="alert ${t.startsWith("✓")?"ok":"err"}">${esc(t)}</div>`).join("")}
   <div class="sec">Receita x Ponto de equilíbrio (R$/mês)</div>${graficoLinha(linha("DRE Projetada",5),linha("DRE Projetada",43),"Receita bruta","Ponto de equilíbrio")}
   <div class="sec">Saldo final de caixa (R$)</div>${graficoBarras(linha("Fluxo de Caixa",15))}
   <div class="sec">Comparativo de cenários (ano)</div>
-  <table class="t"><thead><tr><th></th><th class="r">Pessimista</th><th class="r">Base</th><th class="r">Otimista</th></tr></thead><tbody>
-   ${[5,6,7,8,9,10,11].map(r=>`<tr><td>${esc(P("D"+r))}</td>${cen(r)}</tr>`).join("")}</tbody></table>
-  ${RO?"":`<div class="done">${D.concluido?`<div class="alert ok">✅ Exercício marcado como concluído. Você ainda pode voltar e ajustar o que quiser.</div>`:`<button class="btn" id="bConcluir">✅ Concluir meu exercício</button><p class="hint">Você ainda poderá editar depois.</p>`}</div>`}`;
+  <div class="rolar"><table class="t"><thead><tr><th></th><th class="r">Pessimista</th><th class="r">Base</th><th class="r">Otimista</th></tr></thead><tbody>
+   ${[5,6,7,8,9,10,11].map(r=>`<tr><td>${esc(P("D"+r))}</td>${cen(r)}</tr>`).join("")}</tbody></table></div>
+  ${RO?"":`<div class="done">${D.concluido?`<div class="alert ok">Exercício marcado como concluído. Você ainda pode voltar e ajustar o que quiser.</div>`:`<button type="button" class="btn" id="bConcluir">${IC("check")}Concluir meu exercício</button><p class="hint">Você ainda poderá editar depois.</p>`}</div>`}`;
 }
 function posResultado(c){
-  c.querySelector("#bBaixar2")?.addEventListener("click",()=>$("bBaixar").click());
   const b=c.querySelector("#bConcluir"); if(b) b.onclick=()=>{ D.concluido=true; salvar(true); render(); };
 }
 

@@ -5,57 +5,99 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Administrador · Imersão Têxtil Club</title>
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
 <link rel="icon" href="logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script src="config.js"></script>
+<style>
+  .adm{max-width:1120px;padding-top:30px}
+  .adm-t{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+  .adm-t h1{margin-top:8px}
+  .bloco-a{margin-bottom:46px}
+  .bloco-a>.sub{margin:6px 0 20px}
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;margin-bottom:22px}
+  .stat{padding:16px 18px;border-top:1px solid var(--line);border-left:1px solid var(--line)}
+  .stat:nth-child(-n+2){border-top:0}
+  .stat:nth-child(odd){border-left:0}
+  .stat b{display:block;font:700 clamp(1.7rem,1.3rem + 1.6vw,2.4rem)/1 var(--f-display);letter-spacing:-.03em}
+  .stat span{display:block;font-size:13.5px;color:var(--muted);margin-top:6px;font-weight:500}
+  @media (min-width:760px){.stats{grid-template-columns:repeat(4,1fr)}.stat{border-top:0;border-left:1px solid var(--line)}.stat:first-child{border-left:0}}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+  .filters button{min-height:44px;background:var(--surface);border:1.5px solid var(--line-2);color:var(--ink-2);font:600 14.5px var(--f-body);padding:0 16px;border-radius:999px;display:inline-flex;gap:8px;align-items:center}
+  .filters button:hover{border-color:var(--ink)}
+  .filters button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+  .filters .n{font:700 12.5px var(--f-body);background:var(--paper-2);color:var(--ink);border-radius:999px;padding:2px 8px;min-width:24px;text-align:center}
+  .filters button.on .n{background:var(--gold);color:#0b0b0a}
+  .tabela{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+  .tabela table{min-width:0}
+  .tabela th{background:var(--paper)}
+  .tabela td:last-child,.tabela th:last-child{padding-right:16px}
+  .vazio{color:var(--muted);padding:28px 16px!important;text-align:center}
+  .mini-fita{height:10px;margin-top:8px;max-width:150px}
+  .acts .btn{white-space:nowrap}
+  td .num{font:700 15px var(--f-display);letter-spacing:-.01em}
+  @media (max-width:640px){
+    .tabela{background:none;border:0;overflow:visible}
+    td[data-l]::before{content:attr(data-l);display:block;font:600 11.5px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+    td[data-l=""]::before{display:none}
+    .acts .btn{flex:1}
+  }
+</style>
 </head>
 <body>
-<div class="wrap">
-  <div class="top">
-    <img src="logo.jpg" alt="Têxtil Club">
-    <div class="who"><div id="quem">…</div><button class="link" id="sair" style="margin-top:4px">Sair</button></div>
-  </div>
+<script src="ui.js" data-page="admin"></script>
+<main class="wrap">
+<div class="page adm">
 
-  <div class="card wide">
-    <h1>Participantes da imersão</h1>
+  <section class="bloco-a" id="participantes">
+    <div class="adm-t"><div><div class="eyebrow">Administração</div><h1>Participantes da imersão</h1></div></div>
     <p class="sub">Aprove quem comprou a imersão. Sócios da mesma empresa aparecem juntos.</p>
-    <div class="msg" id="msg"></div>
+    <div class="msg" id="msg" role="alert"></div>
 
     <div class="stats">
       <div class="stat"><b id="sEmp">–</b><span>Empresas</span></div>
       <div class="stat"><b id="sTot">–</b><span>Participantes</span></div>
-      <div class="stat"><b id="sPen" style="color:var(--warn)">–</b><span>Aguardando</span></div>
+      <div class="stat"><b id="sPen" style="color:var(--warn)">–</b><span>Aguardando liberação</span></div>
       <div class="stat"><b id="sApr" style="color:var(--ok)">–</b><span>Liberados</span></div>
     </div>
 
-    <div class="filters" id="filtros">
-      <button data-f="pendente" class="on">Aguardando</button>
-      <button data-f="aprovado">Liberados</button>
-      <button data-f="bloqueado">Bloqueados</button>
-      <button data-f="">Todos</button>
+    <div class="filters" id="filtros" role="group" aria-label="Filtrar participantes">
+      <button type="button" data-f="pendente" class="on">Aguardando <span class="n" data-n="pendente">0</span></button>
+      <button type="button" data-f="aprovado">Liberados <span class="n" data-n="aprovado">0</span></button>
+      <button type="button" data-f="bloqueado">Bloqueados <span class="n" data-n="bloqueado">0</span></button>
+      <button type="button" data-f="">Todos <span class="n" data-n="">0</span></button>
     </div>
 
-    <table>
-      <thead><tr><th>Participante</th><th>Empresa</th><th>Contato</th><th>Status</th><th></th></tr></thead>
-      <tbody id="lista"><tr><td colspan="5">Carregando…</td></tr></tbody>
-    </table>
-  </div>
+    <div class="tabela">
+      <table>
+        <thead><tr><th>Participante</th><th>Empresa</th><th>Contato</th><th>Situação</th><th><span class="sr">Ações</span></th></tr></thead>
+        <tbody id="lista"><tr><td colspan="5" class="vazio">Carregando…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
 
-  <div class="card wide" style="margin-top:18px">
-    <h1>📝 Exercício de casa: Planejamento 2027</h1>
-    <p class="sub">Como está cada empresa. Clique em <b>Resultado</b> para ver o painel da empresa ou em <b>Planilha</b> para ver as 7 abas e baixar o Excel preenchido.</p>
+  <section class="bloco-a" id="exercicios">
+    <div class="eyebrow">Exercício de casa</div>
+    <h1 style="font-size:clamp(1.4rem,1.1rem + 1.4vw,1.9rem);margin-top:8px">Planejamento 2027, empresa por empresa</h1>
+    <p class="sub">Veja como está cada empresa. <b>Resultado</b> abre o painel da empresa; <b>Planilha</b> mostra as 7 abas e permite baixar o Excel preenchido.</p>
     <div class="stats">
       <div class="stat"><b id="eTot">–</b><span>Empresas liberadas</span></div>
       <div class="stat"><b id="eNao" style="color:var(--err)">–</b><span>Não começaram</span></div>
       <div class="stat"><b id="eAnd" style="color:var(--warn)">–</b><span>Em andamento</span></div>
       <div class="stat"><b id="eOk" style="color:var(--ok)">–</b><span>Concluíram</span></div>
     </div>
-    <table>
-      <thead><tr><th>Empresa</th><th>Regime</th><th>Andamento</th><th>Faturamento/ano</th><th>Lucro/ano</th><th></th></tr></thead>
-      <tbody id="exLista"><tr><td colspan="6">Carregando…</td></tr></tbody>
-    </table>
-  </div>
+    <div class="tabela">
+      <table>
+        <thead><tr><th>Empresa</th><th>Regime</th><th>Andamento</th><th>Faturamento/ano</th><th>Lucro/ano</th><th><span class="sr">Ações</span></th></tr></thead>
+        <tbody id="exLista"><tr><td colspan="6" class="vazio">Carregando…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
 </div>
+</main>
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
@@ -65,11 +107,11 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s??"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fCnpj = c => (c||"").replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,"$1.$2.$3/$4-$5");
 const fTel = t => (t||"").replace(/^(\d{2})(\d{4,5})(\d{4})$/,"($1) $2-$3");
+const ROT = { pendente:"Aguardando", aprovado:"Liberado", bloqueado:"Bloqueado" };
 
 const { data:{ session } } = await sb.auth.getSession();
 if (!session) { location.replace("index.html"); throw new Error("sem sessão"); }
 $("quem").textContent = session.user.email;
-$("sair").onclick = async () => { await sb.auth.signOut(); location.replace("index.html"); };
 const { data:adm } = await sb.rpc("is_admin");
 if (!adm) { location.replace("painel.html"); throw new Error("não admin"); }
 
@@ -89,23 +131,24 @@ async function carregar(){
   $("sTot").textContent = todos.length;
   $("sPen").textContent = todos.filter(p=>p.status==="pendente").length;
   $("sApr").textContent = todos.filter(p=>p.status==="aprovado").length;
+  document.querySelectorAll("#filtros .n").forEach(n => n.textContent = n.dataset.n ? todos.filter(p=>p.status===n.dataset.n).length : todos.length);
   render();
 }
 
 function render(){
   const lista = todos.filter(p=>!filtro||p.status===filtro)
     .sort((a,b)=> (a.empresas?.nome||"").localeCompare(b.empresas?.nome||"") || a.criado_em.localeCompare(b.criado_em));
-  if (!lista.length){ $("lista").innerHTML=`<tr><td colspan="5" style="color:var(--muted)">Ninguém aqui por enquanto.</td></tr>`; return; }
+  if (!lista.length){ $("lista").innerHTML=`<tr><td colspan="5" class="vazio">Ninguém aqui por enquanto.</td></tr>`; return; }
   $("lista").innerHTML = lista.map(p=>{
     const e=p.empresas||{}, socios=todos.filter(x=>x.empresa_id===p.empresa_id).length;
-    const wpp = p.whatsapp ? `<a href="https://wa.me/55${p.whatsapp}" target="_blank">${fTel(p.whatsapp)}</a>` : "";
-    const btn = (st,txt,cls="") => p.status===st ? "" : `<button class="btn sm ${cls}" data-id="${p.id}" data-st="${st}">${txt}</button>`;
+    const wpp = p.whatsapp ? `<a href="https://wa.me/55${p.whatsapp}" target="_blank" rel="noopener">${fTel(p.whatsapp)}</a>` : "";
+    const btn = (st,txt,cls="") => p.status===st ? "" : `<button type="button" class="btn sm ${cls}" data-id="${p.id}" data-st="${st}">${txt}</button>`;
     return `<tr>
-      <td><b>${esc(p.nome)}</b><small>${esc(p.cargo||"")}</small><small>${new Date(p.criado_em).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})}</small></td>
-      <td>${esc(e.nome)}<small>${fCnpj(e.cnpj)}${e.cidade?" · "+esc(e.cidade)+"/"+esc(e.uf||""):""}</small><small>${socios} participante${socios>1?"s":""}</small></td>
-      <td><small style="color:var(--txt)">${esc(p.email)}</small>${wpp}</td>
-      <td><span class="badge ${p.status}">${p.status}</span></td>
-      <td><div class="acts">${btn("aprovado","Liberar")}${btn("bloqueado","Bloquear","ghost")}${p.status!=="pendente"?btn("pendente","Voltar p/ pendente","ghost"):""}</div></td>
+      <td data-l="Participante"><b>${esc(p.nome)}</b><small>${esc(p.cargo||"")}</small><small>${new Date(p.criado_em).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})}</small></td>
+      <td data-l="Empresa">${esc(e.nome)}<small>${fCnpj(e.cnpj)}${e.cidade?" · "+esc(e.cidade)+"/"+esc(e.uf||""):""}</small><small>${socios} participante${socios>1?"s":""}</small></td>
+      <td data-l="Contato"><small style="color:var(--ink);margin:0">${esc(p.email)}</small>${wpp}</td>
+      <td data-l="Situação"><span class="badge ${p.status}">${ROT[p.status]||p.status}</span></td>
+      <td data-l=""><div class="acts">${btn("aprovado","Liberar")}${btn("bloqueado","Bloquear","ghost")}${p.status!=="pendente"?btn("pendente","Voltar para aguardando","ghost"):""}</div></td>
     </tr>`;
   }).join("");
   document.querySelectorAll("#lista button[data-id]").forEach(b=>b.onclick=async()=>{
@@ -129,17 +172,18 @@ async function carregarEx(){
   $("eNao").textContent = lib.filter(e=>!ex(e)).length;
   $("eAnd").textContent = lib.filter(e=>ex(e) && ex(e).status!=="concluido").length;
   $("eOk").textContent = lib.filter(e=>ex(e)?.status==="concluido").length;
-  if (!lib.length){ $("exLista").innerHTML = `<tr><td colspan="6" style="color:var(--muted)">Nenhuma empresa liberada ainda.</td></tr>`; return; }
+  if (!lib.length){ $("exLista").innerHTML = `<tr><td colspan="6" class="vazio">Nenhuma empresa liberada ainda.</td></tr>`; return; }
   $("exLista").innerHTML = lib.map(e => {
     const x = ex(e), r = x?.resumo || {}, etapa = r.etapa ?? 0, done = x?.status==="concluido";
+    const pct = !x ? 0 : done ? 100 : Math.round(Math.min(etapa+1,8)/8*100);
     const prog = !x ? `<span class="badge bloqueado">Não começou</span>` : done ? `<span class="badge aprovado">Concluído</span>` : `<span class="badge pendente">Etapa ${Math.min(etapa+1,8)} de 8</span>`;
     return `<tr>
-      <td><b>${esc(e.nome)}</b><small>${esc(e.cidade||"")}${e.uf?"/"+esc(e.uf):""}</small>${x?`<small>Atualizado ${new Date(x.atualizado_em).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})}${x.atualizado_por_nome?" por "+esc(x.atualizado_por_nome.split(" ")[0]):""}</small>`:""}</td>
-      <td>${x?.regime==="presumido"?"Lucro Presumido":x?.regime==="simples"?"Simples Nacional":"–"}</td>
-      <td>${prog}</td>
-      <td>${r.receita?brl(r.receita):"–"}</td>
-      <td>${r.receita?`<b style="color:${r.resultado>=0?"var(--ok)":"var(--err)"}">${brl(r.resultado)}</b><small>margem ${((r.margem||0)*100).toLocaleString("pt-BR",{maximumFractionDigits:1})}%</small>`:"–"}</td>
-      <td>${x?`<div class="acts"><a class="btn sm" href="exercicio.html?empresa=${e.id}" style="text-decoration:none;display:inline-block">Resultado</a><a class="btn sm ghost" href="planilha.html?empresa=${e.id}" style="text-decoration:none;display:inline-block">Planilha</a></div>`:""}</td>
+      <td data-l="Empresa"><b>${esc(e.nome)}</b><small>${esc(e.cidade||"")}${e.uf?"/"+esc(e.uf):""}</small>${x?`<small>Atualizado ${new Date(x.atualizado_em).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})}${x.atualizado_por_nome?" por "+esc(x.atualizado_por_nome.split(" ")[0]):""}</small>`:""}</td>
+      <td data-l="Regime">${x?.regime==="presumido"?"Lucro Presumido":x?.regime==="simples"?"Simples Nacional":"–"}</td>
+      <td data-l="Andamento">${prog}${x?`<div class="fita mini-fita" aria-hidden="true"><i style="width:${pct}%"></i></div>`:""}</td>
+      <td data-l="Faturamento/ano"><span class="num">${r.receita?brl(r.receita):"–"}</span></td>
+      <td data-l="Lucro/ano">${r.receita?`<span class="num" style="color:${r.resultado>=0?"var(--ok)":"var(--err)"}">${brl(r.resultado)}</span><small>margem ${((r.margem||0)*100).toLocaleString("pt-BR",{maximumFractionDigits:1})}%</small>`:"–"}</td>
+      <td data-l="">${x?`<div class="acts"><a class="btn sm" href="exercicio.html?empresa=${e.id}">Resultado</a><a class="btn sm ghost" href="planilha.html?empresa=${e.id}">Planilha</a></div>`:""}</td>
     </tr>`;
   }).join("");
 }

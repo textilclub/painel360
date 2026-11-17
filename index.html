@@ -5,114 +5,218 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Acesso · Imersão Têxtil Club</title>
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
 <link rel="icon" href="logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script src="config.js"></script>
+<script src="ui.js" data-page="login"></script>
+<style>
+  body{background-image:none;background:#000}
+  .acesso{flex:1;display:grid;grid-template-rows:auto 1fr}
+  /* lado da marca */
+  .lado-marca{padding:14px var(--gut);display:flex;align-items:center;gap:14px}
+  .lado-marca .logo{width:118px;height:46px;border-radius:4px;overflow:hidden;flex:0 0 auto}
+  .lado-marca .logo img{width:100%;height:100%;object-fit:cover;object-position:50% 49%}
+  .lado-marca .evento{font:600 12.5px/1.3 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--gold-hi)}
+  .lado-marca .desk{display:none}
+  /* lado do formulário */
+  .lado-form{background:var(--paper);background-image:repeating-linear-gradient(0deg,rgba(60,45,10,.022) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(60,45,10,.022) 0 1px,transparent 1px 3px);
+    border-radius:22px 22px 0 0;padding:26px var(--gut) 36px;display:flex;justify-content:center;align-items:flex-start}
+  .form-w{width:100%;max-width:460px}
+  .tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--paper-2);border:1.5px solid var(--ink);border-radius:12px;padding:4px;margin-bottom:26px;gap:4px}
+  .tabs button{min-height:46px;background:none;border:0;border-radius:8px;color:var(--ink-2);font:600 15px var(--f-body)}
+  .tabs button[aria-selected="true"]{background:var(--ink);color:#fff}
+  .tabs button:not([aria-selected="true"]):hover{background:rgba(0,0,0,.06)}
+  .form-w h1{margin-bottom:8px}
+  .form-w .sub{margin-bottom:24px}
+  .passo{margin-bottom:22px}
+  .passo-t{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:10px;font:600 14px var(--f-body);color:var(--ink-2)}
+  .passo-t span:first-child{font-family:var(--f-display);font-weight:700;font-size:15px;color:var(--ink)}
+  .passo .fita{--seg:50%}
+  .suporte-l{margin-top:28px;padding-top:18px;border-top:2px dashed var(--line-2);font-size:14px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between}
+  .suporte-l a{font-weight:600}
+  .bonus{margin-top:6px}
+  @media (min-width:900px){
+    .acesso{grid-template-columns:minmax(380px,5fr) 6fr;grid-template-rows:1fr;min-height:100vh}
+    .lado-marca{position:relative;overflow:hidden;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:36px;padding:44px 52px}
+    .lado-marca::after{content:"";position:absolute;right:-90px;bottom:-70px;width:420px;height:420px;opacity:.16;pointer-events:none;
+      background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23D4AD4A' stroke-width='1.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 5l7 7-7 7M9 5l7 7-7 7M15 5l7 7-7 7'/%3E%3C/svg%3E") center/contain no-repeat}
+    .lado-marca .logo{width:190px;height:74px}
+    .lado-marca .evento{display:none}
+    .lado-marca .desk{display:block;position:relative;z-index:1;color:var(--on-dark)}
+    .lado-marca .desk h2{font:700 clamp(2rem,1rem + 2.2vw,2.9rem)/1.08 var(--f-display);letter-spacing:-.025em;color:#fff;margin:14px 0 30px;max-width:15ch}
+    .lado-marca .desk ul{list-style:none;display:grid;gap:16px;max-width:36ch}
+    .lado-marca .desk li{display:flex;gap:12px;color:#d8d2c3;font-size:16.5px;line-height:1.45}
+    .lado-marca .desk li .i{color:var(--gold-hi);stroke-width:2.2;margin-top:2px}
+    .lado-marca .desk-f{position:relative;z-index:1;font-size:14px;color:var(--muted-dark)}
+    .lado-marca .desk-f a{color:#fff;font-weight:600}
+    .lado-form{border-radius:0;align-items:center;padding:44px 40px}
+  }
+</style>
 </head>
 <body>
-<div class="wrap">
-  <img class="logo" src="logo.jpg" alt="Têxtil Club">
-  <div class="evento" id="evento"></div>
-
-  <div class="card">
-    <div class="tabs" id="tabs">
-      <button data-t="entrar" class="on">Entrar</button>
-      <button data-t="cadastro">Criar meu acesso</button>
+<main class="acesso">
+  <aside class="lado-marca faixa-m">
+    <div class="logo"><img src="logo.jpg" alt="Têxtil Club" width="190" height="74"></div>
+    <div class="evento" id="evento"></div>
+    <div class="desk">
+      <div class="eyebrow dark"><span id="evento2"></span></div>
+      <h2>Sua confecção em 2027 começa agora.</h2>
+      <ul>
+        <li><svg class="i" viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg><span>Faça o exercício de casa: o Planejamento 2027 da sua empresa.</span></li>
+        <li><svg class="i" viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg><span>Veja o cronograma, o local e onde ficar em Goiânia.</span></li>
+        <li><svg class="i" viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg><span>Seu sócio entra na mesma empresa, com o mesmo CNPJ.</span></li>
+      </ul>
     </div>
+    <div class="desk desk-f" id="foot2"></div>
+  </aside>
 
-    <div class="msg" id="msg"></div>
-
-    <!-- ENTRAR -->
-    <form id="fEntrar" autocomplete="on">
-      <h1>Bem-vindo de volta</h1>
-      <p class="sub">Entre para acessar seu painel da imersão: cronograma, atividades e materiais.</p>
-      <div class="field"><label for="le">E-mail</label><input id="le" type="email" required autocomplete="email" inputmode="email"></div>
-      <div class="field"><label for="ls">Senha</label><input id="ls" type="password" required autocomplete="current-password"></div>
-      <button class="btn" type="submit">Entrar no painel</button>
-      <div class="center"><button type="button" class="link" id="bEsqueci">Esqueci minha senha</button></div>
-    </form>
-
-    <!-- CADASTRO -->
-    <form id="fCadastro" class="hide" autocomplete="on" novalidate>
-      <h1>Crie seu acesso</h1>
-      <p class="sub">Cada participante tem seu próprio login. Se você e seu sócio vieram juntos, os dois se cadastram com o <b>mesmo CNPJ</b> e ficam na mesma empresa.</p>
-
-      <div class="step"><span>1</span> Sua empresa</div>
-      <div class="field">
-        <label for="cnpj">CNPJ da empresa</label>
-        <input id="cnpj" inputmode="numeric" placeholder="00.000.000/0000-00" maxlength="18" required>
-        <div class="hint" id="cnpjHint">Digite o CNPJ. A gente busca os dados da empresa pra você.</div>
-      </div>
-      <div class="field"><label for="enome">Nome da empresa</label><input id="enome" required placeholder="Ex.: Confecções Exemplo"></div>
-      <div class="row uf">
-        <div class="field"><label for="ecid">Cidade</label><input id="ecid"></div>
-        <div class="field"><label for="euf">UF</label><input id="euf" maxlength="2" style="text-transform:uppercase"></div>
+  <section class="lado-form">
+    <div class="form-w">
+      <div class="tabs" id="tabs" role="tablist" aria-label="Entrar ou criar acesso">
+        <button type="button" role="tab" data-t="entrar" aria-selected="true">Entrar</button>
+        <button type="button" role="tab" data-t="cadastro" aria-selected="false">Criar meu acesso</button>
       </div>
 
-      <div class="sep"></div>
-      <div class="step"><span>2</span> Seus dados</div>
-      <div class="field"><label for="nome">Nome completo</label><input id="nome" required autocomplete="name"></div>
-      <div class="row">
-        <div class="field">
-          <label for="cargo">Sua função</label>
-          <select id="cargo" required>
-            <option value="">Selecione</option>
-            <option>Sócio(a) / Proprietário(a)</option>
-            <option>Gestor(a)</option>
-            <option>Colaborador(a)</option>
-          </select>
+      <div class="msg" id="msg" role="alert"></div>
+
+      <!-- ENTRAR -->
+      <form id="fEntrar" autocomplete="on">
+        <h1>Bem-vindo de volta</h1>
+        <p class="sub">Entre para acessar seu painel da imersão: cronograma, exercício de casa e materiais.</p>
+        <div class="field"><label for="le">E-mail</label><input id="le" type="email" required autocomplete="email" inputmode="email" placeholder="voce@suaempresa.com.br"></div>
+        <div class="field"><label for="ls">Senha</label>
+          <div class="pw"><input id="ls" type="password" required autocomplete="current-password"><button type="button" class="pw-t" data-pw="ls" aria-label="Mostrar senha"></button></div></div>
+        <div class="acoes">
+          <button class="btn" type="submit">Entrar no painel</button>
+          <div class="center"><button type="button" class="link" id="bEsqueci">Esqueci minha senha</button></div>
         </div>
-        <div class="field"><label for="wpp">WhatsApp</label><input id="wpp" inputmode="tel" placeholder="(62) 99999-9999" autocomplete="tel" required></div>
-      </div>
-      <div class="field"><label for="email">E-mail (será seu login)</label><input id="email" type="email" required autocomplete="email" inputmode="email"></div>
-      <div class="row">
-        <div class="field"><label for="senha">Senha</label><input id="senha" type="password" minlength="6" required autocomplete="new-password"></div>
-        <div class="field"><label for="senha2">Repita a senha</label><input id="senha2" type="password" minlength="6" required autocomplete="new-password"></div>
-      </div>
-      <div class="hint">Mínimo de 6 caracteres.</div>
-      <button class="btn" type="submit">Criar meu acesso</button>
-    </form>
+      </form>
 
-    <!-- ESQUECI -->
-    <form id="fEsqueci" class="hide">
-      <h1>Recuperar senha</h1>
-      <p class="sub">Informe seu e-mail e enviaremos um link para criar uma nova senha.</p>
-      <div class="field"><label for="re">E-mail</label><input id="re" type="email" required></div>
-      <button class="btn" type="submit">Enviar link</button>
-      <div class="center"><button type="button" class="link" data-voltar>Voltar para entrar</button></div>
-    </form>
+      <!-- CADASTRO em 2 etapas -->
+      <form id="fCadastro" class="hide" autocomplete="on" novalidate>
+        <h1>Crie seu acesso</h1>
+        <p class="sub">Cada participante tem o próprio login. Se você e seu sócio vieram juntos, os dois se cadastram com o <b>mesmo CNPJ</b> e ficam na mesma empresa.</p>
+        <div class="passo">
+          <div class="passo-t"><span id="cadPasso">Etapa 1 de 2</span><span id="cadPassoNome">Sua empresa</span></div>
+          <div class="fita" aria-hidden="true"><i id="cadFita" style="width:50%"></i></div>
+        </div>
 
-    <!-- NOVA SENHA (vindo do link do e-mail) -->
-    <form id="fNova" class="hide">
-      <h1>Nova senha</h1>
-      <p class="sub">Escolha sua nova senha de acesso.</p>
-      <div class="field"><label for="ns">Nova senha</label><input id="ns" type="password" minlength="6" required autocomplete="new-password"></div>
-      <button class="btn" type="submit">Salvar e entrar</button>
-    </form>
-  </div>
-  <div class="foot" id="foot">Têxtil Club · Área do participante</div>
-</div>
+        <div id="cad1">
+          <div class="field">
+            <label for="cnpj">CNPJ da empresa</label>
+            <input id="cnpj" inputmode="numeric" placeholder="00.000.000/0000-00" maxlength="18" required>
+            <div class="hint" id="cnpjHint">Digite o CNPJ. A gente busca os dados da empresa para você.</div>
+          </div>
+          <div class="field"><label for="enome">Nome da empresa</label><input id="enome" required placeholder="Ex.: Confecções Exemplo"></div>
+          <div class="row uf">
+            <div class="field"><label for="ecid">Cidade</label><input id="ecid" placeholder="Ex.: Goiânia"></div>
+            <div class="field"><label for="euf">UF</label><input id="euf" maxlength="2" style="text-transform:uppercase" placeholder="GO"></div>
+          </div>
+          <div class="acoes"><button class="btn" type="button" id="bContinuar">Continuar <svg class="i" viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button></div>
+        </div>
+
+        <div id="cad2" class="hide">
+          <div class="field"><label for="nome">Nome completo</label><input id="nome" required autocomplete="name" placeholder="Nome e sobrenome"></div>
+          <div class="row">
+            <div class="field">
+              <label for="cargo">Sua função</label>
+              <select id="cargo" required>
+                <option value="">Selecione</option>
+                <option>Sócio(a) / Proprietário(a)</option>
+                <option>Gestor(a)</option>
+                <option>Colaborador(a)</option>
+              </select>
+            </div>
+            <div class="field"><label for="wpp">WhatsApp</label><input id="wpp" inputmode="tel" placeholder="(62) 99999-9999" autocomplete="tel" required></div>
+          </div>
+          <div class="field"><label for="email">E-mail (será seu login)</label><input id="email" type="email" required autocomplete="email" inputmode="email" placeholder="voce@suaempresa.com.br"></div>
+          <div class="row">
+            <div class="field"><label for="senha">Senha</label>
+              <div class="pw"><input id="senha" type="password" minlength="6" required autocomplete="new-password"><button type="button" class="pw-t" data-pw="senha" aria-label="Mostrar senha"></button></div></div>
+            <div class="field"><label for="senha2">Repita a senha</label>
+              <div class="pw"><input id="senha2" type="password" minlength="6" required autocomplete="new-password"><button type="button" class="pw-t" data-pw="senha2" aria-label="Mostrar senha"></button></div></div>
+          </div>
+          <div class="hint" style="margin-top:-6px">Mínimo de 6 caracteres.</div>
+          <div class="acoes">
+            <button class="btn" type="submit">Criar meu acesso</button>
+            <button class="btn ghost" type="button" id="bVoltarCad"><svg class="i" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg> Voltar para a empresa</button>
+          </div>
+        </div>
+      </form>
+
+      <!-- ESQUECI -->
+      <form id="fEsqueci" class="hide">
+        <h1>Recuperar senha</h1>
+        <p class="sub">Informe seu e-mail e enviaremos um link para criar uma nova senha.</p>
+        <div class="field"><label for="re">E-mail</label><input id="re" type="email" required autocomplete="email" inputmode="email"></div>
+        <div class="acoes">
+          <button class="btn" type="submit">Enviar link</button>
+          <div class="center"><button type="button" class="link" data-voltar>Voltar para entrar</button></div>
+        </div>
+      </form>
+
+      <!-- NOVA SENHA (vindo do link do e-mail) -->
+      <form id="fNova" class="hide">
+        <h1>Nova senha</h1>
+        <p class="sub">Escolha sua nova senha de acesso.</p>
+        <div class="field"><label for="ns">Nova senha</label>
+          <div class="pw"><input id="ns" type="password" minlength="6" required autocomplete="new-password"><button type="button" class="pw-t" data-pw="ns" aria-label="Mostrar senha"></button></div></div>
+        <div class="acoes"><button class="btn" type="submit">Salvar e entrar</button></div>
+      </form>
+
+      <div class="suporte-l" id="foot">Têxtil Club · Área do participante</div>
+    </div>
+  </section>
+</main>
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 const C = window.TC_CONFIG;
 const sb = createClient(C.SUPABASE_URL, C.SUPABASE_KEY);
 const $ = id => document.getElementById(id);
-$("evento").textContent = C.EVENTO;
-if (C.WHATSAPP_SUPORTE) $("foot").innerHTML = `Dúvidas? <a href="https://wa.me/${C.WHATSAPP_SUPORTE}" target="_blank">Fale com a equipe no WhatsApp</a>`;
+$("evento").textContent = C.EVENTO; $("evento2").textContent = C.EVENTO;
+if (C.WHATSAPP_SUPORTE){
+  $("foot").innerHTML = `<span>Dúvidas? Fale com o Rafael, do suporte.</span><a href="https://wa.me/${C.WHATSAPP_SUPORTE}" target="_blank" rel="noopener">WhatsApp (62) 8229-2141</a>`;
+  $("foot2").innerHTML = `Suporte: Rafael Martins · <a href="https://wa.me/${C.WHATSAPP_SUPORTE}" target="_blank" rel="noopener">(62) 8229-2141</a>`;
+}
+
+// olho da senha
+document.querySelectorAll(".pw-t").forEach(b => {
+  const inp = $(b.dataset.pw); b.innerHTML = IC("eye");
+  b.onclick = () => { const ver = inp.type === "password"; inp.type = ver ? "text" : "password"; b.innerHTML = IC(ver ? "eyeOff" : "eye"); b.setAttribute("aria-label", ver ? "Esconder senha" : "Mostrar senha"); };
+});
 
 const forms = ["fEntrar","fCadastro","fEsqueci","fNova"];
-function show(id){ forms.forEach(f => $(f).classList.toggle("hide", f!==id)); msg(); }
+function show(id){
+  forms.forEach(f => $(f).classList.toggle("hide", f!==id)); msg();
+  document.querySelectorAll("#tabs button").forEach(x => x.setAttribute("aria-selected", String((x.dataset.t==="entrar" && id==="fEntrar") || (x.dataset.t==="cadastro" && id==="fCadastro"))));
+}
 function msg(t="", tipo="err"){ const m=$("msg"); m.className="msg"+(t?" show "+tipo:""); m.textContent=t; }
 function busy(form, on){ const b=form.querySelector("button[type=submit]"); if(!b) return; b.disabled=on; if(on){b.dataset.t=b.textContent;b.textContent="Aguarde…"} else if(b.dataset.t){b.textContent=b.dataset.t} }
 
 // abas
-document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
-  document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on", x===b));
-  show(b.dataset.t==="entrar" ? "fEntrar" : "fCadastro");
-});
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => show(b.dataset.t==="entrar" ? "fEntrar" : "fCadastro"));
 $("bEsqueci").onclick = () => { $("re").value=$("le").value; show("fEsqueci"); };
 document.querySelectorAll("[data-voltar]").forEach(b=>b.onclick=()=>show("fEntrar"));
+
+// cadastro em 2 etapas
+function passo(n){
+  $("cad1").classList.toggle("hide", n!==1); $("cad2").classList.toggle("hide", n!==2);
+  $("cadPasso").textContent = `Etapa ${n} de 2`; $("cadPassoNome").textContent = n===1 ? "Sua empresa" : "Seus dados";
+  $("cadFita").style.width = (n*50)+"%";
+  (n===1 ? $("cnpj") : $("nome")).focus({preventScroll:false});
+}
+$("bContinuar").onclick = () => {
+  msg();
+  if (!cnpjValido($("cnpj").value)) return msg("Informe um CNPJ válido.");
+  if (!$("enome").value.trim()) return msg("Informe o nome da empresa.");
+  passo(2);
+};
+$("bVoltarCad").onclick = () => { msg(); passo(1); };
 
 // já logado? vai pro painel
 const { data:{ session } } = await sb.auth.getSession();
@@ -136,7 +240,7 @@ $("cnpj").oninput = async e => {
   e.target.value = mCnpj(e.target.value);
   const c = so(e.target.value), h=$("cnpjHint");
   ["enome","ecid","euf"].forEach(i=>$(i).readOnly=false);
-  if (c.length<14){ h.className="hint"; h.textContent="Digite o CNPJ. A gente busca os dados da empresa pra você."; ultimoCnpj=""; return; }
+  if (c.length<14){ h.className="hint"; h.textContent="Digite o CNPJ. A gente busca os dados da empresa para você."; ultimoCnpj=""; return; }
   if (c===ultimoCnpj) return; ultimoCnpj=c;
   if (!cnpjValido(c)){ h.className="hint err"; h.textContent="CNPJ inválido. Confira os números."; return; }
   h.className="hint"; h.textContent="Buscando…";
@@ -173,8 +277,9 @@ $("fEntrar").onsubmit = async e => {
 $("fCadastro").onsubmit = async e => {
   e.preventDefault(); msg();
   const c=so($("cnpj").value), nome=$("nome").value.trim(), email=$("email").value.trim();
-  if (!cnpjValido(c)) return msg("Informe um CNPJ válido.");
-  if (!$("enome").value.trim()) return msg("Informe o nome da empresa.");
+  const erro = (m, p) => { passo(p); msg(m); };
+  if (!cnpjValido(c)) return erro("Informe um CNPJ válido.", 1);
+  if (!$("enome").value.trim()) return erro("Informe o nome da empresa.", 1);
   if (nome.split(" ").length<2) return msg("Informe seu nome completo.");
   if (!$("cargo").value) return msg("Selecione sua função.");
   if (so($("wpp").value).length<10) return msg("Informe um WhatsApp válido com DDD.");
@@ -196,7 +301,7 @@ $("fCadastro").onsubmit = async e => {
     return msg("Não foi possível criar o acesso: "+error.message);
   }
   if (data.session) return location.replace("painel.html");
-  e.target.reset(); show("fEntrar");
+  e.target.reset(); passo(1); show("fEntrar");
   msg("Cadastro recebido! Enviamos um link de confirmação para "+email+". Confirme e depois entre aqui.", "ok");
 };
 
