@@ -15,8 +15,8 @@
   .crhead h1{font-size:20px;margin:0}
   .crhead .s{font-size:13px;color:var(--muted)}
   .crhead a.v{margin-left:auto;font-size:13px}
-  .dias{display:flex;gap:8px;margin-bottom:18px}
-  .dias button{flex:1;background:#0d0d0d;border:1px solid var(--line2);color:var(--muted);font:600 14px Poppins;padding:12px;border-radius:14px;cursor:pointer}
+  .dias{display:flex;gap:8px;margin-bottom:18px;overflow-x:auto}
+  .dias button{flex:1 0 auto;min-width:120px;background:#0d0d0d;border:1px solid var(--line2);color:var(--muted);font:600 14px Poppins;padding:12px;border-radius:14px;cursor:pointer}
   .dias button.on{border-color:var(--gold);color:var(--txt);background:#1a1508}
   .dias button small{display:block;font-weight:500;font-size:12px;color:var(--muted)}
   .obj{border:1px solid var(--gold);background:linear-gradient(135deg,#1a1508,#0d0d0d);border-radius:20px;padding:22px;margin-bottom:22px}
@@ -35,6 +35,12 @@
   .mod .tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold2);margin-bottom:6px}
   .pausa{position:relative;margin:0 0 14px;font-size:13px;color:var(--muted);padding:8px 14px;border:1px dashed var(--line2);border-radius:12px;text-align:center}
   .pausa::before{content:"";position:absolute;left:-26px;top:50%;width:12px;height:12px;border-radius:50%;background:#333;transform:translateY(-50%);box-shadow:0 0 0 4px #000}
+  .loc{background:#0d0d0d;border:1px solid var(--line2);border-radius:18px;padding:18px;margin-bottom:14px}
+  .loc .k{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold2);margin-bottom:6px}
+  .loc b{font-size:17px} .loc .la{font-size:13px;color:var(--muted);margin:4px 0 12px}
+  .loc .bts{display:flex;gap:8px;flex-wrap:wrap}
+  .loc .bts a{background:var(--gold);color:#000;font-weight:700;font-size:13px;padding:9px 14px;border-radius:10px;text-decoration:none}
+  .loc .bts a.g{background:#141414;color:var(--txt);border:1px solid var(--line2)}
   .breve{text-align:center;color:var(--muted);padding:40px 10px;border:1px dashed var(--line2);border-radius:18px}
 </style>
 </head>
@@ -57,6 +63,30 @@ const { data:{ session } } = await sb.auth.getSession();
 if (!session) { location.replace("index.html"); throw new Error("sem sessão"); }
 
 const DIAS = [
+  { nome:"Visita técnica", data:"Quarta, 18/11", rot:"da visita técnica", rotSaida:"Você vai entregar",
+    local:{ nome:"Siqueira Gaipo", end:"R. Pres. José Linhares, 806 · Jardim Presidente, Goiânia - GO · CEP 74353-240", tel:"(62) 3602-4440", telLink:"556236024440",
+            mapa:"https://www.google.com/maps/search/?api=1&query=Siqueira%20Gaipo%2C%20R.%20Pres.%20Jos%C3%A9%20Linhares%2C%20806%2C%20Jardim%20Presidente%2C%20Goi%C3%A2nia" },
+    objetivo:"Observar uma operação industrial de perto, identificar boas práticas e oportunidades de melhoria que você possa aplicar na sua própria confecção.",
+    saida:["3 pontos fortes que você observou na operação.","3 oportunidades de melhoria.","3 ações práticas para implementar na sua empresa."],
+    itens:[
+      { pausa:"Recepção" },
+      { t:"Briefing de observação",
+        o:"Antes de entrar na fábrica, você recebe um roteiro do que observar: fluxo, organização, gargalos, gestão visual e pessoas.",
+        e:"Você deixa de \"passear\" pela fábrica e passa a enxergar como um consultor, percebendo detalhes que normalmente passam batido." },
+      { t:"Visita técnica guiada", tag:"Na prática",
+        o:"Um percurso guiado por dentro de uma operação industrial real, do recebimento da matéria-prima até a expedição.",
+        e:"Você vê funcionando na prática o que só conhecia na teoria e volta com referências concretas do que é possível na sua fábrica." },
+      { pausa:"Pausa e deslocamento" },
+      { t:"Reflexão individual", tag:"Mão na massa",
+        o:"Um momento só seu para comparar o que viu com a realidade da sua empresa e anotar pontos fortes, oportunidades e ações.",
+        e:"As ideias saem da cabeça e vão para o papel antes de se perderem, já traduzidas para a sua realidade." },
+      { t:"Debrief 360°",
+        o:"Conversa em grupo para compartilhar o que cada um observou e organizar os aprendizados da visita.",
+        e:"Você enxerga a mesma fábrica pelos olhos de outros empresários e sai com ideias que sozinho não teria percebido." },
+      { t:"Compromisso da visita",
+        o:"Cada participante escolhe as ações práticas que vai levar para a própria empresa.",
+        e:"A visita não fica só na inspiração: você já chega à imersão com ações definidas e a cabeça aquecida para os dois dias." },
+    ]},
   { nome:"1º dia", data:"Quinta, 19/11",
     objetivo:"Diagnosticar a sua empresa e identificar as principais alavancas de crescimento.",
     saida:["O diagnóstico dos seis pilares da sua confecção.","Os principais gargalos da sua produção.","A equação da sua meta comercial.","Decisões sobre marca e portfólio.","Decisões estratégicas consolidadas para alimentar o seu planejamento de 2027."],
@@ -153,8 +183,9 @@ function render(){
   document.querySelectorAll("#dias button").forEach(b=>b.onclick=()=>{ d=+b.dataset.i; render(); });
   const D = DIAS[d]; let n = 0;
   document.getElementById("conteudo").innerHTML = !D.itens.length ? `<div class="breve">📅 A programação do ${D.nome} será liberada em breve.</div>` : `
-    <div class="obj"><div class="k">Objetivo do ${D.nome}</div><h2>${esc(D.objetivo)}</h2>
-      <div class="k" style="margin-bottom:8px">Você vai sair com</div><ol>${D.saida.map(s=>`<li>${esc(s)}</li>`).join("")}</ol></div>
+    ${D.local?`<div class="loc"><div class="k">📍 Local da visita</div><b>${esc(D.local.nome)}</b><div class="la">${esc(D.local.end)}</div><div class="bts"><a href="${D.local.mapa}" target="_blank">Abrir no mapa</a><a class="g" href="tel:+${D.local.telLink}">📞 ${esc(D.local.tel)}</a></div></div>`:""}
+    <div class="obj"><div class="k">Objetivo ${D.rot||"do "+D.nome}</div><h2>${esc(D.objetivo)}</h2>
+      <div class="k" style="margin-bottom:8px">${D.rotSaida||"Você vai sair com"}</div><ol>${D.saida.map(s=>`<li>${esc(s)}</li>`).join("")}</ol></div>
     <div class="tl">${D.itens.map(it => it.pausa ? `<div class="pausa">☕ ${esc(it.pausa)}</div>` : `
       <div class="mod ${it.tag?"case":""}" data-n="${++n}">${it.tag?`<span class="tag">${esc(it.tag)}</span>`:""}<h3>${esc(it.t)}</h3>
         <div class="oq">${esc(it.o)}</div><div class="ef"><b>✨ Efeito colateral positivo</b>${esc(it.e)}</div></div>`).join("")}</div>`;
