@@ -33,6 +33,13 @@
   .pa details[open] summary::after{content:"−"}
   .pa details p{font-size:14.5px;line-height:1.65;color:var(--ink-2)}
   .pa .breve{font-size:14px;color:var(--muted);margin-top:8px}
+  .pa.principal{grid-column:1 / -1;grid-template-columns:170px 1fr;gap:26px;align-items:center;background:#000;color:#fff;border:1.5px solid #000;box-shadow:6px 6px 0 var(--gold);padding:26px}
+  .pa.principal .foto{width:170px;height:170px;border:3px solid var(--gold)}
+  .pa.principal h3{font-size:clamp(1.5rem,1.1rem + 1.6vw,2.2rem);color:#fff}
+  .pa.principal .cargo{color:var(--gold-hi);font-size:16px}
+  .pa.principal .tag{display:inline-block;font:700 11.5px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:#000;background:var(--gold);padding:5px 10px;border-radius:999px;margin-bottom:10px}
+  .pa.principal .bio{color:#e7e2d6}
+  @media (max-width:560px){.pa.principal{grid-template-columns:1fr;text-align:center;justify-items:center}.pa.principal .foto{width:140px;height:140px}}
   @media (max-width:420px){.pa{grid-template-columns:72px 1fr;gap:14px}.foto,.ini{width:72px;height:72px;font-size:22px}}
 </style>
 </head>
@@ -56,11 +63,11 @@ const { data: adm } = await sb.rpc("is_admin"); if (adm && window.TC_UI) window.
 
 // Palestrantes: preencha foto, cargo e bio conforme chegarem
 const P = [
-  { nome:"Tarcísio Gaipo" },
-  { nome:"Carlos Ribeiro" },
+  { nome:"Tarcísio Gaipo", foto:"palestrante-tarcisio-gaipo.jpg", principal:true, cargo:"Anfitrião da Imersão Método Confecção 360° · 30 anos no setor têxtil" },
+  { nome:"Carlos Ribeiro", foto:"palestrante-carlos-ribeiro.jpg" },
   { nome:"Thaissa Siqueira" },
   { nome:"Claudinei" },
-  { nome:"Matheus Eller" },
+  { nome:"Matheus Eller", foto:"palestrante-matheus-eller.jpg" },
   { nome:"Meire Tranjan", foto:"palestrante-meire-tranjan.jpg",
     cargo:"Empresária, fundadora da WebPic e do Vestuar",
     bio:"Fundou a WebPic e o Vestuar, empresas de tecnologia voltadas ao ramo de confecção. Apaixonada por gestão, inovação e pessoas, acredita que a tecnologia, aliada a uma visão estratégica e à liderança, é fundamental para transformar negócios e gerar oportunidades." },
@@ -71,14 +78,14 @@ const P = [
 ];
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const ini = n => n.split(" ").filter(Boolean).slice(0,2).map(p=>p[0]).join("").toUpperCase();
-const ordem = [...P.filter(p=>p.bio), ...P.filter(p=>!p.bio)];
+const ordem = [...P.filter(p=>p.principal), ...P.filter(p=>!p.principal && p.bio), ...P.filter(p=>!p.principal && !p.bio && p.foto), ...P.filter(p=>!p.principal && !p.bio && !p.foto)];
 document.getElementById("grade").innerHTML = ordem.map(p => `
-  <article class="pa ${p.bio ? "destaque" : ""}">
-    ${p.foto ? `<img class="foto" src="${p.foto}" alt="Foto de ${esc(p.nome)}" width="96" height="96" loading="lazy">` : `<div class="ini" aria-hidden="true">${ini(p.nome)}</div>`}
+  <article class="pa ${p.principal ? "principal" : p.bio ? "destaque" : ""}">
+    ${p.foto ? `<img class="foto" src="${p.foto}" alt="Foto de ${esc(p.nome)}" width="${p.principal?170:96}" height="${p.principal?170:96}" ${p.principal?"":`loading="lazy"`}>` : `<div class="ini" aria-hidden="true">${ini(p.nome)}</div>`}
     <div>
-      <h3>${esc(p.nome)}</h3>
+      ${p.principal ? `<span class="tag">Anfitrião</span>` : ""}<h3>${esc(p.nome)}</h3>
       ${p.cargo ? `<div class="cargo">${esc(p.cargo)}</div>` : ""}
-      ${p.bio ? `<p class="bio">${esc(p.bio)}</p>` : `<p class="breve">Apresentação em breve.</p>`}
+      ${p.bio ? `<p class="bio">${esc(p.bio)}</p>` : (p.cargo ? "" : `<p class="breve">Apresentação em breve.</p>`)}
       ${p.completa ? `<details><summary>Ver currículo completo</summary><p>${esc(p.completa)}</p></details>` : ""}
     </div>
   </article>`).join("");
