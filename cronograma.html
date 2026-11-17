@@ -64,7 +64,7 @@ if (!session) { location.replace("index.html"); throw new Error("sem sessão"); 
 
 const DIAS = [
   { nome:"Visita técnica", data:"Quarta, 18/11", rot:"da visita técnica", rotSaida:"Você vai entregar",
-    local:{ nome:"Siqueira Gaipo", end:"R. Pres. José Linhares, 806 · Jardim Presidente, Goiânia - GO · CEP 74353-240", tel:"(62) 3602-4440", telLink:"556236024440",
+    local:{ nome:"Siqueira Gaipo", end:"R. Pres. José Linhares, 806 · Jardim Presidente, Goiânia - GO · CEP 74353-240", tel:"Suporte: Rafael Martins · (62) 8229-2141", telLink:"556282292141",
             mapa:"https://www.google.com/maps/search/?api=1&query=Siqueira%20Gaipo%2C%20R.%20Pres.%20Jos%C3%A9%20Linhares%2C%20806%2C%20Jardim%20Presidente%2C%20Goi%C3%A2nia" },
     objetivo:"Observar uma operação industrial de perto, identificar boas práticas e oportunidades de melhoria que você possa aplicar na sua própria confecção.",
     saida:["3 pontos fortes que você observou na operação.","3 oportunidades de melhoria.","3 ações práticas para implementar na sua empresa."],
@@ -183,7 +183,7 @@ function render(){
   document.querySelectorAll("#dias button").forEach(b=>b.onclick=()=>{ d=+b.dataset.i; render(); });
   const D = DIAS[d]; let n = 0;
   document.getElementById("conteudo").innerHTML = !D.itens.length ? `<div class="breve">📅 A programação do ${D.nome} será liberada em breve.</div>` : `
-    ${D.local?`<div class="loc"><div class="k">📍 Local da visita</div><b>${esc(D.local.nome)}</b><div class="la">${esc(D.local.end)}</div><div class="bts"><a href="${D.local.mapa}" target="_blank">Abrir no mapa</a><a class="g" href="tel:+${D.local.telLink}">📞 ${esc(D.local.tel)}</a></div></div>`:""}
+    ${D.local?`<div class="loc"><div class="k">📍 Local da visita</div><b>${esc(D.local.nome)}</b><div class="la">${esc(D.local.end)}</div><div class="bts"><a href="${D.local.mapa}" target="_blank">Abrir no mapa</a><a class="g" href="https://wa.me/${D.local.telLink}" target="_blank">💬 ${esc(D.local.tel)}</a></div></div>`:""}
     <div class="obj"><div class="k">Objetivo ${D.rot||"do "+D.nome}</div><h2>${esc(D.objetivo)}</h2>
       <div class="k" style="margin-bottom:8px">${D.rotSaida||"Você vai sair com"}</div><ol>${D.saida.map(s=>`<li>${esc(s)}</li>`).join("")}</ol></div>
     <div class="tl">${D.itens.map(it => it.pausa ? `<div class="pausa">☕ ${esc(it.pausa)}</div>` : `
