@@ -43,7 +43,7 @@
 
   <div class="card wide" style="margin-top:18px">
     <h1>📝 Exercício de casa: Planejamento 2027</h1>
-    <p class="sub">Como está cada empresa. Clique em <b>Abrir</b> para ver o exercício completo e o resultado.</p>
+    <p class="sub">Como está cada empresa. Clique em <b>Resultado</b> para ver o painel da empresa ou em <b>Planilha</b> para ver as 7 abas e baixar o Excel preenchido.</p>
     <div class="stats">
       <div class="stat"><b id="eTot">–</b><span>Empresas liberadas</span></div>
       <div class="stat"><b id="eNao" style="color:var(--err)">–</b><span>Não começaram</span></div>
@@ -139,7 +139,7 @@ async function carregarEx(){
       <td>${prog}</td>
       <td>${r.receita?brl(r.receita):"–"}</td>
       <td>${r.receita?`<b style="color:${r.resultado>=0?"var(--ok)":"var(--err)"}">${brl(r.resultado)}</b><small>margem ${((r.margem||0)*100).toLocaleString("pt-BR",{maximumFractionDigits:1})}%</small>`:"–"}</td>
-      <td>${x?`<a class="btn sm" href="exercicio.html?empresa=${e.id}" style="text-decoration:none;display:inline-block">Abrir</a>`:""}</td>
+      <td>${x?`<div class="acts"><a class="btn sm" href="exercicio.html?empresa=${e.id}" style="text-decoration:none;display:inline-block">Resultado</a><a class="btn sm ghost" href="planilha.html?empresa=${e.id}" style="text-decoration:none;display:inline-block">Planilha</a></div>`:""}</td>
     </tr>`;
   }).join("");
 }

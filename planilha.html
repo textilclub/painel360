@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Minha planilha · Planejamento 2027 · Têxtil Club</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="logo.jpg">
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hyperformula@3.1.0/dist/hyperformula.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="motor.js"></script>
+<script src="exportar.js"></script>
+<style>
+  body{background:#000}
+  .bar{position:sticky;top:0;z-index:5;background:#000;border-bottom:1px solid var(--line);padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .bar img{width:42px;height:42px}
+  .bar h1{font-size:16px;margin:0}
+  .bar .s{font-size:12px;color:var(--muted)}
+  .bar .sp{flex:1}
+  .bar .salvo{font-size:12px;color:var(--muted)} .bar .salvo.ok{color:var(--ok)}
+  .tbtn{background:#141414;border:1px solid var(--line2);color:var(--txt);font:600 13px Poppins;padding:9px 14px;border-radius:10px;cursor:pointer;text-decoration:none;white-space:nowrap}
+  .tbtn.gold{background:var(--gold);color:#000;border-color:var(--gold)}
+  .tbtn:disabled{opacity:.6}
+  .abas{display:flex;gap:4px;overflow-x:auto;padding:10px 14px 0;background:#000;position:sticky;top:63px;z-index:4;border-bottom:1px solid var(--line)}
+  .abas button{flex:0 0 auto;background:#111;border:1px solid var(--line);border-bottom:0;color:var(--muted);font:600 13px Poppins;padding:9px 16px;border-radius:10px 10px 0 0;cursor:pointer}
+  .abas button.on{background:#fff;color:#000;border-color:#fff}
+  .dica{font-size:12px;color:var(--muted);padding:8px 14px;background:#0a0a0a}
+  .dica b{background:#FFF2CC;color:#000;padding:1px 6px;border-radius:4px}
+  .grade{overflow:auto;height:calc(100vh - 150px);background:#fff}
+  table.xl{border-collapse:separate;border-spacing:0;font:12px/1.35 Arial,Helvetica,sans-serif;color:#000;background:#fff;table-layout:fixed}
+  table.xl td{border-right:1px solid #e5e5e5;border-bottom:1px solid #e5e5e5;padding:2px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:20px;vertical-align:middle}
+  table.xl td.wr{white-space:normal}
+  table.xl th{position:sticky;top:0;background:#f3f3f3;color:#666;font-weight:400;font-size:11px;border-right:1px solid #ddd;border-bottom:1px solid #ccc;z-index:2;height:20px}
+  table.xl td.rn{position:sticky;left:0;background:#f3f3f3;color:#666;font-size:11px;text-align:center;z-index:1;border-right:1px solid #ccc}
+  table.xl td.in{background:#FFF2CC;padding:0}
+  table.xl td.in input{width:100%;height:100%;border:0;background:transparent;font:inherit;color:#0000ff;padding:2px 5px;border-radius:0;text-align:inherit}
+  table.xl td.in input:focus{outline:2px solid #1a73e8;background:#fff}
+  table.xl td.in input:disabled{color:#000}
+  table.xl td.r{text-align:right} table.xl td.c{text-align:center}
+  .carregando{color:#000;padding:40px;font:14px Poppins}
+  @media (max-width:640px){ .bar h1{font-size:14px} .abas{top:0;position:relative} }
+</style>
+</head>
+<body>
+<div class="bar">
+  <a href="exercicio.html" id="lVolta"><img src="logo.jpg" alt="Têxtil Club"></a>
+  <div><h1>Minha planilha · Planejamento 2027</h1><div class="s" id="empNome"></div></div>
+  <div class="sp"></div>
+  <span class="salvo" id="salvo"></span>
+  <a class="tbtn" id="lGuiado" href="exercicio.html">✍️ Preenchimento guiado</a>
+  <button class="tbtn gold" id="bBaixar">⬇️ Baixar Excel</button>
+</div>
+<div class="abas" id="abas"></div>
+<div class="dica" id="dica">Células <b>amarelas</b> são de preenchimento: clique e digite. O resto é calculado pelas fórmulas da planilha.</div>
+<div class="grade" id="grade"><div class="carregando">Carregando sua planilha…</div></div>
+
+<script type="module">
+import { $, esc, parse, fmtExcel, contexto, carregarModelo, salvarDepois, baixar } from "./app.js";
+const ctx = await contexto(); const D = ctx.D, RO = ctx.RO;
+$("empNome").textContent = (ctx.emp?.nome || "") + (D.regime ? " · " + (D.regime === "presumido" ? "Lucro Presumido" : "Simples Nacional") : "");
+const q = RO ? `?empresa=${ctx.empresaId}` : ""; $("lGuiado").href = "exercicio.html" + q; $("lVolta").href = RO ? "admin.html" : "painel.html";
+if (RO) $("dica").innerHTML = "👁️ Visualização do administrador (somente leitura).";
+function status(t, ok){ const s=$("salvo"); s.textContent=t; s.className="salvo"+(ok?" ok":""); }
+if (!D.regime) { $("grade").innerHTML = `<div class="carregando">Escolha primeiro o regime de tributação no <a href="exercicio.html${q}">preenchimento guiado</a>.</div>`; throw new Error("sem regime"); }
+
+const M = await carregarModelo(D.regime);
+for (const [k, v] of Object.entries(M.padrao)) if (D.celulas[k] === undefined && v !== undefined && v !== null) D.celulas[k] = v;
+const motor = window.TC_MOTOR.criar(M, D.celulas);
+const { parseA1, colStr } = window.TC_MOTOR;
+let aba = new URLSearchParams(location.search).get("aba") || "Painel";
+
+$("abas").innerHTML = M.sheets.map(s => `<button data-s="${esc(s.name)}">${esc(s.name)}</button>`).join("");
+$("abas").querySelectorAll("button").forEach(b => b.onclick = () => { aba = b.dataset.s; render(); });
+$("bBaixar").onclick = async () => { const b=$("bBaixar"); b.disabled=true; b.textContent="Gerando…"; try { await baixar(ctx, motor, M); } catch(e){ alert(e.message); } b.disabled=false; b.textContent="⬇️ Baixar Excel"; };
+
+const pxw = w => Math.round((w || 9) * 7.2 + 6);
+function render(){
+  $("abas").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.s === aba));
+  const sh = M.sheets.find(s => s.name === aba); const inputs = M.inputs[aba] || {};
+  const vals = motor.valores(aba);
+  // células mescladas (ocultas / colspan)
+  const span = {}, hide = new Set();
+  sh.merged.forEach(rg => { const [a, b] = rg.split(":"); const A = parseA1(a), B = parseA1(b); span[a] = { cs: B.col - A.col + 1, rs: B.row - A.row + 1 };
+    for (let r = A.row; r <= B.row; r++) for (let c = A.col; c <= B.col; c++) if (r !== A.row || c !== A.col) hide.add(colStr(c + 1) + (r + 1)); });
+  let h = `<table class="xl"><colgroup><col style="width:38px">`;
+  for (let c = 1; c <= sh.maxCol; c++) h += `<col style="width:${pxw(sh.cols[colStr(c)])}px">`;
+  h += `</colgroup><thead><tr><th></th>`; for (let c = 1; c <= sh.maxCol; c++) h += `<th>${colStr(c)}</th>`; h += `</tr></thead><tbody>`;
+  for (let r = 1; r <= sh.maxRow; r++) {
+    h += `<tr><td class="rn">${r}</td>`;
+    for (let c = 1; c <= sh.maxCol; c++) {
+      const a1 = colStr(c) + r; if (hide.has(a1)) continue;
+      const cell = sh.cells[a1] || {}, st = cell.s || {}; const v = vals[r - 1]?.[c - 1];
+      const sp = span[a1] ? ` colspan="${span[a1].cs}" rowspan="${span[a1].rs}"` : "";
+      let css = ""; if (st.bg && !inputs[a1]) css += `background:${st.bg};`; if (st.b) css += "font-weight:700;"; if (st.i) css += "font-style:italic;"; if (st.fc) css += `color:${st.fc};`;
+      if (st.sz) css += `font-size:${Math.round(st.sz * 1.15)}px;`; if (st.bb) css += "border-bottom:1px solid #999;"; if (st.bt) css += "border-top:1px solid #999;";
+      const al = st.al === "center" ? "c" : (st.al === "right" || (typeof v === "number" && st.al !== "left")) ? "r" : "";
+      if (inputs[a1] !== undefined) {
+        const raw = D.celulas[`${aba}!${a1}`];
+        h += `<td class="in ${al}" style="${css}"${sp}><input data-a="${a1}" data-nf="${esc(st.nf || "")}" data-tp="${inputs[a1]}" value="${esc(raw === undefined || raw === null ? "" : fmtExcel(raw, st.nf))}" ${RO ? "disabled" : ""}></td>`;
+      } else {
+        h += `<td class="${al} ${st.wr ? "wr" : ""}" style="${css}"${sp} data-c="${a1}">${esc(v === null || v === undefined ? "" : fmtExcel(v, st.nf))}</td>`;
+      }
+    }
+    h += `</tr>`;
+  }
+  $("grade").innerHTML = h + `</tbody></table>`;
+  $("grade").querySelectorAll("input[data-a]").forEach(inp => {
+    inp.addEventListener("focus", () => { const raw = D.celulas[`${aba}!${inp.dataset.a}`]; const pct = inp.dataset.nf.includes("%");
+      inp.value = raw === undefined || raw === null ? "" : (typeof raw === "number" ? String(+(pct ? raw * 100 : raw).toFixed(6)).replace(".", ",") : raw); inp.select(); });
+    inp.addEventListener("change", () => gravar(inp));
+    inp.addEventListener("keydown", e => { if (e.key === "Enter") { inp.blur(); } });
+    inp.addEventListener("blur", () => { const raw = D.celulas[`${aba}!${inp.dataset.a}`]; inp.value = raw === undefined || raw === null ? "" : fmtExcel(raw, inp.dataset.nf); });
+  });
+}
+function gravar(inp){
+  const k = `${aba}!${inp.dataset.a}`; let v;
+  if (inp.dataset.tp === "txt") v = inp.value.trim() || null;
+  else { v = parse(inp.value); if (v !== null && inp.dataset.nf.includes("%")) v = v / 100; }
+  if (v === null) delete D.celulas[k]; else D.celulas[k] = v;
+  motor.set(aba, inp.dataset.a, v);
+  atualizarValores(); salvarDepois(ctx, motor, status);
+}
+function atualizarValores(){
+  const sh = M.sheets.find(s => s.name === aba); const vals = motor.valores(aba);
+  $("grade").querySelectorAll("td[data-c]").forEach(td => { const { row, col } = parseA1(td.dataset.c); const v = vals[row]?.[col]; const st = (sh.cells[td.dataset.c] || {}).s || {};
+    td.textContent = v === null || v === undefined ? "" : fmtExcel(v, st.nf); });
+}
+render();
+</script>
+</body>
+</html>
