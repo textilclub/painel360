@@ -27,6 +27,32 @@
   .dtabs small{font:500 12.5px var(--f-body);color:var(--muted)}
   .dtabs a[aria-current="page"]{background:var(--ink);color:#fff}
   .dtabs a[aria-current="page"] small{color:var(--gold-hi)}
+  .cartao{background:#0b0b0a;color:#f4efe4;border-radius:18px;padding:22px 20px 18px;position:relative;overflow:hidden;max-width:560px;box-shadow:6px 6px 0 var(--gold)}
+  .cartao::after{content:"";position:absolute;right:-60px;top:-60px;width:180px;height:180px;border-radius:50%;border:28px solid rgba(212,173,74,.14)}
+  .cartao .cab{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+  .cartao .cab img{height:34px;width:auto;border-radius:4px}
+  .cartao .ey{font:700 11px var(--f-body);letter-spacing:.16em;text-transform:uppercase;color:var(--gold-hi);text-align:right}
+  .cartao .quem{font:700 20px/1.2 var(--f-display);letter-spacing:-.02em;color:#fff}
+  .cartao .emp{font-size:14px;color:#b9b2a2;margin:2px 0 14px}
+  .cartao ol{list-style:none;display:grid;gap:10px;margin:0;padding:0}
+  .cartao li{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start;border-top:1px solid #2c2a24;padding-top:10px}
+  .cartao li .k{width:30px;height:30px;border-radius:8px;background:var(--gold);color:#0b0b0a;display:grid;place-items:center;font:700 14px var(--f-display)}
+  .cartao li b{display:block;font:600 15.5px/1.4 var(--f-body);color:#fff}
+  .cartao li small{font-size:13px;color:var(--gold-hi)}
+  .cartao li.vazio b{color:#6f6a5e;font-weight:500}
+  .cartao .rod{margin-top:16px;font:600 11px var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:#8a8475;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .cartao .rod .ok{color:var(--gold-hi)}
+  .cartao-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .ia{margin-top:22px;border:1.5px dashed var(--line-2);border-radius:var(--r-lg);padding:4px 16px;background:var(--paper)}
+  .ia summary{list-style:none;cursor:pointer;min-height:52px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .ia summary::-webkit-details-marker{display:none}
+  .ia summary .op{font:700 11px var(--f-body);letter-spacing:.1em;text-transform:uppercase;background:var(--ink);color:var(--gold-hi);border-radius:999px;padding:4px 10px}
+  .ia summary b{font:700 15.5px var(--f-display)}
+  .ia p{font-size:14.5px;line-height:1.5;color:var(--ink-2);margin:4px 0 10px}
+  .ia textarea{min-height:180px;font-size:13.5px;background:var(--surface)}
+  .ia .btn{margin:10px 10px 14px 0}
+  .ro .cartao-acts,.ro .ia{display:none!important}
+  #matriz,#compromissoEx{scroll-margin-top:190px}
   .corpo{position:relative;z-index:2;margin-top:-56px;max-width:980px}
 
   /* barra de status fixa */
@@ -143,7 +169,7 @@
       <div><b><span data-ic="target"></span>3. Escolha</b>Toque na estrela das áreas em que você quer agir.</div>
     </div>
 
-    <div class="sec"><span data-ic="layers"></span>A matriz</div>
+    <div class="sec" id="matriz"><span data-ic="layers"></span><span id="ex1T">A matriz</span></div>
     <div id="areas"></div>
 
     <div class="sec"><span data-ic="trend"></span>Sua distância, área por área</div>
@@ -153,10 +179,10 @@
       <div class="barras" id="barras"></div>
     </div>
 
-    <div class="sec"><span data-ic="clip"></span>Sua entrega</div>
+    <div class="sec"><span data-ic="clip"></span><span id="refT">Sua reflexão</span></div>
     <div class="entrega" id="entrega">
-      <div class="eyebrow" id="entEye"></div>
-      <h2>3 + 3 + 3: o que você leva para casa</h2>
+      <div class="eyebrow" id="refEye"></div>
+      <h2 id="refH"></h2>
       <p class="sub">Use a matriz acima como base. Toque nas sugestões para puxar o que você já escreveu.</p>
 
       <div class="bloco3">
@@ -169,12 +195,29 @@
         <div class="sug" id="sugO"></div>
         <div id="oport"></div>
       </div>
+    </div>
+
+    <div class="sec" id="compromissoEx"><span data-ic="target"></span><span id="ex2T">Seu compromisso</span></div>
+    <div class="entrega">
+      <div class="eyebrow" id="entEye"></div>
+      <h2>O card das três ações</h2>
+      <p class="sub">Escolha as 3 ações que você vai colocar em prática, quem cuida de cada uma e até quando. O card se monta sozinho.</p>
       <div class="bloco3">
         <h3><span data-ic="target"></span>3 ações práticas para implementar<span class="ct" id="ctA"></span></h3>
         <div id="acoes"></div>
       </div>
-
+      <div class="bloco3">
+        <h3><span data-ic="clip"></span>Seu card</h3>
+        <div class="cartao" id="cartao"></div>
+        <div class="cartao-acts" id="cartaoActs"></div>
+      </div>
       <div class="compromisso" id="compromisso"></div>
+      <details class="ia" id="iaBox" hidden>
+        <summary><span class="op">Opcional</span><b>Aprofunde com a IA: PRODUÇÃO 360</b></summary>
+        <p>O comando abaixo já leva a sua matriz, a sua reflexão e as suas 3 ações. Copie e cole no agente Estrategista Confecção 360° (ou no ChatGPT). Ele analisa gargalos e capacidade, revisa a ordem das ações e sugere o primeiro passo de cada uma.</p>
+        <textarea id="iaTxt" readonly></textarea>
+        <button class="btn ghost" id="iaCopiar" type="button">Copiar comando</button><span class="hint" id="iaOk"></span>
+      </details>
     </div>
     <div id="dosSocios"></div>
   </div>
@@ -240,10 +283,14 @@ const hoje = new Date().toLocaleDateString("sv-SE",{timeZone:"America/Sao_Paulo"
 const qd = new URLSearchParams(location.search).get("dia");
 const DIA = DIAS[qd] ? qd : hoje >= "2026-11-20" ? "dia2" : hoje === "2026-11-19" ? "dia1" : "visita";
 const CFG = DIAS[DIA], AREAS = CFG.areas, NA = AREAS.length;
+const EXT = DIA === "visita"
+  ? { ex1:"Exercício 1 · Matriz: o que vi × minha empresa", ref:"Exercício 1 · Fechamento da matriz", refEye:"Reflexão individual", refH:"3 pontos fortes e 3 lacunas", ex2:"Exercício 2 · Compromisso da visita", ia:true }
+  : { ex1:"A matriz", ref:"Sua reflexão", refEye:"Reflexão do dia", refH:"3 aprendizados e 3 lacunas", ex2:"Seu compromisso", ia:false };
 document.title = `${CFG.nome} · O que vi × minha empresa · Têxtil Club`;
 $("hEye").textContent = `${CFG.nome} · ${CFG.data}`; $("hTit").innerHTML = CFG.tit; $("hSub").textContent = CFG.sub;
 $("como1").textContent = CFG.como1; $("mapaT").textContent = CFG.mapa; $("entEye").textContent = CFG.ent; $("tF").textContent = CFG.fortes;
 $("stTxt").textContent = `0 de ${NA} áreas comparadas`;
+$("ex1T").textContent = EXT.ex1; $("refT").textContent = EXT.ref; $("refEye").textContent = EXT.refEye; $("refH").textContent = EXT.refH; $("ex2T").textContent = EXT.ex2;
 $("mLocal").innerHTML = ic("pin","sm") + CFG.local;
 const ESCALA = [ [0,"Não faço"], [1,"Faço pouco"], [2,"Faço parecido"], [3,"Igual ou melhor"] ];
 
@@ -331,12 +378,13 @@ function renderEntrega(){
       <textarea data-ac="${i}" data-c="o" placeholder="O que vou fazer? Ex.: colocar quadro de produção na costura" ${RO?"disabled":""}>${esc(a.o||"")}</textarea></div>
       <div class="lin"><div><label for="q${i}">Quem cuida</label><input id="q${i}" data-ac="${i}" data-c="q" value="${esc(a.q||"")}" placeholder="Nome do responsável" ${RO?"disabled":""}></div>
       <div><label for="p${i}">Até quando</label><select id="p${i}" data-ac="${i}" data-c="p" ${RO?"disabled":""}><option value="">Escolha</option>${["30 dias","60 dias","90 dias"].map(x=>`<option ${a.p===x?"selected":""}>${x}</option>`).join("")}</select></div></div></div>`).join("");
-  document.querySelectorAll("#entrega [data-l]").forEach(ta => ta.addEventListener("input", () => { D[ta.dataset.l][+ta.dataset.i] = ta.value; contar(); salvar(); }));
-  document.querySelectorAll("#entrega [data-ac]").forEach(el => el.addEventListener(el.tagName==="SELECT"?"change":"input", () => { D.acoes[+el.dataset.ac][el.dataset.c] = el.value; contar(); salvar(); }));
-  contar(); sugestoes(); renderCompromisso();
+  document.querySelectorAll("[data-l]").forEach(ta => ta.addEventListener("input", () => { D[ta.dataset.l][+ta.dataset.i] = ta.value; contar(); salvar(); }));
+  document.querySelectorAll("[data-ac]").forEach(el => el.addEventListener(el.tagName==="SELECT"?"change":"input", () => { D.acoes[+el.dataset.ac][el.dataset.c] = el.value; contar(); salvar(); }));
+  contar(); sugestoes(); renderCompromisso(); renderCard();
 }
 function contar(){
   const c = arr => arr.filter(x => String(x||"").trim()).length;
+  if (typeof renderCard === "function" && $("cartao").innerHTML) renderCard(true);
   $("ctF").textContent = `${c(D.fortes)} de 3`; $("ctO").textContent = `${c(D.oport)} de 3`; $("ctA").textContent = `${D.acoes.filter(a=>(a.o||"").trim()).length} de 3`;
 }
 function sugestoes(){
@@ -357,7 +405,68 @@ function renderCompromisso(){
   $("bOk").onclick = () => {
     if (!pronto()) { $("hOk").className="hint warn"; $("hOk").textContent = "Preencha os 3 pontos fortes, as 3 oportunidades e as 3 ações antes de concluir."; return; }
     if (!$("ck").checked) { $("hOk").className="hint warn"; $("hOk").textContent = "Marque a caixa do compromisso para concluir."; return; }
-    D.compromisso = true; salvar(true); renderCompromisso(); resumo();
+    D.compromisso = true; salvar(true); renderCompromisso(); resumo(); renderCard();
+  };
+}
+
+// ---------- card das três ações + PRODUÇÃO 360 ----------
+const NIVEL_TXT = ["não faço","faço pouco","faço parecido","igual ou melhor"];
+function renderCard(soCard){
+  const prim = s => String(s||"").trim();
+  const it = D.acoes.map((a,i) => prim(a.o)
+    ? `<li><span class="k">${i+1}</span><span><b>${esc(prim(a.o))}</b><small>${[prim(a.q)?"Quem: "+esc(prim(a.q)):"", a.p?"Prazo: "+esc(a.p):""].filter(Boolean).join(" · ")||"Defina quem e até quando"}</small></span></li>`
+    : `<li class="vazio"><span class="k">${i+1}</span><span><b>Ação ${i+1} ainda não escrita</b></span></li>`).join("");
+  $("cartao").innerHTML = `<div class="cab"><img src="logo.jpg" alt="Têxtil Club" crossorigin="anonymous"><span class="ey">${esc(CFG.ent)}<br>${esc(CFG.data)}</span></div>
+    <div class="quem">${esc(alvo.nome||"")}</div><div class="emp">${esc(alvo.empresas?.nome||"")}</div>
+    <ol>${it}</ol>
+    <div class="rod"><span>Imersão Método Confecção 360°</span>${D.compromisso?`<span class="ok">✓ Compromisso assumido</span>`:""}</div>`;
+  if (soCard || RO) return iaTexto();
+  const txt = `${CFG.ent} (${CFG.data}) · ${alvo.empresas?.nome||""}\n` + D.acoes.map((a,i)=>`${i+1}. ${prim(a.o)||"—"}${prim(a.q)?" · "+prim(a.q):""}${a.p?" · "+a.p:""}`).join("\n");
+  $("cartaoActs").innerHTML = `<button class="btn sm" id="bImg" type="button">${ic("download","sm")}Baixar o card</button>
+    <a class="btn sm ghost" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(txt)}">${ic("chat","sm")}Enviar no WhatsApp</a>`;
+  $("bImg").onclick = async () => {
+    const b = $("bImg"); b.disabled = true; b.lastChild.textContent = "Gerando…";
+    try {
+      if (!window.html2canvas) await new Promise((ok,er) => { const s=document.createElement("script"); s.src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"; s.onload=ok; s.onerror=er; document.head.appendChild(s); });
+      const cv = await html2canvas($("cartao"), { scale:2, backgroundColor:null, useCORS:true });
+      const a = document.createElement("a"); a.href = cv.toDataURL("image/png"); a.download = `compromisso-${DIA}.png`; a.click();
+    } catch(e) { alert("Não foi possível gerar a imagem. Tire um print da tela do card."); }
+    b.disabled = false; b.lastChild.textContent = "Baixar o card";
+  };
+  iaTexto();
+}
+function iaTexto(){
+  if (!EXT.ia || RO) return;
+  $("iaBox").hidden = false;
+  const t = s => String(s||"").trim();
+  const mat = AREAS.map(a => { const v = D.areas[a.k]; if (!t(v.vi) && !t(v.eu) && v.nivel==null) return null;
+    return `- ${a.t}${v.foco?" (quero agir)":""}: vi "${t(v.vi)||"—"}" | na minha empresa "${t(v.eu)||"—"}" | ${v.nivel==null?"sem avaliação":NIVEL_TXT[v.nivel]}`; }).filter(Boolean).join("\n") || "- (ainda não preenchi a matriz)";
+  const lst = arr => arr.map((x,i)=>`${i+1}. ${t(x)||"—"}`).join("\n");
+  $("iaTxt").value = `PRODUÇÃO 360
+
+Sou ${alvo.nome||""}, da ${alvo.empresas?.nome||"minha confecção"}. Hoje participei de uma visita técnica a uma indústria têxtil (Imersão Método Confecção 360°) e comparei o que vi com a minha empresa.
+
+MINHA MATRIZ (área: o que vi | como é na minha empresa | distância)
+${mat}
+
+PONTOS FORTES QUE OBSERVEI
+${lst(D.fortes)}
+
+LACUNAS NA MINHA EMPRESA
+${lst(D.oport)}
+
+MINHAS 3 AÇÕES
+${D.acoes.map((a,i)=>`${i+1}. ${t(a.o)||"—"} · responsável: ${t(a.q)||"—"} · prazo: ${a.p||"—"}`).join("\n")}
+
+Aja como consultor de produção para confecções. Com base nisso:
+1. Quais gargalos e limitações de capacidade essas lacunas indicam na minha produção?
+2. As minhas 3 ações atacam os gargalos certos? Em que ordem devo fazê-las e por quê?
+3. Qual o primeiro passo de cada ação nos próximos 7 dias?
+4. Que indicador simples devo acompanhar em cada ação para saber se está funcionando?
+Se faltar alguma informação importante, me faça até 3 perguntas antes de responder.`;
+  $("iaCopiar").onclick = async () => {
+    try { await navigator.clipboard.writeText($("iaTxt").value); } catch { $("iaTxt").select(); document.execCommand("copy"); }
+    $("iaOk").textContent = "Copiado. Agora cole no agente."; setTimeout(()=>$("iaOk").textContent="", 4000);
   };
 }
 
@@ -370,6 +479,7 @@ if (!RO && eu?.empresa_id) {
 const pq = new URLSearchParams(location.search).get("p");
 $("dtabs").innerHTML = Object.entries(DIAS).map(([k,c]) => `<a href="visita.html?dia=${k}${pq?"&p="+encodeURIComponent(pq):""}"${k===DIA?' aria-current="page"':""}><b>${c.nome}</b><small>${c.data}</small></a>`).join("");
 renderAreas(); resumo(); renderEntrega();
+if (location.hash) setTimeout(() => document.querySelector(location.hash)?.scrollIntoView({ behavior:"smooth", block:"start" }), 150);
 </script>
 </body>
 </html>
