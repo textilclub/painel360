@@ -39,6 +39,7 @@
   table.xl td.in input:focus{outline:2px solid #1a73e8;background:#fff}
   table.xl td.in input:disabled{color:#000}
   table.xl td.r{text-align:right} table.xl td.c{text-align:center}
+  table.xl td.tx{overflow:visible;text-overflow:clip;position:relative}
   .carregando{color:#000;padding:40px;font:14px Poppins}
   @media (max-width:640px){ .bar h1{font-size:14px} .abas{top:0;position:relative} }
 </style>
@@ -100,7 +101,8 @@ function render(){
         const raw = D.celulas[`${aba}!${a1}`];
         h += `<td class="in ${al}" style="${css}"${sp}><input data-a="${a1}" data-nf="${esc(st.nf || "")}" data-tp="${inputs[a1]}" value="${esc(raw === undefined || raw === null ? "" : fmtExcel(raw, st.nf))}" ${RO ? "disabled" : ""}></td>`;
       } else {
-        h += `<td class="${al} ${st.wr ? "wr" : ""}" style="${css}"${sp} data-c="${a1}">${esc(v === null || v === undefined ? "" : fmtExcel(v, st.nf))}</td>`;
+        const tx = typeof v === "string" && !st.wr && !st.bg && !span[a1] && !(sh.cells[colStr(c + 1) + r]?.v !== undefined || sh.cells[colStr(c + 1) + r]?.f !== undefined) ? "tx" : "";
+        h += `<td class="${al} ${st.wr ? "wr" : ""} ${tx}" style="${css}"${sp} data-c="${a1}">${esc(v === null || v === undefined ? "" : fmtExcel(v, st.nf))}</td>`;
       }
     }
     h += `</tr>`;
