@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Visita técnica · O que vi × minha empresa · Têxtil Club</title>
+<title>O que vi × minha empresa · Têxtil Club</title>
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#000000">
 <link rel="icon" href="logo.jpg">
@@ -20,6 +20,13 @@
   .vh .meta{display:flex;gap:10px 18px;flex-wrap:wrap;margin-top:18px;color:var(--muted-dark);font-size:14.5px}
   .vh .meta span{display:inline-flex;align-items:center;gap:8px}
   .vh .meta .i{color:var(--gold-hi)}
+  .dtabs{display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface);border:1.5px solid var(--ink);border-radius:var(--r-lg);overflow:hidden;margin-bottom:16px}
+  .dtabs a{min-height:64px;display:grid;align-content:center;justify-items:center;gap:2px;padding:8px 6px;text-decoration:none;color:var(--ink);border-left:1.5px solid var(--ink);text-align:center}
+  .dtabs a:first-child{border-left:0}
+  .dtabs b{font:700 15px/1.1 var(--f-display);letter-spacing:-.01em}
+  .dtabs small{font:500 12.5px var(--f-body);color:var(--muted)}
+  .dtabs a[aria-current="page"]{background:var(--ink);color:#fff}
+  .dtabs a[aria-current="page"] small{color:var(--gold-hi)}
   .corpo{position:relative;z-index:2;margin-top:-56px;max-width:980px}
 
   /* barra de status fixa */
@@ -116,21 +123,22 @@
 <script src="ui.js" data-page="visita"></script>
 <main class="wrap">
   <section class="faixa vh"><div class="faixa-in">
-    <div class="eyebrow">Visita técnica · Quarta, 18/11</div>
-    <h1>O que vi <em>×</em> minha empresa</h1>
-    <p class="sub">Compare o que você observou na fábrica com a realidade da sua confecção, área por área. No fim, escolha o que vai levar para casa.</p>
+    <div class="eyebrow" id="hEye"></div>
+    <h1 id="hTit"></h1>
+    <p class="sub" id="hSub"></p>
     <div class="meta"><span id="mLocal"></span><span id="mQuem"></span></div>
   </div></section>
 
   <div class="page corpo">
+    <nav class="dtabs" id="dtabs" aria-label="Dias da imersão"></nav>
     <div id="banner"></div>
     <div class="status" aria-live="polite">
-      <div class="l1"><span id="stTxt">0 de 8 áreas comparadas</span><span class="salvo" id="salvo"></span></div>
+      <div class="l1"><span id="stTxt"></span><span class="salvo" id="salvo"></span></div>
       <div class="fita"><i id="stBar" style="width:0%"></i></div>
     </div>
 
     <div class="como">
-      <div><b><span data-ic="factory"></span>1. Observe</b>Anote o que você viu lá: como fazem, o que chamou atenção.</div>
+      <div><b><span data-ic="factory"></span>1. Observe</b><span id="como1"></span></div>
       <div><b><span data-ic="building"></span>2. Compare</b>Escreva como isso funciona hoje na sua empresa e marque a distância.</div>
       <div><b><span data-ic="target"></span>3. Escolha</b>Toque na estrela das áreas em que você quer agir.</div>
     </div>
@@ -140,19 +148,19 @@
 
     <div class="sec"><span data-ic="trend"></span>Sua distância, área por área</div>
     <div class="mapa">
-      <h3>Onde a sua empresa está mais longe do que você viu</h3>
+      <h3 id="mapaT"></h3>
       <p>Quanto maior a barra, maior a oportunidade. A estrela marca onde você quer agir.</p>
       <div class="barras" id="barras"></div>
     </div>
 
     <div class="sec"><span data-ic="clip"></span>Sua entrega</div>
     <div class="entrega" id="entrega">
-      <div class="eyebrow">Compromisso da visita</div>
+      <div class="eyebrow" id="entEye"></div>
       <h2>3 + 3 + 3: o que você leva para casa</h2>
       <p class="sub">Use a matriz acima como base. Toque nas sugestões para puxar o que você já escreveu.</p>
 
       <div class="bloco3">
-        <h3><span data-ic="check"></span>3 pontos fortes que você observou<span class="ct" id="ctF"></span></h3>
+        <h3><span data-ic="check"></span><span id="tF"></span><span class="ct" id="ctF"></span></h3>
         <div class="sug" id="sugF"></div>
         <div id="fortes"></div>
       </div>
@@ -179,18 +187,64 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const ic = (n, c) => (window.IC ? IC(n, c) : "");
 document.querySelectorAll("[data-ic]").forEach(e => e.outerHTML = ic(e.dataset.ic, "sm"));
-$("mLocal").innerHTML = ic("pin","sm") + "Siqueira Gaipo";
 
-const AREAS = [
-  { k:"fluxo", t:"Fluxo e layout da produção", d:"Como o material anda do corte à expedição. Tem vai e volta? Gente esperando?" },
-  { k:"5s", t:"Organização e limpeza", d:"Cada coisa no seu lugar, setores identificados, chão livre, ferramentas à mão." },
-  { k:"pcp", t:"Planejamento e controle da produção", d:"Como decidem o que produzir, em que ordem, e como acompanham os prazos." },
-  { k:"visual", t:"Gestão visual e indicadores", d:"Quadros, metas, produção do dia à vista. Todo mundo sabe se está indo bem?" },
-  { k:"qualidade", t:"Qualidade", d:"Onde e como conferem as peças. O que fazem quando acham defeito." },
-  { k:"pessoas", t:"Pessoas e liderança", d:"Treinamento, clima, papel do líder no chão de fábrica, rotatividade." },
-  { k:"maquinas", t:"Máquinas e tecnologia", d:"Equipamentos, manutenção, sistemas e o que é automatizado." },
-  { k:"estoque", t:"Estoque e expedição", d:"Matéria-prima e produto pronto: controle, organização, separação e envio." },
-];
+
+const DIAS = {
+  visita: { nome:"Visita técnica", data:"Quarta, 18/11", local:"Siqueira Gaipo", tit:"O que vi <em>×</em> minha empresa",
+    sub:"Compare o que você observou na fábrica com a realidade da sua confecção, área por área. No fim, escolha o que vai levar para casa.",
+    como1:"Anote o que você viu lá: como fazem, o que chamou atenção.", ladoLa:["Lá","O que eu vi"], phLa:"Ex.: cada setor com a meta do dia no quadro", phAqui:"Ex.: só eu sei a meta; a equipe não acompanha",
+    mapa:"Onde a sua empresa está mais longe do que você viu", ent:"Compromisso da visita", fortes:"3 pontos fortes que você observou",
+    exF:["Ex.: produção do dia exposta em cada setor","Ex.: corte separado e etiquetado por ordem","Ex.: líder conversa com a equipe no início do turno"],
+    exO:["Ex.: nossa equipe não sabe a meta do dia","Ex.: estoque de tecido sem controle","Ex.: retrabalho alto na costura"],
+    areas:[
+      { k:"fluxo", t:"Fluxo e layout da produção", d:"Como o material anda do corte à expedição. Tem vai e volta? Gente esperando?" },
+      { k:"5s", t:"Organização e limpeza", d:"Cada coisa no seu lugar, setores identificados, chão livre, ferramentas à mão." },
+      { k:"pcp", t:"Planejamento e controle da produção", d:"Como decidem o que produzir, em que ordem, e como acompanham os prazos." },
+      { k:"visual", t:"Gestão visual e indicadores", d:"Quadros, metas, produção do dia à vista. Todo mundo sabe se está indo bem?" },
+      { k:"qualidade", t:"Qualidade", d:"Onde e como conferem as peças. O que fazem quando acham defeito." },
+      { k:"pessoas", t:"Pessoas e liderança", d:"Treinamento, clima, papel do líder no chão de fábrica, rotatividade." },
+      { k:"maquinas", t:"Máquinas e tecnologia", d:"Equipamentos, manutenção, sistemas e o que é automatizado." },
+      { k:"estoque", t:"Estoque e expedição", d:"Matéria-prima e produto pronto: controle, organização, separação e envio." } ] },
+  dia1: { nome:"1º dia", data:"Quinta, 19/11", local:"Aporta Hall", tit:"O que aprendi <em>×</em> minha empresa",
+    sub:"A cada conteúdo do dia, anote o que mais fez sentido e compare com a sua confecção. No fim do dia, escolha o que vai levar para casa.",
+    como1:"Anote a ideia, o método ou o exemplo que mais chamou a sua atenção.", ladoLa:["Conteúdo","O que eu aprendi"], phLa:"Ex.: medir a produtividade por peça/hora em cada setor", phAqui:"Ex.: não medimos; só sabemos o total do mês",
+    mapa:"Onde a sua empresa está mais longe do que você aprendeu", ent:"Compromisso do 1º dia", fortes:"3 aprendizados mais importantes do dia",
+    exF:["Ex.: diagnóstico 360° mostra onde está o gargalo","Ex.: vendedor precisa de rotina e meta diária","Ex.: produto certo para o cliente certo"],
+    exO:["Ex.: não sei a capacidade real da fábrica","Ex.: comercial sem processo nem acompanhamento","Ex.: coleção feita sem olhar o que vende"],
+    areas:[
+      { k:"raiox", t:"Raio-X da confecção", d:"O diagnóstico geral: onde a sua empresa está forte e onde está o gargalo." },
+      { k:"producao", t:"Produção e processos", d:"Fluxo, métodos e organização do trabalho na fábrica." },
+      { k:"equip", t:"Equipamentos e produtividade", d:"Máquinas certas, manutenção e quanto cada pessoa e setor produz." },
+      { k:"caseop", t:"Case: operação", d:"O que a empresa do case faz na operação que você ainda não faz." },
+      { k:"vendas", t:"Vendas e gestão comercial", d:"Processo de vendas, equipe, metas, carteira e acompanhamento." },
+      { k:"ia", t:"Inteligência artificial no comercial", d:"Onde a IA pode ajudar a vender mais e atender melhor." },
+      { k:"marca", t:"Marca e produto", d:"Posicionamento, coleção, mix e o valor que o cliente enxerga." },
+      { k:"caseint", t:"Case: integrado", d:"Como a empresa do case junta operação, vendas e gestão." } ] },
+  dia2: { nome:"2º dia", data:"Sexta, 20/11", local:"Aporta Hall", tit:"O que aprendi <em>×</em> minha empresa",
+    sub:"A cada conteúdo do dia, anote o que mais fez sentido e compare com a sua confecção. Feche o dia com as ações que vão para o seu plano 2027.",
+    como1:"Anote a ideia, o método ou a ferramenta que mais chamou a sua atenção.", ladoLa:["Conteúdo","O que eu aprendi"], phLa:"Ex.: orçamento anual com meta mensal por canal", phAqui:"Ex.: não temos orçamento; olhamos o caixa do mês",
+    mapa:"Onde a sua empresa está mais longe do que você aprendeu", ent:"Compromisso do 2º dia", fortes:"3 aprendizados mais importantes do dia",
+    exF:["Ex.: planejamento vira rotina, não evento","Ex.: KPI com dono e meta","Ex.: financeiro separado por centro de custo"],
+    exO:["Ex.: decisões sem números confiáveis","Ex.: líderes sem metas claras","Ex.: não sei a margem por produto"],
+    areas:[
+      { k:"lider", t:"Liderança e pessoas", d:"Papel do líder, time certo, rotina de gestão e cultura." },
+      { k:"plano", t:"Planejamento estratégico", d:"Para onde a empresa vai e como as decisões são tomadas." },
+      { k:"fin", t:"Gestão e financeiro", d:"Controle de custos, margem, caixa e números confiáveis." },
+      { k:"swot", t:"Forças, fraquezas e escolhas", d:"O que a sua análise SWOT mostrou e as escolhas que ela pede." },
+      { k:"dados", t:"Sistemas e dados", d:"Que sistemas você usa e se os dados ajudam a decidir." },
+      { k:"orc", t:"Orçamentos 2027", d:"Orçamento comercial, de resultado e de capacidade produtiva." },
+      { k:"kpi", t:"Objetivos, indicadores e projetos", d:"Metas claras, indicadores com dono e projetos prioritários." },
+      { k:"iagestao", t:"IA na gestão", d:"Como a IA pode testar e fortalecer o seu plano." } ] }
+};
+const hoje = new Date().toLocaleDateString("sv-SE",{timeZone:"America/Sao_Paulo"});
+const qd = new URLSearchParams(location.search).get("dia");
+const DIA = DIAS[qd] ? qd : hoje >= "2026-11-20" ? "dia2" : hoje === "2026-11-19" ? "dia1" : "visita";
+const CFG = DIAS[DIA], AREAS = CFG.areas, NA = AREAS.length;
+document.title = `${CFG.nome} · O que vi × minha empresa · Têxtil Club`;
+$("hEye").textContent = `${CFG.nome} · ${CFG.data}`; $("hTit").innerHTML = CFG.tit; $("hSub").textContent = CFG.sub;
+$("como1").textContent = CFG.como1; $("mapaT").textContent = CFG.mapa; $("entEye").textContent = CFG.ent; $("tF").textContent = CFG.fortes;
+$("stTxt").textContent = `0 de ${NA} áreas comparadas`;
+$("mLocal").innerHTML = ic("pin","sm") + CFG.local;
 const ESCALA = [ [0,"Não faço"], [1,"Faço pouco"], [2,"Faço parecido"], [3,"Igual ou melhor"] ];
 
 const { data:{ session } } = await sb.auth.getSession();
@@ -206,9 +260,9 @@ let alvo = eu;
 if (alvoId !== eu?.id) { const { data } = await sb.from("participantes").select("id,nome,empresa_id,empresas(nome)").eq("id", alvoId).maybeSingle(); alvo = data; }
 if (!alvo) { location.replace("painel.html"); throw new Error("não encontrado"); }
 $("mQuem").innerHTML = ic("building","sm") + esc(alvo.nome) + (alvo.empresas?.nome ? " · " + esc(alvo.empresas.nome) : "");
-if (RO) { document.body.classList.add("ro"); $("banner").innerHTML = `<div class="banner">Você está vendo a matriz de <b>${esc(alvo.nome)}</b> (somente leitura).${adm ? ` <a href="admin.html#visitas">Voltar ao administrador</a>` : ""}</div>`; }
+if (RO) { document.body.classList.add("ro"); $("banner").innerHTML = `<div class="banner">Você está vendo a matriz de <b>${esc(alvo.nome)}</b> (somente leitura).${adm ? ` <a href="admin.html#atividades">Voltar ao administrador</a>` : ""}</div>`; }
 
-const { data:reg } = await sb.from("atividades").select("dados,status,atualizado_em").eq("participante_id", alvoId).eq("tipo","visita").maybeSingle();
+const { data:reg } = await sb.from("atividades").select("dados,status,atualizado_em").eq("participante_id", alvoId).eq("tipo",DIA).maybeSingle();
 const D = Object.assign({ areas:{}, fortes:["","",""], oport:["","",""], acoes:[{},{},{}], compromisso:false }, reg?.dados || {});
 AREAS.forEach(a => D.areas[a.k] = Object.assign({ vi:"", eu:"", nivel:null, foco:false }, D.areas[a.k] || {}));
 if (reg?.atualizado_em) status(`Salvo em ${new Date(reg.atualizado_em).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})}`, true);
@@ -219,7 +273,7 @@ function status(txt, ok){ const s=$("salvo"); s.textContent=txt; s.className="sa
 function salvar(imediato=false){
   if (RO) return; clearTimeout(t); status("Salvando…");
   t = setTimeout(async () => {
-    const { error } = await sb.from("atividades").upsert({ participante_id: eu.id, tipo:"visita", empresa_id: eu.empresa_id, dados: D,
+    const { error } = await sb.from("atividades").upsert({ participante_id: eu.id, tipo:DIA, empresa_id: eu.empresa_id, dados: D,
       status: D.compromisso ? "concluido" : "rascunho", atualizado_em: new Date().toISOString() });
     status(error ? "Não salvou: verifique a internet" : "Salvo automaticamente", !error);
   }, imediato ? 0 : 700);
@@ -236,10 +290,10 @@ function renderAreas(){
         <button class="estrela" type="button" data-foco="${a.k}" aria-pressed="${v.foco}" aria-label="Quero agir nesta área" title="Quero agir nesta área">★</button>
       </div>
       <div class="lados">
-        <div class="lado vi"><label for="vi_${a.k}"><span class="tag">Lá</span>O que eu vi</label>
-          <textarea id="vi_${a.k}" data-k="${a.k}" data-c="vi" placeholder="Ex.: cada setor com a meta do dia no quadro" ${RO?"disabled":""}>${esc(v.vi)}</textarea></div>
+        <div class="lado vi"><label for="vi_${a.k}"><span class="tag">${CFG.ladoLa[0]}</span>${CFG.ladoLa[1]}</label>
+          <textarea id="vi_${a.k}" data-k="${a.k}" data-c="vi" placeholder="${CFG.phLa}" ${RO?"disabled":""}>${esc(v.vi)}</textarea></div>
         <div class="lado eu"><label for="eu_${a.k}"><span class="tag">Aqui</span>Como é na minha empresa</label>
-          <textarea id="eu_${a.k}" data-k="${a.k}" data-c="eu" placeholder="Ex.: só eu sei a meta; a equipe não acompanha" ${RO?"disabled":""}>${esc(v.eu)}</textarea></div>
+          <textarea id="eu_${a.k}" data-k="${a.k}" data-c="eu" placeholder="${CFG.phAqui}" ${RO?"disabled":""}>${esc(v.eu)}</textarea></div>
       </div>
       <div class="escala"><div class="q">Comparando, a minha empresa…</div>
         <div class="chips" role="group" aria-label="Distância da minha empresa">${ESCALA.map(([n,txt]) => `<button type="button" data-nv="${a.k}" data-v="${n}" aria-pressed="${v.nivel===n}" ${RO?"disabled":""}>${txt}</button>`).join("")}</div>
@@ -259,8 +313,8 @@ function marcar(k){
 }
 function resumo(){
   const n = AREAS.filter(feita).length;
-  $("stTxt").textContent = D.compromisso ? "Matriz concluída" : `${n} de 8 áreas comparadas`;
-  $("stBar").style.width = (D.compromisso ? 100 : n/8*100) + "%";
+  $("stTxt").textContent = D.compromisso ? "Matriz concluída" : `${n} de ${NA} áreas comparadas`;
+  $("stBar").style.width = (D.compromisso ? 100 : n/NA*100) + "%";
   const ord = [...AREAS].sort((a,b) => { const ga = D.areas[a.k].nivel===null?-1:3-D.areas[a.k].nivel, gb = D.areas[b.k].nivel===null?-1:3-D.areas[b.k].nivel; return gb-ga || (D.areas[b.k].foco-D.areas[a.k].foco); });
   $("barras").innerHTML = ord.map(a => { const v = D.areas[a.k], g = v.nivel===null ? null : 3 - v.nivel;
     return `<div class="barra ${g===null?"vazia":""}"><span class="nm">${v.foco?`<span class="s">★</span>`:""}${a.t}</span><span class="tr"><i style="width:${g===null?4:Math.max(6,g/3*100)}%"></i></span><span class="v">${g===null?"–":g}</span></div>`; }).join("");
@@ -271,8 +325,8 @@ function lista(id, arr, ph){
   $(id).innerHTML = arr.map((v,i) => `<div class="item"><span class="k">${i+1}</span><textarea data-l="${id}" data-i="${i}" placeholder="${ph[i]}" ${RO?"disabled":""}>${esc(v)}</textarea></div>`).join("");
 }
 function renderEntrega(){
-  lista("fortes", D.fortes, ["Ex.: produção do dia exposta em cada setor","Ex.: corte separado e etiquetado por ordem","Ex.: líder conversa com a equipe no início do turno"]);
-  lista("oport", D.oport, ["Ex.: nossa equipe não sabe a meta do dia","Ex.: estoque de tecido sem controle","Ex.: retrabalho alto na costura"]);
+  lista("fortes", D.fortes, CFG.exF);
+  lista("oport", D.oport, CFG.exO);
   $("acoes").innerHTML = D.acoes.map((a,i) => `<div class="acao"><div class="item" style="margin:0"><span class="k">${i+1}</span>
       <textarea data-ac="${i}" data-c="o" placeholder="O que vou fazer? Ex.: colocar quadro de produção na costura" ${RO?"disabled":""}>${esc(a.o||"")}</textarea></div>
       <div class="lin"><div><label for="q${i}">Quem cuida</label><input id="q${i}" data-ac="${i}" data-c="q" value="${esc(a.q||"")}" placeholder="Nome do responsável" ${RO?"disabled":""}></div>
@@ -297,7 +351,7 @@ function sugestoes(){
 function renderCompromisso(){
   const pronto = () => D.fortes.filter(x=>x.trim()).length===3 && D.oport.filter(x=>x.trim()).length===3 && D.acoes.filter(a=>(a.o||"").trim()).length===3;
   if (D.compromisso) { $("compromisso").innerHTML = `<div class="feito">${ic("check")}Compromisso assumido. Você ainda pode ajustar o que escreveu.</div>`; return; }
-  if (RO) { $("compromisso").innerHTML = `<p class="sub">Ainda não concluiu o compromisso da visita.</p>`; return; }
+  if (RO) { $("compromisso").innerHTML = `<p class="sub">Ainda não concluiu o ${CFG.ent.toLowerCase()}.</p>`; return; }
   $("compromisso").innerHTML = `<label class="check"><input type="checkbox" id="ck"> <span>Assumo o compromisso de colocar essas <b>3 ações</b> em prática na minha empresa.</span></label>
     <button class="btn" id="bOk" type="button">Concluir minha matriz</button><p class="hint" id="hOk"></p>`;
   $("bOk").onclick = () => {
@@ -309,10 +363,12 @@ function renderCompromisso(){
 
 // ---------- matriz dos sócios (somente leitura) ----------
 if (!RO && eu?.empresa_id) {
-  const { data:outros } = await sb.from("atividades").select("participante_id,status,participantes(nome)").eq("empresa_id", eu.empresa_id).eq("tipo","visita").neq("participante_id", eu.id);
-  if (outros?.length) $("dosSocios").innerHTML = outros.map(o => `<div class="socio">Seu sócio <b>${esc(o.participantes?.nome||"")}</b> também fez a matriz${o.status==="concluido"?" e concluiu":""}. <a href="visita.html?p=${o.participante_id}">Ver a matriz dele</a></div>`).join("");
+  const { data:outros } = await sb.from("atividades").select("participante_id,status,participantes(nome)").eq("empresa_id", eu.empresa_id).eq("tipo",DIA).neq("participante_id", eu.id);
+  if (outros?.length) $("dosSocios").innerHTML = outros.map(o => `<div class="socio">Seu sócio <b>${esc(o.participantes?.nome||"")}</b> também fez a matriz${o.status==="concluido"?" e concluiu":""}. <a href="visita.html?dia=${DIA}&p=${o.participante_id}">Ver a matriz dele</a></div>`).join("");
 }
 
+const pq = new URLSearchParams(location.search).get("p");
+$("dtabs").innerHTML = Object.entries(DIAS).map(([k,c]) => `<a href="visita.html?dia=${k}${pq?"&p="+encodeURIComponent(pq):""}"${k===DIA?' aria-current="page"':""}><b>${c.nome}</b><small>${c.data}</small></a>`).join("");
 renderAreas(); resumo(); renderEntrega();
 </script>
 </body>

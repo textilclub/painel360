@@ -96,20 +96,20 @@
       </table>
     </div>
   </section>
-  <section class="bloco-a" id="visitas">
-    <div class="eyebrow">Visita técnica · 18/11</div>
-    <h1 style="font-size:clamp(1.4rem,1.1rem + 1.4vw,1.9rem);margin-top:8px">Matriz: o que vi × minha empresa</h1>
-    <p class="sub">Uma matriz por participante. <b>Ver</b> abre a matriz completa em modo leitura.</p>
+  <section class="bloco-a" id="atividades">
+    <div class="eyebrow">Atividades da imersão</div>
+    <h1 style="font-size:clamp(1.4rem,1.1rem + 1.4vw,1.9rem);margin-top:8px">O que vi × minha empresa, dia a dia</h1>
+    <p class="sub">Uma matriz por participante em cada dia. Toque no dia para abrir a matriz em modo leitura.</p>
     <div class="stats">
       <div class="stat"><b id="vTot">–</b><span>Participantes liberados</span></div>
-      <div class="stat"><b id="vNao" style="color:var(--err)">–</b><span>Não começaram</span></div>
-      <div class="stat"><b id="vAnd" style="color:var(--warn)">–</b><span>Em andamento</span></div>
-      <div class="stat"><b id="vOk" style="color:var(--ok)">–</b><span>Concluíram</span></div>
+      <div class="stat"><b id="vV" style="color:var(--ok)">–</b><span>Concluíram a visita</span></div>
+      <div class="stat"><b id="v1" style="color:var(--ok)">–</b><span>Concluíram o 1º dia</span></div>
+      <div class="stat"><b id="v2" style="color:var(--ok)">–</b><span>Concluíram o 2º dia</span></div>
     </div>
     <div class="tabela">
       <table>
-        <thead><tr><th>Participante</th><th>Empresa</th><th>Andamento</th><th>Maiores distâncias</th><th><span class="sr">Ações</span></th></tr></thead>
-        <tbody id="vLista"><tr><td colspan="5" class="vazio">Carregando…</td></tr></tbody>
+        <thead><tr><th>Participante</th><th>Visita · 18/11</th><th>1º dia · 19/11</th><th>2º dia · 20/11</th></tr></thead>
+        <tbody id="vLista"><tr><td colspan="4" class="vazio">Carregando…</td></tr></tbody>
       </table>
     </div>
   </section>
@@ -205,32 +205,28 @@ async function carregarEx(){
   }).join("");
 }
 carregarEx();
-const AREAS_V = {fluxo:"Fluxo e layout",["5s"]:"Organização",pcp:"PCP",visual:"Gestão visual",qualidade:"Qualidade",pessoas:"Pessoas",maquinas:"Máquinas",estoque:"Estoque"};
+const DIAS_V = { visita:8, dia1:8, dia2:8 };
 async function carregarVisitas(){
   const [{ data:ps }, { data:ats }] = await Promise.all([
     sb.from("participantes").select("id,nome,status,empresas(nome)").eq("status","aprovado").order("nome"),
-    sb.from("atividades").select("participante_id,status,dados,atualizado_em").eq("tipo","visita")
+    sb.from("atividades").select("participante_id,tipo,status,dados,atualizado_em").in("tipo", Object.keys(DIAS_V))
   ]);
-  const m = Object.fromEntries((ats||[]).map(a => [a.participante_id, a]));
+  const m = {}; (ats||[]).forEach(a => m[a.participante_id+"|"+a.tipo] = a);
   const lista = ps||[];
-  $("vTot").textContent = lista.length;
-  $("vNao").textContent = lista.filter(p=>!m[p.id]).length;
-  $("vAnd").textContent = lista.filter(p=>m[p.id] && m[p.id].status!=="concluido").length;
-  $("vOk").textContent = lista.filter(p=>m[p.id]?.status==="concluido").length;
-  if (!lista.length){ $("vLista").innerHTML = `<tr><td colspan="5" class="vazio">Nenhum participante liberado ainda.</td></tr>`; return; }
-  $("vLista").innerHTML = lista.map(p => {
-    const a = m[p.id], ar = a?.dados?.areas || {};
-    const feitas = Object.values(ar).filter(v => (v.vi||v.eu) && v.nivel!=null).length;
-    const gaps = Object.entries(ar).filter(([k,v]) => v.nivel!=null && v.nivel<=1).sort((x,y)=>x[1].nivel-y[1].nivel).slice(0,3).map(([k,v]) => (v.foco?"★ ":"")+(AREAS_V[k]||k));
-    const prog = !a ? `<span class="badge bloqueado">Não começou</span>` : a.status==="concluido" ? `<span class="badge aprovado">Concluído</span>` : `<span class="badge pendente">${feitas} de 8 áreas</span>`;
-    return `<tr>
-      <td data-l="Participante"><b>${esc(p.nome)}</b>${a?`<small>Atualizado ${new Date(a.atualizado_em).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})}</small>`:""}</td>
-      <td data-l="Empresa">${esc(p.empresas?.nome||"")}</td>
-      <td data-l="Andamento">${prog}${a?`<div class="fita mini-fita" aria-hidden="true"><i style="width:${a.status==="concluido"?100:feitas/8*100}%"></i></div>`:""}</td>
-      <td data-l="Maiores distâncias">${gaps.length?esc(gaps.join(", ")):"–"}</td>
-      <td data-l="">${a?`<div class="acts"><a class="btn sm" href="visita.html?p=${p.id}">Ver</a></div>`:""}</td>
-    </tr>`;
-  }).join("");
+  const conc = t => lista.filter(p => m[p.id+"|"+t]?.status==="concluido").length;
+  $("vTot").textContent = lista.length; $("vV").textContent = conc("visita"); $("v1").textContent = conc("dia1"); $("v2").textContent = conc("dia2");
+  if (!lista.length){ $("vLista").innerHTML = `<tr><td colspan="4" class="vazio">Nenhum participante liberado ainda.</td></tr>`; return; }
+  const cel = (p, t, rot) => {
+    const a = m[p.id+"|"+t];
+    if (!a) return `<td data-l="${rot}"><span class="badge bloqueado">Não começou</span></td>`;
+    const ar = a.dados?.areas || {}, feitas = Object.values(ar).filter(v => (v.vi||v.eu) && v.nivel!=null).length, tot = DIAS_V[t];
+    const b = a.status==="concluido" ? `<span class="badge aprovado">Concluído</span>` : `<span class="badge pendente">${feitas} de ${tot} áreas</span>`;
+    return `<td data-l="${rot}">${b}<div class="fita mini-fita" aria-hidden="true"><i style="width:${a.status==="concluido"?100:feitas/tot*100}%"></i></div><div class="acts" style="margin-top:8px"><a class="btn sm ghost" href="visita.html?dia=${t}&p=${p.id}">Ver</a></div></td>`;
+  };
+  $("vLista").innerHTML = lista.map(p => `<tr>
+      <td data-l="Participante"><b>${esc(p.nome)}</b><small>${esc(p.empresas?.nome||"")}</small></td>
+      ${cel(p,"visita","Visita · 18/11")}${cel(p,"dia1","1º dia · 19/11")}${cel(p,"dia2","2º dia · 20/11")}
+    </tr>`).join("");
 }
 carregarVisitas();
 </script>
