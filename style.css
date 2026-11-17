@@ -52,7 +52,7 @@ input[readonly]{opacity:.75}
 .socios{display:grid;gap:10px;margin-top:10px}
 .socio{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px}
 .socio small{display:block;color:var(--muted);font-size:12px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+.grid3{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:18px}
 .tile{border:1px dashed var(--line2);border-radius:14px;padding:18px;color:var(--muted);font-size:13px}
 .tile b{display:block;color:var(--txt);font-size:15px;margin-bottom:4px}
 table{width:100%;border-collapse:collapse;font-size:14px}
