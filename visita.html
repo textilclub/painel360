@@ -484,7 +484,7 @@ if (!RO && eu?.empresa_id) {
 
 const pq = new URLSearchParams(location.search).get("p");
 $("dtabs").innerHTML = Object.entries(DIAS).map(([k,c]) => `<a href="visita.html?dia=${k}${pq?"&p="+encodeURIComponent(pq):""}"${k===DIA?' aria-current="page"':""}><b>${c.nome}</b><small>${c.data}</small></a>`).join("");
-if (DIA === "dia1") $("dtabs").insertAdjacentHTML("afterend", `<a class="fer-link" href="ferramentas.html${pq?"?p="+encodeURIComponent(pq):""}"><span class="ico">${ic("layers")}</span><span><b>Ferramentas 360° com IA do dia</b><small>Diagnóstico 360 · Produção 360 · Produto 360</small></span><span class="go">${ic("chev")}</span></a>`);
+if (DIA !== "visita") $("dtabs").insertAdjacentHTML("afterend", `<a class="fer-link" href="ferramentas.html?dia=${DIA}${pq?"&p="+encodeURIComponent(pq):""}"><span class="ico">${ic("layers")}</span><span><b>Ferramentas 360° com IA do dia</b><small>${DIA==="dia1" ? "Diagnóstico · Produção · Produto · Vendas · Análise cruzada · Painel de decisões" : "Pessoas · Financeiro · SWOT · Prioridades · Orçamento · KPIs · Projetos · 90 dias · Auditoria · One Page"}</small></span><span class="go">${ic("chev")}</span></a>`);
 renderAreas(); resumo(); renderEntrega();
 if (location.hash) setTimeout(() => document.querySelector(location.hash)?.scrollIntoView({ behavior:"smooth", block:"start" }), 150);
 </script>

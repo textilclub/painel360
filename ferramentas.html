@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ferramentas 360° · 19/11 · Têxtil Club</title>
+<title>Ferramentas 360° com IA · Têxtil Club</title>
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#000000">
 <link rel="icon" href="logo.jpg">
@@ -17,18 +17,28 @@
   .fh h1 em{font-style:normal;color:var(--gold-hi)}
   .fh .sub{font-size:17px;max-width:56ch}
   .fh .faixa-in{padding-bottom:88px}
+  .dtabs{display:grid;grid-template-columns:1fr 1fr;background:var(--surface);border:1.5px solid var(--ink);border-radius:var(--r-lg);overflow:hidden;margin-bottom:14px}
+  .dtabs a{min-height:56px;display:grid;align-content:center;justify-items:center;gap:2px;text-decoration:none;color:var(--ink);border-left:1.5px solid var(--ink)}
+  .dtabs a:first-child{border-left:0}
+  .dtabs b{font:700 15px var(--f-display)}.dtabs small{font:500 12.5px var(--f-body);color:var(--muted)}
+  .dtabs a[aria-current="page"]{background:var(--ink);color:#fff}.dtabs a[aria-current="page"] small{color:var(--gold-hi)}
+  .usa{background:var(--gold-soft);border:1px solid var(--warn-line);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--ink);margin-bottom:12px;line-height:1.45}
+  .linha-out{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+  .linha-out.um{grid-template-columns:1fr}
+  .receita{font:700 14px var(--f-display);color:var(--ok);align-self:end;padding-bottom:12px}
   .corpo{position:relative;z-index:2;margin-top:-56px;max-width:980px}
 
-  .ftabs{display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface);border:1.5px solid var(--ink);border-radius:var(--r-lg);overflow:hidden;box-shadow:5px 5px 0 var(--gold);margin-bottom:24px;position:sticky;top:62px;z-index:20}
+  .ftabs{display:grid;grid-template-columns:1fr;background:var(--surface);border:1.5px solid var(--ink);border-radius:var(--r-lg);overflow:hidden;box-shadow:5px 5px 0 var(--gold);margin-bottom:24px;position:sticky;top:62px;z-index:20}
   @media (max-width:899px){.ftabs{top:110px}}
-  .ftabs button{min-height:68px;border:0;border-left:1.5px solid var(--ink);background:var(--surface);color:var(--ink);display:grid;align-content:center;justify-items:center;gap:3px;padding:8px 6px;cursor:pointer}
+  .ftabs .lista{display:flex;overflow-x:auto;scrollbar-width:thin}
+  .ftabs button{flex:1 0 132px;min-height:68px;border:0;border-left:1.5px solid var(--ink);background:var(--surface);color:var(--ink);display:grid;align-content:center;justify-items:center;gap:3px;padding:8px 6px;cursor:pointer}
   .ftabs button:first-child{border-left:0}
   .ftabs b{font:700 15px/1.1 var(--f-display);letter-spacing:-.01em}
   .ftabs small{font:600 11.5px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
   .ftabs small.ok{color:var(--ok)}
   .ftabs button[aria-selected="true"]{background:var(--ink);color:#fff}
   .ftabs button[aria-selected="true"] small{color:var(--gold-hi)}
-  .ftabs .salvo{grid-column:1/-1;border-top:1.5px solid var(--ink);font:500 12.5px var(--f-body);color:var(--muted);padding:6px 12px;text-align:right;background:var(--paper)}
+  .ftabs .salvo{border-top:1.5px solid var(--ink);font:500 12.5px var(--f-body);color:var(--muted);padding:6px 12px;text-align:right;background:var(--paper)}
   .ftabs .salvo.ok{color:var(--ok)}
 
   .ficha{background:#000;color:var(--on-dark);border-radius:var(--r-lg);padding:20px;display:grid;gap:14px;grid-template-columns:repeat(3,1fr);margin-bottom:22px}
@@ -94,14 +104,15 @@
 <script src="ui.js" data-page="visita"></script>
 <main class="wrap">
   <section class="faixa fh"><div class="faixa-in">
-    <div class="eyebrow">1º dia · Quinta, 19/11 · Aporta Hall</div>
+    <div class="eyebrow" id="hEye"></div>
     <h1>Ferramentas <em>360°</em> com IA</h1>
-    <p class="sub">Três ferramentas para usar durante o dia. Você preenche os dados da sua empresa, o Agente Estrategista analisa na hora e você registra o que decidiu.</p>
+    <p class="sub"><span id="hQtd"></span> Você preenche os dados da sua empresa, o Agente Estrategista analisa na hora e você registra o que decidiu. Cada ferramenta já recebe o que você decidiu nas anteriores.</p>
     <div id="quemF" style="margin-top:16px;color:var(--muted-dark);font-size:14.5px"></div>
   </div></section>
 
   <div class="page corpo">
     <div id="banner"></div>
+    <nav class="dtabs" id="dtabs" aria-label="Dia"></nav>
     <div class="ftabs" role="tablist" id="ftabs"></div>
     <div id="tela"></div>
   </div>
@@ -110,72 +121,28 @@
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { montarAgente } from "./agente.js";
+import { FER, DIAS_FER, tipoDia, numero, rotulos, registroTexto, pronto, faltaTexto } from "./ferramentas-def.js";
 const C = window.TC_CONFIG; const sb = createClient(C.SUPABASE_URL, C.SUPABASE_KEY);
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const ic = (n, c) => (window.IC ? IC(n, c) : "");
-const TIPO = "fer_dia1";
 
-const PILARES = [
-  ["producao","Produção"],["vendas","Vendas"],["marca","Marca/Produto"],["fin","Gestão/Financeiro"],["pessoas","Liderança/Pessoas"],["estrat","Estratégia"]
-];
-const FER = {
-  diag: {
-    nome:"DIAGNÓSTICO 360", curto:"Diagnóstico", quando:"Durante o Raio-X Confecção 360°",
-    obj:"Mapear maturidade e gargalo principal dos seis pilares",
-    ins:"Evidências concretas para cada pilar; indicadores existentes; notas sugeridas",
-    saida:"Quadro de seis pilares + um gargalo por pilar + pendências",
-    proc:"Analise Produção, Vendas, Marca/Produto, Gestão/Financeiro, Liderança/Pessoas e Estratégia; para cada um, nota 0–10 somente se justificada, evidência, causa provável, impacto e principal decisão.",
-    grupos: PILARES.map(([k,t]) => ({ t, campos:[
-      { k:`${k}_ev`, l:"Evidência concreta", tipo:"area", ph:"O que acontece hoje, com fatos. Ex.: atrasamos 3 de cada 10 pedidos", f:true },
-      { k:`${k}_ind`, l:"Indicador que você já acompanha", tipo:"text", ph:"Ex.: peças/dia, ticket médio, margem… ou 'nenhum'", f:true },
-      { k:`${k}_nota`, l:"Sua nota (0 a 10)", tipo:"nota" } ] }))
-  },
-  prod: {
-    nome:"PRODUÇÃO 360", curto:"Produção", quando:"Oficina de Produção e Processos",
-    obj:"Diagnosticar fluxo produtivo e gargalos que limitam entrega, qualidade e margem",
-    ins:"Etapas, tempos, demanda, produção, retrabalho, OTD, PPCP, capacidade disponível",
-    saida:"Mapa de gargalos + top 3 + duas ações",
-    proc:"Mapeie fluxo e gargalos; separe sintoma/causa; priorize top 3 por evidência, impacto e controle; indique ação rápida e estrutural; confronte produção e vendas.",
-    grupos:[
-      { t:"Fluxo", campos:[
-        { k:"etapas", l:"Etapas do processo", tipo:"area", ph:"Ex.: modelagem → corte → costura (terceirizada) → acabamento → expedição", f:true },
-        { k:"tempos", l:"Tempos de cada etapa", tipo:"area", ph:"Ex.: corte 1 dia; costura 5 dias; acabamento 2 dias", f:true } ] },
-      { t:"Volume e capacidade", dois:true, campos:[
-        { k:"demanda", l:"Demanda (peças/mês)", tipo:"text", ph:"Quanto o comercial vende ou precisa", f:true },
-        { k:"producao", l:"Produção real (peças/mês)", tipo:"text", ph:"Quanto a fábrica entrega hoje", f:true },
-        { k:"capacidade", l:"Capacidade disponível", tipo:"text", ph:"Ex.: 12 costureiras, 1 turno, 8h", f:true },
-        { k:"retrabalho", l:"Retrabalho / defeitos", tipo:"text", ph:"Ex.: 5% das peças voltam", f:true } ] },
-      { t:"Entrega e planejamento", campos:[
-        { k:"otd", l:"Entregas no prazo (OTD)", tipo:"text", ph:"Ex.: 7 de cada 10 pedidos saem no prazo", f:true },
-        { k:"ppcp", l:"Como planeja e controla a produção (PPCP)", tipo:"area", ph:"Ex.: planilha semanal; prioridade definida pelo dono no dia", f:true } ] } ]
-  },
-  produto: {
-    nome:"PRODUTO 360", curto:"Produto", quando:"Oficina de Marca e Produto",
-    obj:"Avaliar posicionamento e mix de produto sob margem, demanda e capacidade",
-    ins:"Linhas, clientes ideais, preço, volume, margem, pedidos, prazo e posicionamento",
-    saida:"Matriz de portfólio com decisões e hipótese explícita",
-    proc:"Classifique até três linhas em ACELERAR, CORRIGIR, REDUZIR ou VALIDAR; explique evidência e risco; considere margem e ocupação da fábrica.",
-    grupos:[
-      { t:"Posicionamento", campos:[
-        { k:"posic", l:"Como a sua marca se posiciona", tipo:"area", ph:"Para quem vende, por que escolhem você, faixa de preço", f:true } ] },
-      ...[1,2,3].map(n => ({ t:`Linha ${n}`, dois:true, campos:[
-        { k:`l${n}_nome`, l:"Nome da linha", tipo:"text", ph: n===1?"Ex.: camisetas básicas":n===2?"Ex.: uniformes corporativos":"Ex.: moda fitness" },
-        { k:`l${n}_cli`, l:"Cliente ideal", tipo:"text", ph:"Quem compra", f:true },
-        { k:`l${n}_preco`, l:"Preço médio", tipo:"text", ph:"R$ por peça", f:true },
-        { k:`l${n}_vol`, l:"Volume (peças/mês)", tipo:"text", ph:"Ex.: 2.000", f:true },
-        { k:`l${n}_marg`, l:"Margem", tipo:"text", ph:"Ex.: 30% ou 'não sei'", f:true },
-        { k:`l${n}_ped`, l:"Pedidos e prazo", tipo:"text", ph:"Ex.: pedido mínimo 50; prazo 20 dias", f:true } ] })) ]
-  }
-};
-const ORDEM = ["diag","prod","produto"];
+// ---------- dia ----------
+const qs = new URLSearchParams(location.search);
+const hoje = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+const DIA = DIAS_FER[qs.get("dia")] ? qs.get("dia") : (hoje >= "2026-11-20" ? "dia2" : "dia1");
+const DD = DIAS_FER[DIA], ORDEM = DD.ordem, TIPO = tipoDia(DIA);
+$("hEye").textContent = `${DD.nome} · ${DD.data} · ${DD.local}`;
+$("hQtd").textContent = `${ORDEM.length} ferramentas para usar durante o dia.`;
+const pq = qs.get("p");
+$("dtabs").innerHTML = Object.entries(DIAS_FER).map(([k, d]) => `<a href="ferramentas.html?dia=${k}${pq ? "&p=" + encodeURIComponent(pq) : ""}"${k === DIA ? ' aria-current="page"' : ""}><b>${d.nome}</b><small>${d.data}</small></a>`).join("");
 
 // ---------- sessão ----------
 const { data:{ session } } = await sb.auth.getSession();
 if (!session) { location.replace("index.html"); throw new Error("sem sessão"); }
 const { data:adm } = await sb.rpc("is_admin"); if (adm && window.TC_UI) window.TC_UI.mostrarAdmin();
 const { data:eu } = await sb.from("participantes").select("id,nome,status,empresa_id,empresas(nome)").eq("id", session.user.id).maybeSingle();
-const alvoId = new URLSearchParams(location.search).get("p") || eu?.id;
+const alvoId = pq || eu?.id;
 if (!alvoId) { location.replace(adm ? "admin.html" : "painel.html"); throw new Error("sem participante"); }
 const RO = !(eu && eu.id === alvoId && eu.status === "aprovado");
 if (RO && !adm && !(eu && eu.status === "aprovado")) { location.replace("painel.html"); throw new Error("sem acesso"); }
@@ -185,21 +152,24 @@ if (!alvo) { location.replace("painel.html"); throw new Error("não encontrado")
 $("quemF").innerHTML = ic("building","sm") + " " + esc(alvo.nome) + (alvo.empresas?.nome ? " · " + esc(alvo.empresas.nome) : "");
 if (RO) { document.body.classList.add("ro"); $("banner").innerHTML = `<div class="banner">Você está vendo as ferramentas de <b>${esc(alvo.nome)}</b> (somente leitura).${adm ? ` <a href="admin.html#atividades">Voltar ao administrador</a>` : ""}</div>`; }
 
-const [{ data:reg }, { data:vis }, { data:exc }] = await Promise.all([
-  sb.from("atividades").select("dados,atualizado_em").eq("participante_id", alvoId).eq("tipo", TIPO).maybeSingle(),
+const [{ data:regs }, { data:vis }, { data:exc }] = await Promise.all([
+  sb.from("atividades").select("tipo,dados,atualizado_em").eq("participante_id", alvoId).in("tipo", ["fer_dia1","fer_dia2"]),
   sb.from("atividades").select("dados").eq("participante_id", alvoId).eq("tipo","visita").maybeSingle(),
   alvo.empresa_id ? sb.from("exercicios").select("regime,resumo").eq("empresa_id", alvo.empresa_id).maybeSingle() : Promise.resolve({ data:null })
 ]);
+const reg = (regs||[]).find(r => r.tipo === TIPO);
+const OUTRO = (regs||[]).find(r => r.tipo !== TIPO)?.dados || {};
 const D = reg?.dados || {};
 ORDEM.forEach(k => D[k] = Object.assign({ in:{}, out:{}, chat:[], ok:false }, D[k] || {}));
-let atual = ORDEM.includes(location.hash.slice(1)) ? location.hash.slice(1) : (ORDEM.find(k => !D[k].ok) || "diag");
+const dadosDe = k => D[k] || OUTRO[k];
+let atual = ORDEM.includes(location.hash.slice(1)) ? location.hash.slice(1) : (ORDEM.find(k => !D[k].ok) || ORDEM[0]);
 
 // ---------- salvar ----------
-let t = null;
+let tmr = null;
 function status(txt, ok){ const s=$("salvo"); if (s){ s.textContent=txt; s.className="salvo"+(ok?" ok":""); } }
 function salvar(){
-  if (RO) return; clearTimeout(t); status("Salvando…");
-  t = setTimeout(async () => {
+  if (RO) return; clearTimeout(tmr); status("Salvando…");
+  tmr = setTimeout(async () => {
     const tudo = ORDEM.every(k => D[k].ok);
     const { error } = await sb.from("atividades").upsert({ participante_id: eu.id, tipo: TIPO, empresa_id: eu.empresa_id, dados: D,
       status: tudo ? "concluido" : "rascunho", atualizado_em: new Date().toISOString() });
@@ -209,41 +179,39 @@ function salvar(){
 
 // ---------- abas ----------
 function abas(){
-  $("ftabs").innerHTML = ORDEM.map((k,i) => `<button role="tab" type="button" data-t="${k}" aria-selected="${k===atual}"><b>${i+1}. ${FER[k].curto}</b><small class="${D[k].ok?"ok":""}">${D[k].ok?"✓ Concluída":FER[k].nome}</small></button>`).join("")
+  $("ftabs").innerHTML = `<div class="lista">` + ORDEM.map((k,i) => `<button role="tab" type="button" data-t="${k}" aria-selected="${k===atual}"><b>${i+1}. ${FER[k].curto}</b><small class="${D[k].ok?"ok":""}">${D[k].ok?"✓ Concluída":"A fazer"}</small></button>`).join("") + `</div>`
     + `<div class="salvo" id="salvo">${reg?.atualizado_em ? "Salvo em " + new Date(reg.atualizado_em).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"}) : (RO ? "" : "As respostas são salvas automaticamente")}</div>`;
   $("ftabs").querySelectorAll("[data-t]").forEach(b => b.onclick = () => { atual = b.dataset.t; history.replaceState(null,"","#"+atual); abas(); tela(); window.scrollTo({ top: $("ftabs").offsetTop - 130, behavior:"smooth" }); });
+  $("ftabs").querySelector('[aria-selected="true"]')?.scrollIntoView({ block:"nearest", inline:"center" });
 }
 
-// ---------- campos ----------
+// ---------- entradas ----------
 const val = (k, c) => D[k].in[c] || { v:"", f:"" };
 function campo(k, c){
   const v = val(k, c.k), dis = RO ? "disabled" : "";
   const rhp = c.f ? `<span class="rhp" role="group" aria-label="Tipo da informação">${["R","H","P"].map(f => `<button type="button" data-k="${c.k}" data-f="${f}" aria-pressed="${v.f===f}" title="${{R:"Real",H:"Estimativa",P:"Pendente"}[f]}" ${dis}>${f}</button>`).join("")}</span>` : "";
   let inp;
   if (c.tipo === "area") inp = `<textarea data-in="${c.k}" placeholder="${esc(c.ph||"")}" ${dis}>${esc(v.v)}</textarea>`;
-  else if (c.tipo === "nota") inp = `<select data-in="${c.k}" ${dis}><option value="">Sem nota</option>${[...Array(11).keys()].map(n => `<option ${String(v.v)===String(n)?"selected":""}>${n}</option>`).join("")}</select>`;
+  else if (c.tipo === "sel") inp = `<select data-in="${c.k}" ${dis}>${c.op.map(o => `<option value="${esc(o)}" ${String(v.v)===o?"selected":""}>${o===""?"Sem nota":esc(o)}</option>`).join("")}</select>`;
   else inp = `<input data-in="${c.k}" value="${esc(v.v)}" placeholder="${esc(c.ph||"")}" ${dis}>`;
   return `<div class="campo"><label><span>${c.l}</span>${rhp}</label>${inp}</div>`;
 }
 
-function comando(k){
+// ---------- dados para a IA ----------
+const brl = v => "R$ " + Math.round(v||0).toLocaleString("pt-BR");
+function dadosIA(k){
   const F = FER[k], tag = f => f ? `[${f}]` : "";
-  const linhas = F.grupos.map(g => {
-    const itens = g.campos.map(c => { const v = val(k, c.k); const tx = String(v.v||"").trim();
+  const linhas = F.grupos.map(g => `${g.t.toUpperCase()}\n` + g.campos.map(c => { const v = val(k, c.k); const tx = String(v.v||"").trim();
       if (!tx) return `- ${c.l}: [P] não informado`;
-      return `- ${c.l}: ${c.f ? (tag(v.f) || "[H]") + " " : ""}${tx}`; }).join("\n");
-    return `${g.t.toUpperCase()}\n${itens}`;
-  }).join("\n\n");
+      return `- ${c.l}: ${c.f ? (tag(v.f) || "[H]") + " " : ""}${tx}`; }).join("\n")).join("\n\n");
   let extra = "";
-  if (k === "prod" && vis?.dados?.areas) {
+  (F.usa || []).forEach(u => { const tx = registroTexto(u, dadosDe(u)); if (tx) extra += `\n\nREGISTRO ANTERIOR — ${FER[u].nome} (decisões registradas pelo empresário)\n${tx}`; });
+  if (F.visita && vis?.dados?.areas) {
     const lac = Object.values(vis.dados.areas).filter(a => (a.eu||"").trim() && a.nivel != null && a.nivel <= 1).map(a => `- ${a.eu.trim()}`);
     const ac = (vis.dados.acoes||[]).filter(a => (a.o||"").trim()).map(a => `- ${a.o.trim()}${a.p?" ("+a.p+")":""}`);
     if (lac.length || ac.length) extra += `\n\nREGISTRO ANTERIOR — VISITA TÉCNICA (18/11)\nLacunas que identifiquei na minha empresa:\n${lac.join("\n")||"- —"}\nAções que me comprometi a fazer:\n${ac.join("\n")||"- —"}`;
   }
-  if (exc?.resumo?.receita) {
-    const brl = v => "R$ " + Math.round(v||0).toLocaleString("pt-BR");
-    extra += `\n\nREGISTRO ANTERIOR — PLANEJAMENTO 2027 (exercício de casa; é PROJEÇÃO, não histórico)\n- Regime: ${exc.regime==="presumido"?"Lucro Presumido":"Simples Nacional"}\n- Faturamento projetado 2027: [H] ${brl(exc.resumo.receita)}\n- Resultado projetado 2027: [H] ${brl(exc.resumo.resultado)}`;
-  }
+  if (exc?.resumo?.receita) extra += `\n\nREGISTRO ANTERIOR — PLANEJAMENTO 2027 (exercício de casa; é PROJEÇÃO, não histórico)\n- Regime: ${exc.regime==="presumido"?"Lucro Presumido":"Simples Nacional"}\n- Faturamento projetado 2027: [H] ${brl(exc.resumo.receita)}\n- Resultado projetado 2027: [H] ${brl(exc.resumo.resultado)}`;
   return `MÓDULO ${F.nome}
 
 === DADOS DA EMPRESA ===
@@ -254,31 +222,35 @@ Legenda: [R] real · [H] estimativa · [P] pendente
 ${linhas}${extra}`;
 }
 
-// ---------- saída ----------
-function saida(k){
-  const o = D[k].out, dis = RO ? "disabled" : "";
-  const inp = (key, ph) => `<input data-out="${key}" value="${esc(o[key]||"")}" placeholder="${esc(ph)}" ${dis}>`;
-  const area = (key, ph) => `<textarea data-out="${key}" placeholder="${esc(ph)}" ${dis}>${esc(o[key]||"")}</textarea>`;
-  if (k === "diag") return `<div class="grupo"><h3>Quadro dos seis pilares</h3><div class="campos">${PILARES.map(([p,t]) => `
-      <div class="resumo-pilar"><b>${t}</b><select data-out="${p}_nota" aria-label="Nota final ${t}" ${dis}><option value="">Nota</option>${[...Array(11).keys()].map(n=>`<option ${String(o[p+"_nota"])===String(n)?"selected":""}>${n}</option>`).join("")}</select>
-      <div class="g">${inp(p+"_garg", "Gargalo principal deste pilar")}</div></div>`).join("")}</div></div>
-    <div class="campo"><label>Pendências (dados que faltam levantar)</label>${area("pend","Ex.: margem por produto; capacidade real da costura")}</div>`;
-  if (k === "prod") return `<div class="grupo"><h3>Top 3 gargalos</h3><div class="campos">${[1,2,3].map(n => `<div class="campos dois">
-      <div class="campo"><label>Gargalo ${n} (sintoma)</label>${inp("g"+n,"O que aparece")}</div>
-      <div class="campo"><label>Causa provável</label>${inp("c"+n,"Por que acontece")}</div></div>`).join("")}</div></div>
-    <div class="campos dois">
-      <div class="campo"><label>Ação rápida</label>${area("rapida","Resolve logo, com pouco recurso")}</div>
-      <div class="campo"><label>Ação estrutural</label>${area("estrutural","Muda o processo de forma duradoura")}</div></div>`;
-  return `${[1,2,3].map(n => { const nm = String(val("produto","l"+n+"_nome").v||"").trim() || "Linha "+n; return `<div class="grupo"><h3><span class="k">${n}</span>${esc(nm)}</h3>
-      <div class="dec" role="group" aria-label="Decisão para ${esc(nm)}">${["ACELERAR","CORRIGIR","REDUZIR","VALIDAR"].map(d => `<button type="button" data-dec="${n}" data-v="${d}" aria-pressed="${o["d"+n]===d}" ${dis}>${d}</button>`).join("")}</div>
-      <div class="campos dois"><div class="campo"><label>Evidência e risco</label>${area("e"+n,"Por que essa decisão")}</div>
-      <div class="campo"><label>Hipótese a validar</label>${area("h"+n,"O que ainda precisa ser confirmado")}</div></div>
-      <label class="confirmada"><input type="checkbox" data-conf="${n}" ${o["c"+n]?"checked":""} ${dis}> Decisão confirmada por mim (desmarcado = ainda em análise)</label></div>`; }).join("")}`;
+// ---------- registro de saída ----------
+function saidaHTML(k){
+  const F = FER[k], o = D[k].out, dis = RO ? "disabled" : "";
+  const ctl = (key, c) => c.tipo === "sel"
+    ? `<select data-out="${key}" aria-label="${esc(c.l)}" ${dis}>${c.op.map(x => `<option value="${esc(x)}" ${String(o[key]||"")===x?"selected":""}>${x===""?"Escolha":esc(x)}</option>`).join("")}</select>`
+    : `<input data-out="${key}" value="${esc(o[key]||"")}" placeholder="${esc(c.ph||"")}" ${dis}>`;
+  return F.out.map(bl => {
+    if (bl.tipo === "campo") return `<div class="campo" style="margin-bottom:12px"><label>${bl.l}</label><textarea data-out="${bl.b}" placeholder="${esc(bl.ph||"")}" ${dis}>${esc(o[bl.b]||"")}</textarea></div>`;
+    const rot = rotulos(F, bl, D[k]), um = bl.cols.length === 1;
+    if (um) return `<div class="grupo"><h3>${bl.t}</h3><div class="campos">${rot.map((r,i) => `<div class="campo"><label>${bl.rot ? esc(r) : `${bl.cols[0].l} ${i+1}`}</label>${ctl(`${bl.b}${i}_${bl.cols[0].k}`, bl.cols[0])}</div>`).join("")}</div></div>`;
+    return `<div class="grupo"><h3>${bl.t}</h3><div class="campos">${rot.map((r,i) => `
+      <div class="grupo" style="background:var(--surface);margin:0"><h3><span class="k">${bl.rot ? "•" : i+1}</span><span data-rot="${bl.b}${i}">${esc(bl.rot || bl.rotIn ? r : `${bl.cols[0].l.split(" (")[0]} ${i+1}`)}</span></h3>
+        <div class="linha-out">${bl.cols.map(c => `<div class="campo"><label>${c.l}</label>${ctl(`${bl.b}${i}_${c.k}`, c)}</div>`).join("")}${bl.calc ? `<div class="receita" data-rec="${bl.b}${i}"></div>` : ""}</div></div>`).join("")}</div>
+      ${bl.calc ? `<p class="receita" style="margin-top:10px" data-tot="${bl.b}"></p>` : ""}</div>`;
+  }).join("");
+}
+function calcular(k){
+  FER[k].out.filter(bl => bl.calc).forEach(bl => {
+    let tot = 0; const o = D[k].out;
+    for (let i = 0; i < bl.n; i++) { const q = numero(o[`${bl.b}${i}_q`]), p = numero(o[`${bl.b}${i}_pr`]), el = document.querySelector(`[data-rec="${bl.b}${i}"]`);
+      const r = q > 0 && p > 0 ? q * p : 0; tot += r; if (el) el.textContent = r ? "Receita: " + brl(r) : ""; }
+    const t = document.querySelector(`[data-tot="${bl.b}"]`); if (t) t.textContent = tot ? "Receita total orçada: " + brl(tot) : "";
+  });
 }
 
 // ---------- tela ----------
 function tela(){
   const k = atual, F = FER[k];
+  const usados = (F.usa || []).filter(u => registroTexto(u, dadosDe(u))).map(u => FER[u].nome);
   $("tela").innerHTML = `
     <div class="ficha">
       <div><span>Quando</span><p>${F.quando}</p></div>
@@ -287,56 +259,74 @@ function tela(){
     </div>
 
     <section class="passo"><header><span class="n">1</span><div><h2>Seus dados</h2><p>Preencha o que souber. Não precisa ser perfeito: marque se cada informação é real, estimada ou pendente.</p></div></header>
+      ${usados.length ? `<div class="usa">${ic("check","sm")} A IA também vai receber o que você registrou em: <b>${usados.join(", ")}</b>.</div>` : ""}
       <div class="legenda"><span><b class="t-R">R</b>Real (tenho o número)</span><span><b class="t-H">H</b>Estimativa (hipótese)</span><span><b class="t-P">P</b>Pendente (preciso levantar)</span></div>
       ${F.grupos.map((g,i) => `<div class="grupo"><h3>${F.grupos.length>3?`<span class="k">${i+1}</span>`:""}${g.t}</h3><div class="campos ${g.dois?"dois":""}">${g.campos.map(c => campo(k,c)).join("")}</div></div>`).join("")}
     </section>
 
-    <section class="passo"><header><span class="n">2</span><div><h2>Análise do Agente Estrategista</h2><p>A IA lê os seus dados${k==="prod" && vis?.dados?.areas ? ", as lacunas da sua visita técnica" : ""} e responde aqui, no formato do módulo ${F.nome}. Pode conversar com ela para aprofundar.</p></div></header>
+    <section class="passo"><header><span class="n">2</span><div><h2>Análise do Agente Estrategista</h2><p>A IA lê os seus dados e responde aqui, no formato do módulo ${F.nome}. Pode conversar com ela para aprofundar.</p></div></header>
       <div id="agente"></div>
     </section>
 
-    <section class="passo"><header><span class="n">3</span><div><h2>Registro de saída</h2><p>Depois da análise da IA e da discussão na mesa, registre aqui o que ficou decidido.</p></div></header>
-      ${saida(k)}
+    <section class="passo"><header><span class="n">3</span><div><h2>Registro de saída</h2><p>Depois da análise da IA e da discussão na mesa, registre aqui só o que <b>você</b> decidiu. É isso que segue para as próximas ferramentas.</p></div></header>
+      ${saidaHTML(k)}
       <div id="fim" style="margin-top:16px"></div>
     </section>`;
-  montarAgente({ el: $("agente"), sb, modulo: k, ro: RO, dados: () => comando(k), conversa: () => D[k].chat, salvar: c => { D[k].chat = c; salvar(); } });
+  montarAgente({ el: $("agente"), sb, modulo: k, ro: RO, dados: () => dadosIA(k), conversa: () => D[k].chat, salvar: c => { D[k].chat = c; salvar(); } });
 
-  // eventos
   $("tela").querySelectorAll("[data-in]").forEach(el => el.addEventListener(el.tagName==="SELECT"?"change":"input", () => {
     const c = el.dataset.in, cur = D[k].in[c] || { v:"", f:"" }; cur.v = el.value;
-    if (!cur.f && el.value.trim()) { const def = el.closest(".campo").querySelector('[data-f="H"]'); if (def) { cur.f = "H"; el.closest(".campo").querySelectorAll(".rhp button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.f==="H"))); } }
+    if (!cur.f && el.value.trim()) { const h = el.closest(".campo").querySelector('[data-f="H"]'); if (h) { cur.f = "H"; el.closest(".campo").querySelectorAll(".rhp button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.f==="H"))); } }
     D[k].in[c] = cur; salvar();
-    if (k==="produto" && /_nome$/.test(c)) { const n = c[1]; const h = $("tela").querySelectorAll(".passo")[2].querySelectorAll(".grupo h3")[n-1]; if (h) h.innerHTML = `<span class="k">${n}</span>${esc(el.value.trim()||"Linha "+n)}`; }
+    const m = /^l(\d)_nome$/.exec(c); if (m) { const s = document.querySelector(`[data-rot="lin${m[1]-1}"]`); if (s) s.textContent = el.value.trim() || "Linha " + m[1]; }
   }));
   $("tela").querySelectorAll(".rhp button").forEach(b => b.onclick = () => {
     const c = b.dataset.k, cur = D[k].in[c] || { v:"", f:"" }; cur.f = cur.f === b.dataset.f ? "" : b.dataset.f; D[k].in[c] = cur;
-    b.parentElement.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.f === cur.f)));
-    salvar(); });
-  $("tela").querySelectorAll("[data-out]").forEach(el => el.addEventListener(el.tagName==="SELECT"?"change":"input", () => { D[k].out[el.dataset.out] = el.value; salvar(); fim(); }));
-  $("tela").querySelectorAll("[data-dec]").forEach(b => b.onclick = () => { const n = b.dataset.dec; D[k].out["d"+n] = D[k].out["d"+n] === b.dataset.v ? "" : b.dataset.v;
-    b.parentElement.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.v === D[k].out["d"+n]))); salvar(); fim(); });
-  $("tela").querySelectorAll("[data-conf]").forEach(el => el.onchange = () => { D[k].out["c"+el.dataset.conf] = el.checked; salvar(); });
-  fim();
+    b.parentElement.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.f === cur.f))); salvar(); });
+  $("tela").querySelectorAll("[data-out]").forEach(el => el.addEventListener(el.tagName==="SELECT"?"change":"input", () => { D[k].out[el.dataset.out] = el.value; salvar(); calcular(k); fim(); }));
+  calcular(k); fim();
 }
 
-function pronto(k){
-  const o = D[k].out, t = x => String(x||"").trim();
-  if (k === "diag") return PILARES.filter(([p]) => t(o[p+"_garg"])).length >= 6;
-  if (k === "prod") return [1,2,3].every(n => t(o["g"+n])) && t(o.rapida) && t(o.estrutural);
-  return [1,2,3].some(n => o["d"+n]);
-}
 function fim(){
   const k = atual, el = $("fim"); if (!el) return;
-  if (D[k].ok) { el.innerHTML = `<div class="feito">${ic("check")}Ferramenta concluída. Você ainda pode ajustar o registro.</div>${RO?"":proximo(k)}`; return; }
-  if (RO) { el.innerHTML = `<p class="sub">Ainda não concluiu esta ferramenta.</p>`; return; }
-  const falta = { diag:"Escreva o gargalo dos seis pilares para concluir.", prod:"Preencha os 3 gargalos, a ação rápida e a estrutural para concluir.", produto:"Escolha a decisão de pelo menos uma linha para concluir." }[k];
-  el.innerHTML = `<button class="btn" id="bOk" type="button" style="width:auto">Concluir ${FER[k].nome}</button><p class="hint" id="hOk">${pronto(k)?"":falta}</p>`;
-  $("bOk").onclick = () => { if (!pronto(k)) { $("hOk").className = "hint warn"; return; } D[k].ok = true; salvar(); abas(); fim(); };
+  const extra = FER[k].onepage ? `<div class="botoes"><button class="btn ghost" type="button" id="bImp">${ic("download","sm")}Imprimir / salvar PDF do One Page</button></div>` : "";
+  if (D[k].ok) el.innerHTML = `<div class="feito">${ic("check")}Ferramenta concluída. Você ainda pode ajustar o registro.</div>${extra}${RO?"":proximo(k)}`;
+  else if (RO) el.innerHTML = `<p class="sub">Ainda não concluiu esta ferramenta.</p>${extra}`;
+  else {
+    el.innerHTML = `<button class="btn" id="bOk" type="button" style="width:auto">Concluir ${FER[k].nome}</button><p class="hint" id="hOk">${pronto(k, D[k]) ? "" : faltaTexto(k)}</p>${extra}`;
+    $("bOk").onclick = () => { if (!pronto(k, D[k])) { $("hOk").className = "hint warn"; return; } D[k].ok = true; salvar(); abas(); fim(); };
+  }
+  const bi = $("bImp"); if (bi) bi.onclick = imprimirOnePage;
 }
 function proximo(k){
   const i = ORDEM.indexOf(k), n = ORDEM[i+1];
-  return n ? `<div class="botoes"><button class="btn ghost" type="button" onclick="document.querySelector('[data-t=${n}]').click()">Ir para ${FER[n].nome}</button></div>`
-           : `<div class="botoes"><a class="btn ghost" href="visita.html?dia=dia1">Voltar para a matriz do 1º dia</a></div>`;
+  if (n) return `<div class="botoes"><button class="btn ghost" type="button" data-prox="${n}">Ir para ${FER[n].nome}</button></div>`;
+  return DIA === "dia1" ? `<div class="botoes"><a class="btn ghost" href="ferramentas.html?dia=dia2${pq?"&p="+encodeURIComponent(pq):""}">Ir para as ferramentas do 2º dia</a></div>` : "";
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-prox]"); if (b) document.querySelector(`[data-t="${b.dataset.prox}"]`)?.click(); });
+
+// ---------- One Page para imprimir ----------
+function imprimirOnePage(){
+  const o = D.onepage?.out || {}, t = x => esc(String(x || "").trim()) || "—";
+  const lst = (b, n, c) => [...Array(n).keys()].map(i => o[`${b}${i}_${c}`]).filter(x => String(x||"").trim());
+  const tab = (b, n, cols) => `<table><tr>${cols.map(c => `<th>${c[1]}</th>`).join("")}</tr>${[...Array(n).keys()].filter(i => cols.some(c => String(o[`${b}${i}_${c[0]}`]||"").trim())).map(i => `<tr>${cols.map(c => `<td>${t(o[`${b}${i}_${c[0]}`])}</td>`).join("")}</tr>`).join("")}</table>`;
+  const w = window.open("", "_blank");
+  w.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>One Page 2027 · ${esc(alvo.empresas?.nome||"")}</title>
+  <style>body{font:13px/1.45 Arial,sans-serif;color:#0b0b0a;margin:28px}h1{font-size:22px;margin:0}h2{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#76560B;margin:16px 0 6px;border-bottom:1.5px solid #0b0b0a;padding-bottom:3px}
+  .top{display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid #B8912F;padding-bottom:10px}.top img{height:44px}.nums{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.nums div{border:1px solid #BDB299;border-radius:6px;padding:8px;min-height:38px}
+  table{width:100%;border-collapse:collapse}th,td{border:1px solid #BDB299;padding:5px 7px;text-align:left;vertical-align:top}th{background:#F4EFE4}ol{margin:0;padding-left:18px}.ex{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.ex div{border:1px solid #BDB299;border-radius:6px;padding:7px}.ex b{display:block;font-size:11px;color:#76560B}
+  .rod{margin-top:18px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#76560B;text-align:center}</style></head><body>
+  <div class="top"><div><div style="font-size:11px;letter-spacing:.14em;color:#76560B">CONFECÇÃO 360°</div><h1>Plano Estratégico 2027</h1><div>Empresa: <b>${esc(alvo.empresas?.nome||"")}</b> · ${esc(alvo.nome||"")}</div></div><img src="${location.origin}/logo.jpg" alt=""></div>
+  <h2>Visão de futuro</h2><div>${t(o.visao)}</div>
+  <h2>Os cinco números de 2027</h2><div class="nums">${[0,1,2,3,4].map(i => `<div>${t(o[`num${i}_v`])}</div>`).join("")}</div>
+  <h2>Prioridades estratégicas</h2><ol>${lst("pri",5,"v").map(x => `<li>${esc(x)}</li>`).join("")||"<li>—</li>"}</ol>
+  <h2>Metas e indicadores</h2>${tab("kpi",4,[["o","Objetivo"],["m","Meta"],["k","KPI"]])}
+  <h2>Projetos estratégicos</h2>${tab("pj",4,[["p","Projeto"],["r","Responsável"],["z","Prazo"]])}
+  <h2>Execução</h2><div class="ex">${["7 dias","30 dias","60 dias","90 dias"].map((r,i) => `<div><b>${r}</b>${t(o[`ex${i}_v`])}</div>`).join("")}</div>
+  <h2>Maior risco e compromisso do dono</h2><div><b>Maior risco:</b> ${t(o.risco)}</div><div style="margin-top:4px"><b>Compromisso:</b> ${t(o.comp)}</div>
+  <div class="rod">Têxtil Club · Imersão Método Confecção 360°</div>
+  <script>window.onload=()=>setTimeout(()=>window.print(),300)<\/script></body></html>`);
+  w.document.close();
 }
 
 abas(); tela();
