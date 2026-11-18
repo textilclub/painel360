@@ -97,7 +97,7 @@
     <div class="eyebrow">1º dia · Quinta, 19/11 · Aporta Hall</div>
     <h1>Ferramentas <em>360°</em> com IA</h1>
     <p class="sub">Três ferramentas para usar durante o dia. Você preenche os dados da sua empresa, a plataforma monta o comando para o Agente Estrategista e você registra o que decidiu.</p>
-    <div class="meta" id="quem" style="margin-top:16px;color:var(--muted-dark);font-size:14.5px"></div>
+    <div id="quemF" style="margin-top:16px;color:var(--muted-dark);font-size:14.5px"></div>
   </div></section>
 
   <div class="page corpo">
@@ -193,7 +193,7 @@ if (RO && !adm && !(eu && eu.status === "aprovado")) { location.replace("painel.
 let alvo = eu;
 if (alvoId !== eu?.id) { const { data } = await sb.from("participantes").select("id,nome,empresa_id,empresas(nome)").eq("id", alvoId).maybeSingle(); alvo = data; }
 if (!alvo) { location.replace("painel.html"); throw new Error("não encontrado"); }
-$("quem").innerHTML = ic("building","sm") + " " + esc(alvo.nome) + (alvo.empresas?.nome ? " · " + esc(alvo.empresas.nome) : "");
+$("quemF").innerHTML = ic("building","sm") + " " + esc(alvo.nome) + (alvo.empresas?.nome ? " · " + esc(alvo.empresas.nome) : "");
 if (RO) { document.body.classList.add("ro"); $("banner").innerHTML = `<div class="banner">Você está vendo as ferramentas de <b>${esc(alvo.nome)}</b> (somente leitura).${adm ? ` <a href="admin.html#atividades">Voltar ao administrador</a>` : ""}</div>`; }
 
 const [{ data:reg }, { data:vis }, { data:exc }] = await Promise.all([
