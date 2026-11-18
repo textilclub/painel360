@@ -53,6 +53,11 @@
   .ia .btn{margin:10px 10px 14px 0}
   .ro .cartao-acts,.ro .ia{display:none!important}
   #matriz,#compromissoEx{scroll-margin-top:190px}
+  .fer-link{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;background:#000;color:#fff;border-radius:var(--r-lg);padding:14px 16px;margin-bottom:16px;text-decoration:none;min-height:64px}
+  .fer-link .ico{width:42px;height:42px;border-radius:10px;background:var(--gold);color:#0b0b0a;display:grid;place-items:center}
+  .fer-link b{display:block;font:700 16px var(--f-display);color:#fff}
+  .fer-link small{color:var(--gold-hi);font-size:13.5px}
+  .fer-link .go{color:var(--gold-hi)}
   .corpo{position:relative;z-index:2;margin-top:-56px;max-width:980px}
 
   /* barra de status fixa */
@@ -478,6 +483,7 @@ if (!RO && eu?.empresa_id) {
 
 const pq = new URLSearchParams(location.search).get("p");
 $("dtabs").innerHTML = Object.entries(DIAS).map(([k,c]) => `<a href="visita.html?dia=${k}${pq?"&p="+encodeURIComponent(pq):""}"${k===DIA?' aria-current="page"':""}><b>${c.nome}</b><small>${c.data}</small></a>`).join("");
+if (DIA === "dia1") $("dtabs").insertAdjacentHTML("afterend", `<a class="fer-link" href="ferramentas.html${pq?"?p="+encodeURIComponent(pq):""}"><span class="ico">${ic("layers")}</span><span><b>Ferramentas 360° com IA do dia</b><small>Diagnóstico 360 · Produção 360 · Produto 360</small></span><span class="go">${ic("chev")}</span></a>`);
 renderAreas(); resumo(); renderEntrega();
 if (location.hash) setTimeout(() => document.querySelector(location.hash)?.scrollIntoView({ behavior:"smooth", block:"start" }), 150);
 </script>

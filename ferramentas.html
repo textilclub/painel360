@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ferramentas 360° · 19/11 · Têxtil Club</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+<style>
+  .fh h1{font-size:clamp(2rem,1.3rem + 3.2vw,3.1rem);letter-spacing:-.035em;margin:10px 0}
+  .fh h1 em{font-style:normal;color:var(--gold-hi)}
+  .fh .sub{font-size:17px;max-width:56ch}
+  .fh .faixa-in{padding-bottom:88px}
+  .corpo{position:relative;z-index:2;margin-top:-56px;max-width:980px}
+
+  .ftabs{display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface);border:1.5px solid var(--ink);border-radius:var(--r-lg);overflow:hidden;box-shadow:5px 5px 0 var(--gold);margin-bottom:24px;position:sticky;top:62px;z-index:20}
+  @media (max-width:899px){.ftabs{top:110px}}
+  .ftabs button{min-height:68px;border:0;border-left:1.5px solid var(--ink);background:var(--surface);color:var(--ink);display:grid;align-content:center;justify-items:center;gap:3px;padding:8px 6px;cursor:pointer}
+  .ftabs button:first-child{border-left:0}
+  .ftabs b{font:700 15px/1.1 var(--f-display);letter-spacing:-.01em}
+  .ftabs small{font:600 11.5px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .ftabs small.ok{color:var(--ok)}
+  .ftabs button[aria-selected="true"]{background:var(--ink);color:#fff}
+  .ftabs button[aria-selected="true"] small{color:var(--gold-hi)}
+  .ftabs .salvo{grid-column:1/-1;border-top:1.5px solid var(--ink);font:500 12.5px var(--f-body);color:var(--muted);padding:6px 12px;text-align:right;background:var(--paper)}
+  .ftabs .salvo.ok{color:var(--ok)}
+
+  .ficha{background:#000;color:var(--on-dark);border-radius:var(--r-lg);padding:20px;display:grid;gap:14px;grid-template-columns:repeat(3,1fr);margin-bottom:22px}
+  .ficha div{display:grid;gap:4px;align-content:start}
+  .ficha span{font:600 11.5px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-hi)}
+  .ficha p{font-size:14.5px;line-height:1.5;color:#e7e2d6}
+  @media (max-width:760px){.ficha{grid-template-columns:1fr}}
+
+  .passo{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px 18px;margin-bottom:18px}
+  .passo>header{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;margin-bottom:14px}
+  .passo .n{width:38px;height:38px;border-radius:50%;background:var(--ink);color:var(--gold-hi);display:grid;place-items:center;font:700 15px var(--f-display)}
+  .passo h2{font:700 clamp(1.15rem,1rem + .6vw,1.4rem)/1.25 var(--f-display);letter-spacing:-.02em}
+  .passo header p{font-size:14.5px;color:var(--muted);margin-top:3px;line-height:1.45}
+
+  .legenda{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:13.5px;color:var(--ink-2);background:var(--paper);border-radius:10px;padding:10px 12px;margin-bottom:14px}
+  .legenda b{font:700 12px var(--f-display);padding:2px 7px;border-radius:6px;margin-right:4px}
+  .t-R{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-line)}
+  .t-H{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-line)}
+  .t-P{background:var(--err-bg);color:var(--err);border:1px solid var(--err-line)}
+
+  .grupo{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;background:var(--paper)}
+  .grupo>h3{font:700 16px var(--f-display);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .grupo>h3 .k{width:26px;height:26px;border-radius:7px;background:var(--ink);color:var(--gold-hi);display:grid;place-items:center;font-size:12.5px}
+  .campos{display:grid;gap:12px}
+  @media (min-width:760px){.campos.dois{grid-template-columns:1fr 1fr}}
+  .campo label{display:flex;align-items:center;justify-content:space-between;gap:8px;font:600 13.5px var(--f-body);color:var(--ink-2);margin-bottom:6px;flex-wrap:wrap}
+  .campo .ajuda{font:400 12.5px var(--f-body);color:var(--muted);display:block;margin:-2px 0 6px}
+  .rhp{display:inline-flex;border:1.5px solid var(--line-2);border-radius:8px;overflow:hidden}
+  .rhp button{min-width:36px;min-height:30px;border:0;border-left:1px solid var(--line-2);background:var(--surface);font:700 12px var(--f-display);color:var(--muted);cursor:pointer}
+  .rhp button:first-child{border-left:0}
+  .rhp button[aria-pressed="true"][data-f="R"]{background:var(--ok);color:#fff}
+  .rhp button[aria-pressed="true"][data-f="H"]{background:var(--warn);color:#fff}
+  .rhp button[aria-pressed="true"][data-f="P"]{background:var(--err);color:#fff}
+  textarea{width:100%;min-height:78px;resize:vertical;background:var(--surface);border:1.5px solid var(--line-2);border-radius:var(--r);padding:11px 13px;font:500 15.5px/1.5 var(--f-body);color:var(--ink);outline:none}
+  textarea:focus,input:focus,select:focus{border-color:var(--ink);box-shadow:0 0 0 4px rgba(184,145,47,.35)}
+  textarea::placeholder,input::placeholder{color:#968E7A;font-weight:400}
+  input,select{min-height:48px;font-size:15.5px}
+  textarea:disabled,input:disabled,select:disabled{background:var(--paper-2);color:var(--ink-2)}
+
+  .cmd textarea{min-height:240px;font:500 13.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--paper)}
+  .botoes{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+  .botoes .btn{width:auto}
+  .aviso{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:14px;margin-bottom:12px}
+
+  .dec{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+  @media (max-width:560px){.dec{grid-template-columns:1fr 1fr}}
+  .dec button{min-height:46px;border-radius:10px;border:1.5px solid var(--line-2);background:var(--surface);font:700 12.5px var(--f-body);letter-spacing:.06em;color:var(--ink-2);cursor:pointer}
+  .dec button[aria-pressed="true"][data-v="ACELERAR"]{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .dec button[aria-pressed="true"][data-v="CORRIGIR"]{background:var(--warn-bg);border-color:var(--warn);color:var(--warn)}
+  .dec button[aria-pressed="true"][data-v="REDUZIR"]{background:var(--err-bg);border-color:var(--err);color:var(--err)}
+  .dec button[aria-pressed="true"][data-v="VALIDAR"]{background:var(--gold-soft);border-color:var(--gold-ink);color:var(--gold-ink)}
+
+  .confirmada{display:flex;gap:10px;align-items:center;font-size:14.5px;margin-top:8px;cursor:pointer}
+  .confirmada input{width:22px;height:22px;min-height:22px;padding:0;accent-color:var(--ink);appearance:auto;-webkit-appearance:checkbox}
+  .feito{display:flex;gap:12px;align-items:center;background:var(--ok-bg);border:1px solid var(--ok-line);color:var(--ok);border-radius:12px;padding:14px 16px;font-weight:600}
+  .banner{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn);border-radius:12px;padding:12px 16px;font-size:14.5px;margin-bottom:16px;font-weight:500}
+  .ro .rhp button:not([aria-pressed="true"]),.ro .so-edit{display:none!important}
+  .resumo-pilar{display:grid;grid-template-columns:minmax(120px,170px) 90px 1fr;gap:8px;align-items:center}
+  @media (max-width:640px){.resumo-pilar{grid-template-columns:1fr 90px}.resumo-pilar .g{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<script src="ui.js" data-page="visita"></script>
+<main class="wrap">
+  <section class="faixa fh"><div class="faixa-in">
+    <div class="eyebrow">1º dia · Quinta, 19/11 · Aporta Hall</div>
+    <h1>Ferramentas <em>360°</em> com IA</h1>
+    <p class="sub">Três ferramentas para usar durante o dia. Você preenche os dados da sua empresa, a plataforma monta o comando para o Agente Estrategista e você registra o que decidiu.</p>
+    <div class="meta" id="quem" style="margin-top:16px;color:var(--muted-dark);font-size:14.5px"></div>
+  </div></section>
+
+  <div class="page corpo">
+    <div id="banner"></div>
+    <div class="ftabs" role="tablist" id="ftabs"></div>
+    <div id="tela"></div>
+  </div>
+</main>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+const C = window.TC_CONFIG; const sb = createClient(C.SUPABASE_URL, C.SUPABASE_KEY);
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ic = (n, c) => (window.IC ? IC(n, c) : "");
+const TIPO = "fer_dia1";
+
+const CONTROLE = `CONTROLE: Nunca inventar dados; apresentar hipótese como hipótese; decisão final é do empresário. Questione incoerências entre produção, vendas, marca/produto, finanças, pessoas e estratégia. Nunca fabrique percentuais, margens, capacidades ou valores. Se houver informação insuficiente, entregue a estrutura preenchível e as perguntas necessárias, sem conclusões numéricas.`;
+const FORMATO = s => `FORMATO DE ENTREGA: ${s}. Em toda tabela, sinalize: [R] dado real informado, [H] hipótese/estimativa ou [P] informação pendente. Para cada recomendação, escreva evidência, impacto, responsável sugerido, prazo a confirmar e dependências. Distinga decisão confirmada pelo empresário de opção ainda em análise.`;
+const PROMPT = (mod, obj, ins, proc, fmt) => `Você é o Agente Estrategista Confecção 360°, atuando como conselheiro crítico de um empresário brasileiro da indústria do vestuário. Execute o módulo ${mod}. Objetivo: ${obj}.
+
+CONTEXTO: use exclusivamente informações fornecidas pelo participante e os registros anteriores desta mesma empresa. Antes da análise, solicite somente os dados essenciais que faltarem: ${ins}. Não confunda projeções com histórico, nem faturamento com lucro.
+
+PROCESSO OBRIGATÓRIO: ${proc}
+
+${FORMATO(fmt)}
+
+${CONTROLE}`;
+
+const PILARES = [
+  ["producao","Produção"],["vendas","Vendas"],["marca","Marca/Produto"],["fin","Gestão/Financeiro"],["pessoas","Liderança/Pessoas"],["estrat","Estratégia"]
+];
+const FER = {
+  diag: {
+    nome:"DIAGNÓSTICO 360", curto:"Diagnóstico", quando:"Durante o Raio-X Confecção 360°",
+    obj:"Mapear maturidade e gargalo principal dos seis pilares",
+    ins:"Evidências concretas para cada pilar; indicadores existentes; notas sugeridas",
+    saida:"Quadro de seis pilares + um gargalo por pilar + pendências",
+    proc:"Analise Produção, Vendas, Marca/Produto, Gestão/Financeiro, Liderança/Pessoas e Estratégia; para cada um, nota 0–10 somente se justificada, evidência, causa provável, impacto e principal decisão.",
+    grupos: PILARES.map(([k,t]) => ({ t, campos:[
+      { k:`${k}_ev`, l:"Evidência concreta", tipo:"area", ph:"O que acontece hoje, com fatos. Ex.: atrasamos 3 de cada 10 pedidos", f:true },
+      { k:`${k}_ind`, l:"Indicador que você já acompanha", tipo:"text", ph:"Ex.: peças/dia, ticket médio, margem… ou 'nenhum'", f:true },
+      { k:`${k}_nota`, l:"Sua nota (0 a 10)", tipo:"nota" } ] }))
+  },
+  prod: {
+    nome:"PRODUÇÃO 360", curto:"Produção", quando:"Oficina de Produção e Processos",
+    obj:"Diagnosticar fluxo produtivo e gargalos que limitam entrega, qualidade e margem",
+    ins:"Etapas, tempos, demanda, produção, retrabalho, OTD, PPCP, capacidade disponível",
+    saida:"Mapa de gargalos + top 3 + duas ações",
+    proc:"Mapeie fluxo e gargalos; separe sintoma/causa; priorize top 3 por evidência, impacto e controle; indique ação rápida e estrutural; confronte produção e vendas.",
+    grupos:[
+      { t:"Fluxo", campos:[
+        { k:"etapas", l:"Etapas do processo", tipo:"area", ph:"Ex.: modelagem → corte → costura (terceirizada) → acabamento → expedição", f:true },
+        { k:"tempos", l:"Tempos de cada etapa", tipo:"area", ph:"Ex.: corte 1 dia; costura 5 dias; acabamento 2 dias", f:true } ] },
+      { t:"Volume e capacidade", dois:true, campos:[
+        { k:"demanda", l:"Demanda (peças/mês)", tipo:"text", ph:"Quanto o comercial vende ou precisa", f:true },
+        { k:"producao", l:"Produção real (peças/mês)", tipo:"text", ph:"Quanto a fábrica entrega hoje", f:true },
+        { k:"capacidade", l:"Capacidade disponível", tipo:"text", ph:"Ex.: 12 costureiras, 1 turno, 8h", f:true },
+        { k:"retrabalho", l:"Retrabalho / defeitos", tipo:"text", ph:"Ex.: 5% das peças voltam", f:true } ] },
+      { t:"Entrega e planejamento", campos:[
+        { k:"otd", l:"Entregas no prazo (OTD)", tipo:"text", ph:"Ex.: 7 de cada 10 pedidos saem no prazo", f:true },
+        { k:"ppcp", l:"Como planeja e controla a produção (PPCP)", tipo:"area", ph:"Ex.: planilha semanal; prioridade definida pelo dono no dia", f:true } ] } ]
+  },
+  produto: {
+    nome:"PRODUTO 360", curto:"Produto", quando:"Oficina de Marca e Produto",
+    obj:"Avaliar posicionamento e mix de produto sob margem, demanda e capacidade",
+    ins:"Linhas, clientes ideais, preço, volume, margem, pedidos, prazo e posicionamento",
+    saida:"Matriz de portfólio com decisões e hipótese explícita",
+    proc:"Classifique até três linhas em ACELERAR, CORRIGIR, REDUZIR ou VALIDAR; explique evidência e risco; considere margem e ocupação da fábrica.",
+    grupos:[
+      { t:"Posicionamento", campos:[
+        { k:"posic", l:"Como a sua marca se posiciona", tipo:"area", ph:"Para quem vende, por que escolhem você, faixa de preço", f:true } ] },
+      ...[1,2,3].map(n => ({ t:`Linha ${n}`, dois:true, campos:[
+        { k:`l${n}_nome`, l:"Nome da linha", tipo:"text", ph: n===1?"Ex.: camisetas básicas":n===2?"Ex.: uniformes corporativos":"Ex.: moda fitness" },
+        { k:`l${n}_cli`, l:"Cliente ideal", tipo:"text", ph:"Quem compra", f:true },
+        { k:`l${n}_preco`, l:"Preço médio", tipo:"text", ph:"R$ por peça", f:true },
+        { k:`l${n}_vol`, l:"Volume (peças/mês)", tipo:"text", ph:"Ex.: 2.000", f:true },
+        { k:`l${n}_marg`, l:"Margem", tipo:"text", ph:"Ex.: 30% ou 'não sei'", f:true },
+        { k:`l${n}_ped`, l:"Pedidos e prazo", tipo:"text", ph:"Ex.: pedido mínimo 50; prazo 20 dias", f:true } ] })) ]
+  }
+};
+const ORDEM = ["diag","prod","produto"];
+
+// ---------- sessão ----------
+const { data:{ session } } = await sb.auth.getSession();
+if (!session) { location.replace("index.html"); throw new Error("sem sessão"); }
+const { data:adm } = await sb.rpc("is_admin"); if (adm && window.TC_UI) window.TC_UI.mostrarAdmin();
+const { data:eu } = await sb.from("participantes").select("id,nome,status,empresa_id,empresas(nome)").eq("id", session.user.id).maybeSingle();
+const alvoId = new URLSearchParams(location.search).get("p") || eu?.id;
+if (!alvoId) { location.replace(adm ? "admin.html" : "painel.html"); throw new Error("sem participante"); }
+const RO = !(eu && eu.id === alvoId && eu.status === "aprovado");
+if (RO && !adm && !(eu && eu.status === "aprovado")) { location.replace("painel.html"); throw new Error("sem acesso"); }
+let alvo = eu;
+if (alvoId !== eu?.id) { const { data } = await sb.from("participantes").select("id,nome,empresa_id,empresas(nome)").eq("id", alvoId).maybeSingle(); alvo = data; }
+if (!alvo) { location.replace("painel.html"); throw new Error("não encontrado"); }
+$("quem").innerHTML = ic("building","sm") + " " + esc(alvo.nome) + (alvo.empresas?.nome ? " · " + esc(alvo.empresas.nome) : "");
+if (RO) { document.body.classList.add("ro"); $("banner").innerHTML = `<div class="banner">Você está vendo as ferramentas de <b>${esc(alvo.nome)}</b> (somente leitura).${adm ? ` <a href="admin.html#atividades">Voltar ao administrador</a>` : ""}</div>`; }
+
+const [{ data:reg }, { data:vis }, { data:exc }] = await Promise.all([
+  sb.from("atividades").select("dados,atualizado_em").eq("participante_id", alvoId).eq("tipo", TIPO).maybeSingle(),
+  sb.from("atividades").select("dados").eq("participante_id", alvoId).eq("tipo","visita").maybeSingle(),
+  alvo.empresa_id ? sb.from("exercicios").select("regime,resumo").eq("empresa_id", alvo.empresa_id).maybeSingle() : Promise.resolve({ data:null })
+]);
+const D = reg?.dados || {};
+ORDEM.forEach(k => D[k] = Object.assign({ in:{}, out:{}, ia:"", ok:false }, D[k] || {}));
+let atual = ORDEM.includes(location.hash.slice(1)) ? location.hash.slice(1) : (ORDEM.find(k => !D[k].ok) || "diag");
+
+// ---------- salvar ----------
+let t = null;
+function status(txt, ok){ const s=$("salvo"); if (s){ s.textContent=txt; s.className="salvo"+(ok?" ok":""); } }
+function salvar(){
+  if (RO) return; clearTimeout(t); status("Salvando…");
+  t = setTimeout(async () => {
+    const tudo = ORDEM.every(k => D[k].ok);
+    const { error } = await sb.from("atividades").upsert({ participante_id: eu.id, tipo: TIPO, empresa_id: eu.empresa_id, dados: D,
+      status: tudo ? "concluido" : "rascunho", atualizado_em: new Date().toISOString() });
+    status(error ? "Não salvou: verifique a internet" : "Salvo automaticamente", !error);
+  }, 700);
+}
+
+// ---------- abas ----------
+function abas(){
+  $("ftabs").innerHTML = ORDEM.map((k,i) => `<button role="tab" type="button" data-t="${k}" aria-selected="${k===atual}"><b>${i+1}. ${FER[k].curto}</b><small class="${D[k].ok?"ok":""}">${D[k].ok?"✓ Concluída":FER[k].nome}</small></button>`).join("")
+    + `<div class="salvo" id="salvo">${reg?.atualizado_em ? "Salvo em " + new Date(reg.atualizado_em).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"}) : (RO ? "" : "As respostas são salvas automaticamente")}</div>`;
+  $("ftabs").querySelectorAll("[data-t]").forEach(b => b.onclick = () => { atual = b.dataset.t; history.replaceState(null,"","#"+atual); abas(); tela(); window.scrollTo({ top: $("ftabs").offsetTop - 130, behavior:"smooth" }); });
+}
+
+// ---------- campos ----------
+const val = (k, c) => D[k].in[c] || { v:"", f:"" };
+function campo(k, c){
+  const v = val(k, c.k), dis = RO ? "disabled" : "";
+  const rhp = c.f ? `<span class="rhp" role="group" aria-label="Tipo da informação">${["R","H","P"].map(f => `<button type="button" data-k="${c.k}" data-f="${f}" aria-pressed="${v.f===f}" title="${{R:"Real",H:"Estimativa",P:"Pendente"}[f]}" ${dis}>${f}</button>`).join("")}</span>` : "";
+  let inp;
+  if (c.tipo === "area") inp = `<textarea data-in="${c.k}" placeholder="${esc(c.ph||"")}" ${dis}>${esc(v.v)}</textarea>`;
+  else if (c.tipo === "nota") inp = `<select data-in="${c.k}" ${dis}><option value="">Sem nota</option>${[...Array(11).keys()].map(n => `<option ${String(v.v)===String(n)?"selected":""}>${n}</option>`).join("")}</select>`;
+  else inp = `<input data-in="${c.k}" value="${esc(v.v)}" placeholder="${esc(c.ph||"")}" ${dis}>`;
+  return `<div class="campo"><label><span>${c.l}</span>${rhp}</label>${inp}</div>`;
+}
+
+function comando(k){
+  const F = FER[k], tag = f => f ? `[${f}]` : "";
+  const linhas = F.grupos.map(g => {
+    const itens = g.campos.map(c => { const v = val(k, c.k); const tx = String(v.v||"").trim();
+      if (!tx) return `- ${c.l}: [P] não informado`;
+      return `- ${c.l}: ${c.f ? (tag(v.f) || "[H]") + " " : ""}${tx}`; }).join("\n");
+    return `${g.t.toUpperCase()}\n${itens}`;
+  }).join("\n\n");
+  let extra = "";
+  if (k === "prod" && vis?.dados?.areas) {
+    const lac = Object.values(vis.dados.areas).filter(a => (a.eu||"").trim() && a.nivel != null && a.nivel <= 1).map(a => `- ${a.eu.trim()}`);
+    const ac = (vis.dados.acoes||[]).filter(a => (a.o||"").trim()).map(a => `- ${a.o.trim()}${a.p?" ("+a.p+")":""}`);
+    if (lac.length || ac.length) extra += `\n\nREGISTRO ANTERIOR — VISITA TÉCNICA (18/11)\nLacunas que identifiquei na minha empresa:\n${lac.join("\n")||"- —"}\nAções que me comprometi a fazer:\n${ac.join("\n")||"- —"}`;
+  }
+  if (exc?.resumo?.receita) {
+    const brl = v => "R$ " + Math.round(v||0).toLocaleString("pt-BR");
+    extra += `\n\nREGISTRO ANTERIOR — PLANEJAMENTO 2027 (exercício de casa; é PROJEÇÃO, não histórico)\n- Regime: ${exc.regime==="presumido"?"Lucro Presumido":"Simples Nacional"}\n- Faturamento projetado 2027: [H] ${brl(exc.resumo.receita)}\n- Resultado projetado 2027: [H] ${brl(exc.resumo.resultado)}`;
+  }
+  return `${PROMPT(F.nome, F.obj, F.ins, F.proc, F.saida)}
+
+=== DADOS DA EMPRESA ===
+Empresa: ${alvo.empresas?.nome || ""}
+Participante: ${alvo.nome || ""}
+Legenda: [R] real · [H] estimativa · [P] pendente
+
+${linhas}${extra}`;
+}
+
+// ---------- saída ----------
+function saida(k){
+  const o = D[k].out, dis = RO ? "disabled" : "";
+  const inp = (key, ph) => `<input data-out="${key}" value="${esc(o[key]||"")}" placeholder="${esc(ph)}" ${dis}>`;
+  const area = (key, ph) => `<textarea data-out="${key}" placeholder="${esc(ph)}" ${dis}>${esc(o[key]||"")}</textarea>`;
+  if (k === "diag") return `<div class="grupo"><h3>Quadro dos seis pilares</h3><div class="campos">${PILARES.map(([p,t]) => `
+      <div class="resumo-pilar"><b>${t}</b><select data-out="${p}_nota" aria-label="Nota final ${t}" ${dis}><option value="">Nota</option>${[...Array(11).keys()].map(n=>`<option ${String(o[p+"_nota"])===String(n)?"selected":""}>${n}</option>`).join("")}</select>
+      <div class="g">${inp(p+"_garg", "Gargalo principal deste pilar")}</div></div>`).join("")}</div></div>
+    <div class="campo"><label>Pendências (dados que faltam levantar)</label>${area("pend","Ex.: margem por produto; capacidade real da costura")}</div>`;
+  if (k === "prod") return `<div class="grupo"><h3>Top 3 gargalos</h3><div class="campos">${[1,2,3].map(n => `<div class="campos dois">
+      <div class="campo"><label>Gargalo ${n} (sintoma)</label>${inp("g"+n,"O que aparece")}</div>
+      <div class="campo"><label>Causa provável</label>${inp("c"+n,"Por que acontece")}</div></div>`).join("")}</div></div>
+    <div class="campos dois">
+      <div class="campo"><label>Ação rápida</label>${area("rapida","Resolve logo, com pouco recurso")}</div>
+      <div class="campo"><label>Ação estrutural</label>${area("estrutural","Muda o processo de forma duradoura")}</div></div>`;
+  return `${[1,2,3].map(n => { const nm = String(val("produto","l"+n+"_nome").v||"").trim() || "Linha "+n; return `<div class="grupo"><h3><span class="k">${n}</span>${esc(nm)}</h3>
+      <div class="dec" role="group" aria-label="Decisão para ${esc(nm)}">${["ACELERAR","CORRIGIR","REDUZIR","VALIDAR"].map(d => `<button type="button" data-dec="${n}" data-v="${d}" aria-pressed="${o["d"+n]===d}" ${dis}>${d}</button>`).join("")}</div>
+      <div class="campos dois"><div class="campo"><label>Evidência e risco</label>${area("e"+n,"Por que essa decisão")}</div>
+      <div class="campo"><label>Hipótese a validar</label>${area("h"+n,"O que ainda precisa ser confirmado")}</div></div>
+      <label class="confirmada"><input type="checkbox" data-conf="${n}" ${o["c"+n]?"checked":""} ${dis}> Decisão confirmada por mim (desmarcado = ainda em análise)</label></div>`; }).join("")}`;
+}
+
+// ---------- tela ----------
+function tela(){
+  const k = atual, F = FER[k];
+  $("tela").innerHTML = `
+    <div class="ficha">
+      <div><span>Quando</span><p>${F.quando}</p></div>
+      <div><span>Objetivo</span><p>${F.obj}</p></div>
+      <div><span>Você sai com</span><p>${F.saida}</p></div>
+    </div>
+
+    <section class="passo"><header><span class="n">1</span><div><h2>Seus dados</h2><p>Preencha o que souber. Não precisa ser perfeito: marque se cada informação é real, estimada ou pendente.</p></div></header>
+      <div class="legenda"><span><b class="t-R">R</b>Real (tenho o número)</span><span><b class="t-H">H</b>Estimativa (hipótese)</span><span><b class="t-P">P</b>Pendente (preciso levantar)</span></div>
+      ${F.grupos.map((g,i) => `<div class="grupo"><h3>${F.grupos.length>3?`<span class="k">${i+1}</span>`:""}${g.t}</h3><div class="campos ${g.dois?"dois":""}">${g.campos.map(c => campo(k,c)).join("")}</div></div>`).join("")}
+    </section>
+
+    <section class="passo cmd"><header><span class="n">2</span><div><h2>Comando para o Agente Estrategista</h2><p>O comando já leva o prompt do módulo ${F.nome} e os seus dados. Copie e cole no agente (ou no ChatGPT).</p></div></header>
+      ${k==="prod" && vis?.dados?.areas ? `<div class="aviso">Incluímos as lacunas e ações da sua visita técnica do dia 18.</div>` : ""}
+      <textarea id="cmd" readonly></textarea>
+      <div class="botoes so-edit"><button class="btn" id="bCopiar" type="button">${ic("clip","sm")}Copiar comando</button><a class="btn ghost" href="https://chatgpt.com/" target="_blank" rel="noopener">Abrir o ChatGPT</a><span class="hint" id="cpOk"></span></div>
+    </section>
+
+    <section class="passo"><header><span class="n">3</span><div><h2>Registro de saída</h2><p>Depois da conversa com a IA e da discussão na mesa, registre aqui o que ficou decidido.</p></div></header>
+      ${saida(k)}
+      <div class="campo" style="margin-top:12px"><label>Resposta da IA (opcional: cole aqui para guardar)</label><textarea data-ia="1" style="min-height:120px" ${RO?"disabled":""}>${esc(D[k].ia||"")}</textarea></div>
+      <div id="fim" style="margin-top:16px"></div>
+    </section>`;
+  $("cmd").value = comando(k);
+
+  // eventos
+  $("tela").querySelectorAll("[data-in]").forEach(el => el.addEventListener(el.tagName==="SELECT"?"change":"input", () => {
+    const c = el.dataset.in, cur = D[k].in[c] || { v:"", f:"" }; cur.v = el.value;
+    if (!cur.f && el.value.trim()) { const def = el.closest(".campo").querySelector('[data-f="H"]'); if (def) { cur.f = "H"; el.closest(".campo").querySelectorAll(".rhp button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.f==="H"))); } }
+    D[k].in[c] = cur; $("cmd").value = comando(k); salvar();
+    if (k==="produto" && /_nome$/.test(c)) { const n = c[1]; const h = $("tela").querySelectorAll(".passo")[2].querySelectorAll(".grupo h3")[n-1]; if (h) h.innerHTML = `<span class="k">${n}</span>${esc(el.value.trim()||"Linha "+n)}`; }
+  }));
+  $("tela").querySelectorAll(".rhp button").forEach(b => b.onclick = () => {
+    const c = b.dataset.k, cur = D[k].in[c] || { v:"", f:"" }; cur.f = cur.f === b.dataset.f ? "" : b.dataset.f; D[k].in[c] = cur;
+    b.parentElement.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.f === cur.f)));
+    $("cmd").value = comando(k); salvar(); });
+  $("tela").querySelectorAll("[data-out]").forEach(el => el.addEventListener(el.tagName==="SELECT"?"change":"input", () => { D[k].out[el.dataset.out] = el.value; salvar(); fim(); }));
+  $("tela").querySelectorAll("[data-dec]").forEach(b => b.onclick = () => { const n = b.dataset.dec; D[k].out["d"+n] = D[k].out["d"+n] === b.dataset.v ? "" : b.dataset.v;
+    b.parentElement.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.v === D[k].out["d"+n]))); salvar(); fim(); });
+  $("tela").querySelectorAll("[data-conf]").forEach(el => el.onchange = () => { D[k].out["c"+el.dataset.conf] = el.checked; salvar(); });
+  $("tela").querySelector("[data-ia]").addEventListener("input", e => { D[k].ia = e.target.value; salvar(); });
+  const bc = $("bCopiar"); if (bc) bc.onclick = async () => {
+    try { await navigator.clipboard.writeText($("cmd").value); } catch { $("cmd").select(); document.execCommand("copy"); }
+    $("cpOk").textContent = "Copiado. Agora cole no agente."; setTimeout(() => $("cpOk").textContent = "", 4000); };
+  fim();
+}
+
+function pronto(k){
+  const o = D[k].out, t = x => String(x||"").trim();
+  if (k === "diag") return PILARES.filter(([p]) => t(o[p+"_garg"])).length >= 6;
+  if (k === "prod") return [1,2,3].every(n => t(o["g"+n])) && t(o.rapida) && t(o.estrutural);
+  return [1,2,3].some(n => o["d"+n]);
+}
+function fim(){
+  const k = atual, el = $("fim"); if (!el) return;
+  if (D[k].ok) { el.innerHTML = `<div class="feito">${ic("check")}Ferramenta concluída. Você ainda pode ajustar o registro.</div>${RO?"":proximo(k)}`; return; }
+  if (RO) { el.innerHTML = `<p class="sub">Ainda não concluiu esta ferramenta.</p>`; return; }
+  const falta = { diag:"Escreva o gargalo dos seis pilares para concluir.", prod:"Preencha os 3 gargalos, a ação rápida e a estrutural para concluir.", produto:"Escolha a decisão de pelo menos uma linha para concluir." }[k];
+  el.innerHTML = `<button class="btn" id="bOk" type="button" style="width:auto">Concluir ${FER[k].nome}</button><p class="hint" id="hOk">${pronto(k)?"":falta}</p>`;
+  $("bOk").onclick = () => { if (!pronto(k)) { $("hOk").className = "hint warn"; return; } D[k].ok = true; salvar(); abas(); fim(); };
+}
+function proximo(k){
+  const i = ORDEM.indexOf(k), n = ORDEM[i+1];
+  return n ? `<div class="botoes"><button class="btn ghost" type="button" onclick="document.querySelector('[data-t=${n}]').click()">Ir para ${FER[n].nome}</button></div>`
+           : `<div class="botoes"><a class="btn ghost" href="visita.html?dia=dia1">Voltar para a matriz do 1º dia</a></div>`;
+}
+
+abas(); tela();
+</script>
+</body>
+</html>

@@ -108,8 +108,8 @@
     </div>
     <div class="tabela">
       <table>
-        <thead><tr><th>Participante</th><th>Visita · 18/11</th><th>1º dia · 19/11</th><th>2º dia · 20/11</th></tr></thead>
-        <tbody id="vLista"><tr><td colspan="4" class="vazio">Carregando…</td></tr></tbody>
+        <thead><tr><th>Participante</th><th>Visita · 18/11</th><th>1º dia · 19/11</th><th>Ferramentas 19/11</th><th>2º dia · 20/11</th></tr></thead>
+        <tbody id="vLista"><tr><td colspan="5" class="vazio">Carregando…</td></tr></tbody>
       </table>
     </div>
   </section>
@@ -209,13 +209,13 @@ const DIAS_V = { visita:8, dia1:8, dia2:8 };
 async function carregarVisitas(){
   const [{ data:ps }, { data:ats }] = await Promise.all([
     sb.from("participantes").select("id,nome,status,empresas(nome)").eq("status","aprovado").order("nome"),
-    sb.from("atividades").select("participante_id,tipo,status,dados,atualizado_em").in("tipo", Object.keys(DIAS_V))
+    sb.from("atividades").select("participante_id,tipo,status,dados,atualizado_em").in("tipo", [...Object.keys(DIAS_V),"fer_dia1"])
   ]);
   const m = {}; (ats||[]).forEach(a => m[a.participante_id+"|"+a.tipo] = a);
   const lista = ps||[];
   const conc = t => lista.filter(p => m[p.id+"|"+t]?.status==="concluido").length;
   $("vTot").textContent = lista.length; $("vV").textContent = conc("visita"); $("v1").textContent = conc("dia1"); $("v2").textContent = conc("dia2");
-  if (!lista.length){ $("vLista").innerHTML = `<tr><td colspan="4" class="vazio">Nenhum participante liberado ainda.</td></tr>`; return; }
+  if (!lista.length){ $("vLista").innerHTML = `<tr><td colspan="5" class="vazio">Nenhum participante liberado ainda.</td></tr>`; return; }
   const cel = (p, t, rot) => {
     const a = m[p.id+"|"+t];
     if (!a) return `<td data-l="${rot}"><span class="badge bloqueado">Não começou</span></td>`;
@@ -223,9 +223,13 @@ async function carregarVisitas(){
     const b = a.status==="concluido" ? `<span class="badge aprovado">Concluído</span>` : `<span class="badge pendente">${feitas} de ${tot} áreas</span>`;
     return `<td data-l="${rot}">${b}<div class="fita mini-fita" aria-hidden="true"><i style="width:${a.status==="concluido"?100:feitas/tot*100}%"></i></div><div class="acts" style="margin-top:8px"><a class="btn sm ghost" href="visita.html?dia=${t}&p=${p.id}">Ver</a></div></td>`;
   };
+  const celF = p => { const a = m[p.id+"|fer_dia1"], rot = "Ferramentas 19/11";
+    if (!a) return `<td data-l="${rot}"><span class="badge bloqueado">Não começou</span></td>`;
+    const n = ["diag","prod","produto"].filter(k => a.dados?.[k]?.ok).length;
+    return `<td data-l="${rot}"><span class="badge ${n===3?"aprovado":"pendente"}">${n} de 3 concluídas</span><div class="fita mini-fita" aria-hidden="true"><i style="width:${n/3*100}%"></i></div><div class="acts" style="margin-top:8px"><a class="btn sm ghost" href="ferramentas.html?p=${p.id}">Ver</a></div></td>`; };
   $("vLista").innerHTML = lista.map(p => `<tr>
       <td data-l="Participante"><b>${esc(p.nome)}</b><small>${esc(p.empresas?.nome||"")}</small></td>
-      ${cel(p,"visita","Visita · 18/11")}${cel(p,"dia1","1º dia · 19/11")}${cel(p,"dia2","2º dia · 20/11")}
+      ${cel(p,"visita","Visita · 18/11")}${cel(p,"dia1","1º dia · 19/11")}${celF(p)}${cel(p,"dia2","2º dia · 20/11")}
     </tr>`).join("");
 }
 carregarVisitas();
