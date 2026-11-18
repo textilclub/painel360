@@ -60,15 +60,16 @@
   const C = window.TC_CONFIG || {};
   const wa = C.WHATSAPP_SUPORTE ? `https://wa.me/${C.WHATSAPP_SUPORTE}` : "#";
 
-  const links = page === "admin"
-    ? [["participantes", "#participantes", "Participantes"], ["exercicios", "#exercicios", "Exercício das empresas"], ["atividades", "#atividades", "Atividades"]]
-    : [["painel", "painel.html", "Início"], ["exercicio", "exercicio.html", "Exercício"], ["visita", "visita.html", "Atividades"], ["cronograma", "cronograma.html", "Cronograma"], ["palestrantes", "palestrantes.html", "Palestrantes"], ["local", "local.html", "Local"]];
+  const pre = page === "cliente" ? "admin.html" : "";
+  const links = (page === "admin" || page === "cliente")
+    ? [["participantes", pre + "#participantes", "Participantes"], ["exercicios", pre + "#exercicios", "Plano Anual das empresas"], ["acoes", pre + "#acoes", "Ações"]]
+    : [["painel", "painel.html", "Início"], ["exercicio", "exercicio.html", "Plano Anual"], ["visita", "visita.html", "Ações"], ["cronograma", "cronograma.html", "Cronograma"], ["palestrantes", "palestrantes.html", "Palestrantes"], ["local", "local.html", "Local"]];
   const nav = cls => `<nav class="${cls}" aria-label="Navegação principal">${links.map(([k, h, t]) =>
-    `<a class="nl"${k === page ? ' aria-current="page"' : ""} href="${h}">${t}</a>`).join("")}${page === "admin" ? "" : `<a class="nl nl-admin hide" href="admin.html">Administração</a>`}</nav>`;
+    `<a class="nl"${k === page ? ' aria-current="page"' : ""} href="${h}">${t}</a>`).join("")}${page === "admin" || page === "cliente" ? "" : `<a class="nl nl-admin hide" href="admin.html">Administração</a>`}</nav>`;
 
   const html = `
 <header class="topo"><div class="topo-in">
-  <a class="marca" href="${page === "admin" ? "admin.html" : "painel.html"}" aria-label="Têxtil Club, página inicial"><img src="logo.jpg" alt="Têxtil Club" width="132" height="50"></a>
+  <a class="marca" href="${page === "admin" || page === "cliente" ? "admin.html" : "painel.html"}" aria-label="Têxtil Club, página inicial"><img src="logo.jpg" alt="Têxtil Club" width="132" height="50"></a>
   ${nav("nav-inline")}
   <div class="topo-dir">
     <span class="quem" id="quem"></span>
@@ -87,6 +88,9 @@ ${nav("subnav")}`;
     } catch (_) {}
     location.replace("index.html");
   });
+
+  // IA de consulta: ícone fixo nas páginas do participante
+  if (page !== "admin" && page !== "cliente") { const s = document.createElement("script"); s.type = "module"; s.src = "consulta.js"; document.head.appendChild(s); }
 
   window.TC_UI = { mostrarAdmin() { document.querySelectorAll(".nl-admin").forEach(a => a.classList.remove("hide")); } };
 

@@ -60,6 +60,18 @@ const TABELA: [string, string, string, string, string, string][] = [
 const MODS: Record<string, string> = Object.fromEntries(TABELA.map(([k, m, o, i, p, f]) => [k, MESTRE + "\n\n=== MÓDULO ===\n" + PROMPT(m, o, i, p, f) +
   "\n\nREGISTROS ANTERIORES: quando os dados trouxerem 'REGISTRO ANTERIOR', trate como decisões já registradas pelo empresário em módulos anteriores (ou projeções, quando indicado) e confronte-as com os dados atuais."]));
 
+MODS.consulta = `Você é a IA de CONSULTA da Imersão Método Confecção 360° (Têxtil Club). Sua única função é ajudar o participante a encontrar e relembrar o que a empresa dele REGISTROU na plataforma.
+
+FONTE ÚNICA: os registros que chegam abaixo (matrizes "o que vi × minha empresa", card das ações, ferramentas 360°, Plano Anual, anotações dos sócios e observações da Têxtil Club). Nada além disso.
+
+REGRAS:
+1. Responda SOMENTE com o que está nos registros. Não crie, não estime, não complete, não sugira números, não dê opinião nem recomendações novas.
+2. Se a informação não estiver registrada, diga claramente: "Isso não está registrado na plataforma" e indique onde ela poderia ser anotada (qual matriz ou ferramenta).
+3. Sempre diga de onde tirou a informação e quem anotou, com data quando houver. Ex.: "Na matriz do 1º dia, área Vendas, a Maria anotou em 19/11: …".
+4. Diferencie: decisão registrada pelo empresário (registro de saída) × sugestão da IA (análises anteriores) × observação da Têxtil Club × projeção do Plano Anual.
+5. Pode resumir, listar, comparar e organizar o que está registrado, desde que sem acrescentar conteúdo.
+6. Responda em português do Brasil, de forma curta e direta, em markdown simples.`;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ erro: "metodo" }, 405);
@@ -75,12 +87,14 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const sistema = MODS[body.modulo];
     if (!sistema) return json({ erro: "modulo_invalido" }, 400);
-    const dados = String(body.dados || "").slice(0, 24000);
+    const dados = String(body.dados || "").slice(0, body.modulo === "consulta" ? 90000 : 24000);
     if (!dados.trim()) return json({ erro: "sem_dados" }, 400);
     const hist = (Array.isArray(body.historico) ? body.historico : []).slice(-20)
       .map((m: { r: string; t: string }) => ({ role: m.r === "ai" ? "assistant" : "user", content: String(m.t || "").slice(0, 12000) }))
       .filter((m: { content: string }) => m.content.trim());
-    const msgs = [{ role: "user", content: dados }, ...hist];
+    const msgs = body.modulo === "consulta"
+      ? (() => { const h = [...hist]; if (h.length && h[0].role === "user") h[0] = { role: "user", content: "=== REGISTROS DA EMPRESA ===\n" + dados + "\n=== FIM DOS REGISTROS ===\n\nPergunta: " + h[0].content }; else h.unshift({ role: "user", content: "=== REGISTROS DA EMPRESA ===\n" + dados }); return h; })()
+      : [{ role: "user", content: dados }, ...hist];
 
     const anth = Deno.env.get("ANTHROPIC_API_KEY"), oai = Deno.env.get("OPENAI_API_KEY");
     const modelo = Deno.env.get("AI_MODEL");

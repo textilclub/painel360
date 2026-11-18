@@ -26,6 +26,26 @@
   .linha-out{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
   .linha-out.um{grid-template-columns:1fr}
   .receita{font:700 14px var(--f-display);color:var(--ok);align-self:end;padding-bottom:12px}
+  .modos{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--paper-2);border-radius:12px;padding:5px;margin-bottom:18px}
+  .modos button{min-height:46px;border:0;border-radius:9px;background:transparent;font:600 14.5px var(--f-body);color:var(--ink-2);cursor:pointer}
+  .modos button[aria-selected="true"]{background:var(--ink);color:#fff}
+  .modos .cont{display:inline-block;min-width:22px;padding:1px 7px;border-radius:999px;background:var(--gold);color:#0b0b0a;font:700 12px var(--f-display);margin-left:4px}
+  .nota{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+  .nota-cab{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;margin-bottom:10px}
+  .nota-n{width:26px;height:26px;border-radius:7px;background:var(--ink);color:var(--gold-hi);display:grid;place-items:center;font:700 12.5px var(--f-display)}
+  .nota-tit{min-height:40px!important;font:600 14.5px var(--f-body)!important;background:var(--paper)!important;border-style:dashed!important}
+  .nota-x{width:40px;height:40px;border-radius:9px;border:1px solid var(--line-2);background:var(--surface);color:var(--err);display:grid;place-items:center;cursor:pointer}
+  .autor{font-size:12.5px;color:var(--muted);margin-top:8px;text-align:right}
+  .add-nota{width:100%;min-height:48px;border:1.5px dashed var(--line-2);border-radius:12px;background:transparent;font:600 14.5px var(--f-body);color:var(--ink-2);display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+  .add-nota:hover{border-color:var(--ink);color:var(--ink)}
+  .grupo>h3 .qtd{margin-left:auto;font:600 12px var(--f-body);color:var(--muted);letter-spacing:.04em}
+  .nota.ger.minha{border-left:4px solid var(--gold)}
+  .quem-anotou{font-size:13.5px;color:var(--muted);margin-bottom:6px}.quem-anotou b{color:var(--ink)}
+  .nota.ger dl{display:grid;gap:4px}.nota.ger dt{font:600 12.5px var(--f-body);color:var(--ink-2)}.nota.ger dt b{font-size:10.5px;padding:1px 5px;border-radius:5px}
+  .nota.ger dd{margin:0 0 6px;font-size:15px;line-height:1.5;white-space:pre-wrap}
+  .reg{white-space:pre-wrap;font:500 13.5px/1.55 var(--f-body);margin:0}
+  .socios-ia{display:flex;gap:10px;align-items:center;font-size:14.5px;margin-bottom:12px;cursor:pointer;background:var(--paper);border-radius:10px;padding:10px 12px}
+  .socios-ia input{width:22px;height:22px;min-height:22px;padding:0;accent-color:var(--ink);appearance:auto;-webkit-appearance:checkbox}
   .corpo{position:relative;z-index:2;margin-top:-56px;max-width:980px}
 
   .ftabs{display:grid;grid-template-columns:1fr;background:var(--surface);border:1.5px solid var(--ink);border-radius:var(--r-lg);overflow:hidden;box-shadow:5px 5px 0 var(--gold);margin-bottom:24px;position:sticky;top:62px;z-index:20}
@@ -121,7 +141,8 @@
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { montarAgente } from "./agente.js";
-import { FER, DIAS_FER, tipoDia, numero, rotulos, registroTexto, pronto, faltaTexto } from "./ferramentas-def.js";
+import { FER, DIAS_FER, tipoDia, numero, rotulos, registroTexto, pronto, faltaTexto, migrar, novaNota, notasTexto } from "./ferramentas-def.js";
+import { montarObs } from "./obs.js";
 const C = window.TC_CONFIG; const sb = createClient(C.SUPABASE_URL, C.SUPABASE_KEY);
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -150,7 +171,7 @@ let alvo = eu;
 if (alvoId !== eu?.id) { const { data } = await sb.from("participantes").select("id,nome,empresa_id,empresas(nome)").eq("id", alvoId).maybeSingle(); alvo = data; }
 if (!alvo) { location.replace("painel.html"); throw new Error("não encontrado"); }
 $("quemF").innerHTML = ic("building","sm") + " " + esc(alvo.nome) + (alvo.empresas?.nome ? " · " + esc(alvo.empresas.nome) : "");
-if (RO) { document.body.classList.add("ro"); $("banner").innerHTML = `<div class="banner">Você está vendo as ferramentas de <b>${esc(alvo.nome)}</b> (somente leitura).${adm ? ` <a href="admin.html#atividades">Voltar ao administrador</a>` : ""}</div>`; }
+if (RO) { document.body.classList.add("ro"); $("banner").innerHTML = `<div class="banner">Você está vendo as ferramentas de <b>${esc(alvo.nome)}</b> (somente leitura).${adm ? ` <a href="admin.html#acoes">Voltar ao administrador</a>` : ""}</div>`; }
 
 const [{ data:regs }, { data:vis }, { data:exc }] = await Promise.all([
   sb.from("atividades").select("tipo,dados,atualizado_em").eq("participante_id", alvoId).in("tipo", ["fer_dia1","fer_dia2"]),
@@ -160,7 +181,11 @@ const [{ data:regs }, { data:vis }, { data:exc }] = await Promise.all([
 const reg = (regs||[]).find(r => r.tipo === TIPO);
 const OUTRO = (regs||[]).find(r => r.tipo !== TIPO)?.dados || {};
 const D = reg?.dados || {};
-ORDEM.forEach(k => D[k] = Object.assign({ in:{}, out:{}, chat:[], ok:false }, D[k] || {}));
+ORDEM.forEach(k => { D[k] = Object.assign({ in:{}, out:{}, chat:[], ok:false }, D[k] || {}); migrar(k, D[k], alvo.nome); });
+// anotações dos sócios (mesma empresa, mesmo dia)
+const { data:socRows } = alvo.empresa_id ? await sb.from("atividades").select("participante_id,dados,atualizado_em,participantes(nome)").eq("empresa_id", alvo.empresa_id).eq("tipo", TIPO).neq("participante_id", alvoId) : { data:[] };
+const SOCIOS = (socRows||[]).map(r => { const d = r.dados || {}; ORDEM.forEach(k => { if (d[k]) migrar(k, d[k], r.participantes?.nome); }); return { id:r.participante_id, nome:r.participantes?.nome || "Sócio", dados:d }; });
+let modo = "minhas", incluirSocios = false;
 const dadosDe = k => D[k] || OUTRO[k];
 let atual = ORDEM.includes(location.hash.slice(1)) ? location.hash.slice(1) : (ORDEM.find(k => !D[k].ok) || ORDEM[0]);
 
@@ -185,26 +210,62 @@ function abas(){
   $("ftabs").querySelector('[aria-selected="true"]')?.scrollIntoView({ block:"nearest", inline:"center" });
 }
 
-// ---------- entradas ----------
-const val = (k, c) => D[k].in[c] || { v:"", f:"" };
-function campo(k, c){
-  const v = val(k, c.k), dis = RO ? "disabled" : "";
-  const rhp = c.f ? `<span class="rhp" role="group" aria-label="Tipo da informação">${["R","H","P"].map(f => `<button type="button" data-k="${c.k}" data-f="${f}" aria-pressed="${v.f===f}" title="${{R:"Real",H:"Estimativa",P:"Pendente"}[f]}" ${dis}>${f}</button>`).join("")}</span>` : "";
+// ---------- entradas: várias anotações por tema ----------
+const fmtTs = ts => ts ? new Date(ts).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"}) : "";
+function campoNota(k, gi, ei, c, n){
+  const v = n.c?.[c.k] || { v:"", f:"" }, dis = RO ? "disabled" : "", at = `data-gi="${gi}" data-ei="${ei}" data-c="${c.k}"`;
+  const rhp = c.f ? `<span class="rhp" role="group" aria-label="Tipo da informação">${["R","H","P"].map(f => `<button type="button" ${at} data-f="${f}" aria-pressed="${v.f===f}" title="${{R:"Real",H:"Estimativa",P:"Pendente"}[f]}" ${dis}>${f}</button>`).join("")}</span>` : "";
   let inp;
-  if (c.tipo === "area") inp = `<textarea data-in="${c.k}" placeholder="${esc(c.ph||"")}" ${dis}>${esc(v.v)}</textarea>`;
-  else if (c.tipo === "sel") inp = `<select data-in="${c.k}" ${dis}>${c.op.map(o => `<option value="${esc(o)}" ${String(v.v)===o?"selected":""}>${o===""?"Sem nota":esc(o)}</option>`).join("")}</select>`;
-  else inp = `<input data-in="${c.k}" value="${esc(v.v)}" placeholder="${esc(c.ph||"")}" ${dis}>`;
+  if (c.tipo === "area") inp = `<textarea ${at} data-in="1" placeholder="${esc(c.ph||"")}" ${dis}>${esc(v.v)}</textarea>`;
+  else if (c.tipo === "sel") inp = `<select ${at} data-in="1" ${dis}>${c.op.map(o => `<option value="${esc(o)}" ${String(v.v)===o?"selected":""}>${o===""?"Sem nota":esc(o)}</option>`).join("")}</select>`;
+  else inp = `<input ${at} data-in="1" value="${esc(v.v)}" placeholder="${esc(c.ph||"")}" ${dis}>`;
   return `<div class="campo"><label><span>${c.l}</span>${rhp}</label>${inp}</div>`;
 }
+function grupoHTML(k, gi){
+  const g = FER[k].grupos[gi], lista = D[k].g[gi], dis = RO ? "disabled" : "", item = g.item || "anotação";
+  const notas = lista.map((n, ei) => `
+    <div class="nota" data-nota="${gi}-${ei}">
+      ${g.unico ? "" : `<div class="nota-cab"><span class="nota-n">${ei+1}</span><input class="nota-tit" data-tit="1" data-gi="${gi}" data-ei="${ei}" value="${esc(n.t||"")}" placeholder="Título curto (opcional). Ex.: Atrasos na costura" ${dis}>
+        ${!RO && lista.length > 1 ? `<button type="button" class="nota-x" data-del="${gi}-${ei}" aria-label="Excluir esta ${item}" title="Excluir">${ic("trash","sm")}</button>` : ""}</div>`}
+      <div class="campos ${g.dois?"dois":""}">${g.campos.map(c => campoNota(k, gi, ei, c, n)).join("")}</div>
+      ${n.por || n.ts ? `<p class="autor">${esc(n.por||"")}${n.ts ? " · " + fmtTs(n.ts) : ""}</p>` : ""}
+    </div>`).join("");
+  return `<div class="grupo" id="grp-${gi}"><h3>${g.t}${!g.unico && lista.length > 1 ? `<span class="qtd">${lista.length} ${item === "linha" ? "linhas" : "anotações"}</span>` : ""}</h3>${notas}
+    ${!RO && !g.unico ? `<button type="button" class="add-nota" data-add="${gi}">${ic("plus","sm")} Adicionar ${item === "linha" ? "outra linha de produto" : "outra anotação sobre " + g.t}</button>` : ""}</div>`;
+}
+function ligarGrupo(k, gi){
+  const el = $("grp-" + gi); if (!el) return;
+  const nota = (g, e) => D[k].g[g][e];
+  const tocar = n => { n.ts = new Date().toISOString(); n.por = eu?.nome || n.por; };
+  el.querySelectorAll("[data-in]").forEach(x => x.addEventListener(x.tagName==="SELECT"?"change":"input", () => {
+    const n = nota(+x.dataset.gi, +x.dataset.ei), c = x.dataset.c, cur = n.c[c] || { v:"", f:"" }; cur.v = x.value;
+    if (!cur.f && x.value.trim()) { const h = x.closest(".campo").querySelector('[data-f="H"]'); if (h) { cur.f = "H"; x.closest(".campo").querySelectorAll(".rhp button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.f==="H"))); } }
+    n.c[c] = cur; tocar(n); salvar();
+    if (k === "produto" && +x.dataset.gi === 1 && c === "nome") { const s = document.querySelector(`[data-rot="lin${x.dataset.ei}"]`); if (s) s.textContent = x.value.trim() || "Linha " + (+x.dataset.ei + 1); }
+  }));
+  el.querySelectorAll("[data-tit]").forEach(x => x.addEventListener("input", () => { const n = nota(+x.dataset.gi, +x.dataset.ei); n.t = x.value; tocar(n); salvar(); }));
+  el.querySelectorAll(".rhp button").forEach(b => b.onclick = () => {
+    const n = nota(+b.dataset.gi, +b.dataset.ei), c = b.dataset.c, cur = n.c[c] || { v:"", f:"" }; cur.f = cur.f === b.dataset.f ? "" : b.dataset.f; n.c[c] = cur; tocar(n);
+    b.parentElement.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.f === cur.f))); salvar(); });
+  el.querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
+    const [g, e] = b.dataset.del.split("-").map(Number); if (!confirm("Excluir esta anotação?")) return;
+    D[k].g[g].splice(e, 1); salvar(); redesenhar(k, g); });
+  el.querySelectorAll("[data-add]").forEach(b => b.onclick = () => {
+    const g = +b.dataset.add; D[k].g[g].push(novaNota(eu?.nome)); salvar(); redesenhar(k, g);
+    const ult = $("grp-" + g).querySelectorAll(".nota"); ult[ult.length-1]?.scrollIntoView({ behavior:"smooth", block:"center" }); ult[ult.length-1]?.querySelector("textarea,input:not(.nota-tit)")?.focus({ preventScroll:true }); });
+}
+function redesenhar(k, gi){ const el = $("grp-" + gi); el.outerHTML = grupoHTML(k, gi); ligarGrupo(k, gi); }
 
 // ---------- dados para a IA ----------
 const brl = v => "R$ " + Math.round(v||0).toLocaleString("pt-BR");
 function dadosIA(k){
-  const F = FER[k], tag = f => f ? `[${f}]` : "";
-  const linhas = F.grupos.map(g => `${g.t.toUpperCase()}\n` + g.campos.map(c => { const v = val(k, c.k); const tx = String(v.v||"").trim();
-      if (!tx) return `- ${c.l}: [P] não informado`;
-      return `- ${c.l}: ${c.f ? (tag(v.f) || "[H]") + " " : ""}${tx}`; }).join("\n")).join("\n\n");
+  const F = FER[k];
+  const linhas = F.grupos.map((g, gi) => `${g.t.toUpperCase()}\n` + notasTexto(F, gi, D[k].g[gi])).join("\n\n");
   let extra = "";
+  if (incluirSocios) SOCIOS.forEach(so => { const d = so.dados[k]; if (!d?.g) return;
+    const tx = F.grupos.map((g, gi) => { const t = notasTexto(F, gi, d.g[gi], { autor:true, pularVazio:true }); return t ? `${g.t.toUpperCase()}\n${t}` : ""; }).filter(Boolean).join("\n\n");
+    const out = registroTexto(k, d);
+    if (tx || out) extra += `\n\nANOTAÇÕES DO SÓCIO ${so.nome.toUpperCase()} (mesma empresa)\n${tx}${out ? "\nRegistro de saída do sócio:\n" + out : ""}`; });
   (F.usa || []).forEach(u => { const tx = registroTexto(u, dadosDe(u)); if (tx) extra += `\n\nREGISTRO ANTERIOR — ${FER[u].nome} (decisões registradas pelo empresário)\n${tx}`; });
   if (F.visita && vis?.dados?.areas) {
     const lac = Object.values(vis.dados.areas).filter(a => (a.eu||"").trim() && a.nivel != null && a.nivel <= 1).map(a => `- ${a.eu.trim()}`);
@@ -251,40 +312,65 @@ function calcular(k){
 function tela(){
   const k = atual, F = FER[k];
   const usados = (F.usa || []).filter(u => registroTexto(u, dadosDe(u))).map(u => FER[u].nome);
+  const nGer = contarGerais(k);
   $("tela").innerHTML = `
     <div class="ficha">
       <div><span>Quando</span><p>${F.quando}</p></div>
       <div><span>Objetivo</span><p>${F.obj}</p></div>
       <div><span>Você sai com</span><p>${F.saida}</p></div>
     </div>
-
-    <section class="passo"><header><span class="n">1</span><div><h2>Seus dados</h2><p>Preencha o que souber. Não precisa ser perfeito: marque se cada informação é real, estimada ou pendente.</p></div></header>
+    <div class="modos" role="tablist" aria-label="Ver anotações">
+      <button type="button" role="tab" data-modo="minhas" aria-selected="${modo==="minhas"}">${RO ? "Anotações de " + esc(alvo.nome.split(" ")[0]) : "Minhas anotações"}</button>
+      <button type="button" role="tab" data-modo="gerais" aria-selected="${modo==="gerais"}">Anotações gerais da empresa <span class="cont">${nGer}</span></button>
+    </div>
+    <div id="obsF"></div>
+    ${modo === "gerais" ? geraisHTML(k) : `
+    <section class="passo"><header><span class="n">1</span><div><h2>Seus dados</h2><p>Preencha o que souber, em quantas anotações quiser por tema. Marque se cada informação é real, estimada ou pendente.</p></div></header>
       ${usados.length ? `<div class="usa">${ic("check","sm")} A IA também vai receber o que você registrou em: <b>${usados.join(", ")}</b>.</div>` : ""}
       <div class="legenda"><span><b class="t-R">R</b>Real (tenho o número)</span><span><b class="t-H">H</b>Estimativa (hipótese)</span><span><b class="t-P">P</b>Pendente (preciso levantar)</span></div>
-      ${F.grupos.map((g,i) => `<div class="grupo"><h3>${F.grupos.length>3?`<span class="k">${i+1}</span>`:""}${g.t}</h3><div class="campos ${g.dois?"dois":""}">${g.campos.map(c => campo(k,c)).join("")}</div></div>`).join("")}
+      ${F.grupos.map((g, gi) => grupoHTML(k, gi)).join("")}
     </section>
 
     <section class="passo"><header><span class="n">2</span><div><h2>Análise do Agente Estrategista</h2><p>A IA lê os seus dados e responde aqui, no formato do módulo ${F.nome}. Pode conversar com ela para aprofundar.</p></div></header>
+      ${!RO && SOCIOS.some(so => so.dados[k]) ? `<label class="socios-ia"><input type="checkbox" id="incSoc" ${incluirSocios?"checked":""}> Incluir as anotações dos sócios (${SOCIOS.filter(so => so.dados[k]).map(so => esc(so.nome.split(" ")[0])).join(", ")}) na análise</label>` : ""}
       <div id="agente"></div>
     </section>
 
     <section class="passo"><header><span class="n">3</span><div><h2>Registro de saída</h2><p>Depois da análise da IA e da discussão na mesa, registre aqui só o que <b>você</b> decidiu. É isso que segue para as próximas ferramentas.</p></div></header>
       ${saidaHTML(k)}
       <div id="fim" style="margin-top:16px"></div>
-    </section>`;
+    </section>`}`;
+  $("tela").querySelectorAll("[data-modo]").forEach(b => b.onclick = () => { modo = b.dataset.modo; tela(); });
+  montarObs({ el: $("obsF"), sb, empresaId: alvo.empresa_id, participanteId: alvo.id, alvos: ["fer:" + k], rotuloAlvo: F.nome, admin: !!adm });
+  if (modo === "gerais") return;
   montarAgente({ el: $("agente"), sb, modulo: k, ro: RO, dados: () => dadosIA(k), conversa: () => D[k].chat, salvar: c => { D[k].chat = c; salvar(); } });
-
-  $("tela").querySelectorAll("[data-in]").forEach(el => el.addEventListener(el.tagName==="SELECT"?"change":"input", () => {
-    const c = el.dataset.in, cur = D[k].in[c] || { v:"", f:"" }; cur.v = el.value;
-    if (!cur.f && el.value.trim()) { const h = el.closest(".campo").querySelector('[data-f="H"]'); if (h) { cur.f = "H"; el.closest(".campo").querySelectorAll(".rhp button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.f==="H"))); } }
-    D[k].in[c] = cur; salvar();
-    const m = /^l(\d)_nome$/.exec(c); if (m) { const s = document.querySelector(`[data-rot="lin${m[1]-1}"]`); if (s) s.textContent = el.value.trim() || "Linha " + m[1]; }
-  }));
-  $("tela").querySelectorAll(".rhp button").forEach(b => b.onclick = () => {
-    const c = b.dataset.k, cur = D[k].in[c] || { v:"", f:"" }; cur.f = cur.f === b.dataset.f ? "" : b.dataset.f; D[k].in[c] = cur;
-    b.parentElement.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.f === cur.f))); salvar(); });
+  const inc = $("incSoc"); if (inc) inc.onchange = () => { incluirSocios = inc.checked; };
+  F.grupos.forEach((g, gi) => ligarGrupo(k, gi));
   $("tela").querySelectorAll("[data-out]").forEach(el => el.addEventListener(el.tagName==="SELECT"?"change":"input", () => { D[k].out[el.dataset.out] = el.value; salvar(); calcular(k); fim(); }));
   calcular(k); fim();
+}
+
+// ---------- anotações gerais da empresa ----------
+function todos(){ return [{ id: alvo.id, nome: alvo.nome, dados: D, eu: true }, ...SOCIOS]; }
+function contarGerais(k){
+  const F = FER[k], t = x => String(x||"").trim();
+  return todos().reduce((s, p) => s + (p.dados[k]?.g ? F.grupos.reduce((a, g, gi) => a + (p.dados[k].g[gi]||[]).filter(n => t(n.t) || g.campos.some(c => t(n.c?.[c.k]?.v))).length, 0) : 0), 0);
+}
+function geraisHTML(k){
+  const F = FER[k], t = x => String(x||"").trim(), P = todos();
+  const blocos = F.grupos.map((g, gi) => {
+    const itens = [];
+    P.forEach(p => (p.dados[k]?.g?.[gi] || []).forEach(n => { if (t(n.t) || g.campos.some(c => t(n.c?.[c.k]?.v))) itens.push({ p, n }); }));
+    itens.sort((a, b) => String(b.n.ts||"").localeCompare(String(a.n.ts||"")));
+    return `<div class="grupo"><h3>${g.t}<span class="qtd">${itens.length}</span></h3>${itens.length ? itens.map(({ p, n }) => `
+      <div class="nota ger ${p.eu ? "minha" : ""}"><p class="quem-anotou"><b>${esc(p.eu && !RO ? "Você" : (n.por || p.nome))}</b>${n.ts ? " · " + fmtTs(n.ts) : ""}${t(n.t) ? ` · <i>${esc(n.t)}</i>` : ""}</p>
+        <dl>${g.campos.filter(c => t(n.c?.[c.k]?.v)).map(c => `<dt>${c.l}${n.c[c.k].f ? ` <b class="t-${n.c[c.k].f}">${n.c[c.k].f}</b>` : ""}</dt><dd>${esc(n.c[c.k].v)}</dd>`).join("")}</dl></div>`).join("")
+      : `<p class="sub" style="font-size:14px">Ninguém da empresa anotou sobre ${g.t} ainda.</p>`}</div>`;
+  }).join("");
+  const regs = P.map(p => { const r = registroTexto(k, p.dados[k]); return r ? `<div class="nota ger ${p.eu ? "minha" : ""}"><p class="quem-anotou"><b>${esc(p.eu && !RO ? "Você" : p.nome)}</b>${p.dados[k]?.ok ? " · ✓ concluiu" : ""}</p><pre class="reg">${esc(r)}</pre></div>` : ""; }).join("");
+  return `<section class="passo"><header><span class="n">${ic("users","sm")}</span><div><h2>Tudo o que a empresa anotou em ${F.nome}</h2><p>${P.length > 1 ? `Anotações de ${P.map(p => esc(p.eu && !RO ? "você" : p.nome.split(" ")[0])).join(", ")}, das mais recentes para as mais antigas.` : "Por enquanto só você da sua empresa anotou aqui. Quando um sócio anotar, aparece aqui com o nome dele."}</p></div></header>
+    ${blocos}
+    <div class="grupo"><h3>Registros de saída</h3>${regs || `<p class="sub" style="font-size:14px">Ninguém registrou a saída ainda.</p>`}</div></section>`;
 }
 
 function fim(){

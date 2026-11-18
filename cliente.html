@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Visão completa do cliente · Têxtil Club</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+<style>
+  .ch h1{font-size:clamp(1.9rem,1.3rem + 2.6vw,2.8rem);letter-spacing:-.03em;margin:10px 0 6px}
+  .ch .meta{color:var(--muted-dark);font-size:15px;display:flex;gap:6px 16px;flex-wrap:wrap}
+  .ch .faixa-in{padding-bottom:80px}
+  .corpo{position:relative;z-index:2;margin-top:-52px;display:grid;gap:18px}
+  .bloco{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px}
+  .bloco>h3{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .bloco>h3 small{margin-left:auto;font:600 12px var(--f-body);color:var(--muted)}
+  .pessoas{display:grid;gap:18px}
+  .pess{background:var(--surface);border:1.5px solid var(--ink);border-radius:var(--r-lg);overflow:hidden}
+  .pess-h{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:16px 18px;background:#0b0b0a;color:#fff}
+  .pess-h b{font:700 17px var(--f-display)}.pess-h small{display:block;color:#b9b2a2;font-size:13px;margin-top:2px}
+  .pess-h .pc{font:800 28px/1 var(--f-display);color:var(--gold-hi);text-align:right}.pess-h .pc small{color:#b9b2a2;font:500 12px var(--f-body)}
+  .pess-b{padding:16px 18px;display:grid;gap:16px}
+  @media (min-width:900px){.pess-b{grid-template-columns:1.2fr 1fr}}
+  .h4{font:700 12px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-ink);margin-bottom:8px}
+  .todas .obs-it{background:var(--paper)}
+  .alvo{font:700 11px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--gold-ink)}
+  .voltar{display:inline-flex;align-items:center;gap:6px;color:var(--gold-hi);font-weight:600;text-decoration:none;font-size:14px}
+</style>
+</head>
+<body>
+<script src="ui.js" data-page="cliente"></script>
+<main class="wrap">
+  <section class="faixa ch"><div class="faixa-in">
+    <a class="voltar" href="admin.html#exercicios" id="aVoltar"></a>
+    <div class="eyebrow" style="margin-top:12px">Visão completa do cliente</div>
+    <h1 id="eNome">Carregando…</h1>
+    <div class="meta" id="eMeta"></div>
+  </div></section>
+
+  <div class="page corpo">
+    <section class="bloco"><h3><span data-ic="trend"></span>Números da empresa<small id="exQuem"></small></h3><div class="nums" id="nums"></div>
+      <div class="acoes" id="exLinks" style="margin-top:14px"></div>
+      <div id="obsPlano" style="margin-top:14px"></div>
+    </section>
+
+    <section class="bloco"><h3><span data-ic="chat"></span>Observação geral para a empresa</h3>
+      <p class="sub" style="font-size:14.5px;margin-bottom:10px">Aparece no painel inicial de todos os participantes da empresa, assinada como <b>Têxtil Club</b>. Para comentar um item específico (uma ferramenta, uma matriz), abra o item abaixo e escreva lá.</p>
+      <div id="obsGeral"></div>
+    </section>
+
+    <section class="bloco"><h3><span data-ic="check"></span>Decisões registradas</h3><div id="dec"></div></section>
+
+    <div class="pessoas" id="pessoas"></div>
+
+    <section class="bloco todas"><h3><span data-ic="clip"></span>Todas as observações da Têxtil Club para esta empresa<small id="obsN"></small></h3><div id="obsTodas"></div></section>
+  </div>
+</main>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import { itens, pct, decisoes, porParticipante, htmlNumeros, htmlChecklist, htmlDecisoes, htmlPendencias, CSS_RESUMO, fmt, brl } from "./progresso.js";
+import { montarObs } from "./obs.js";
+import { FER } from "./ferramentas-def.js";
+{ const st = document.createElement("style"); st.textContent = CSS_RESUMO; document.head.appendChild(st); }
+const C = window.TC_CONFIG; const sb = createClient(C.SUPABASE_URL, C.SUPABASE_KEY);
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+document.querySelectorAll("[data-ic]").forEach(e => e.innerHTML = IC(e.dataset.ic));
+$("aVoltar").innerHTML = IC("back","sm") + "Voltar ao administrador";
+
+const { data:{ session } } = await sb.auth.getSession();
+if (!session) { location.replace("index.html"); throw new Error("sem sessão"); }
+const { data:adm } = await sb.rpc("is_admin");
+if (!adm) { location.replace("painel.html"); throw new Error("sem acesso"); }
+const EID = new URLSearchParams(location.search).get("e");
+if (!EID) { location.replace("admin.html"); throw new Error("sem empresa"); }
+
+const [{ data:emp }, { data:parts }, { data:ex }, { data:ats }] = await Promise.all([
+  sb.from("empresas").select("id,nome,cnpj,cidade,uf").eq("id", EID).maybeSingle(),
+  sb.from("participantes").select("id,nome,email,whatsapp,cargo,status").eq("empresa_id", EID).order("criado_em"),
+  sb.from("exercicios").select("empresa_id,status,regime,resumo,atualizado_em,atualizado_por_nome").eq("empresa_id", EID).maybeSingle(),
+  sb.from("atividades").select("participante_id,tipo,dados,status,atualizado_em").eq("empresa_id", EID)
+]);
+if (!emp) { $("eNome").textContent = "Empresa não encontrada"; throw new Error("não encontrada"); }
+document.title = `${emp.nome} · Visão completa · Têxtil Club`;
+$("eNome").textContent = emp.nome;
+const cnpj = String(emp.cnpj||"").replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
+$("eMeta").innerHTML = `<span>CNPJ ${esc(cnpj)}</span>${emp.cidade ? `<span>${esc(emp.cidade)}${emp.uf ? "/" + esc(emp.uf) : ""}</span>` : ""}<span>${(parts||[]).length} participante(s)</span>`;
+
+// números e Plano Anual
+$("nums").innerHTML = htmlNumeros(ex, `exercicio.html?empresa=${EID}`);
+if (ex?.atualizado_em) $("exQuem").textContent = `Atualizado em ${fmt(ex.atualizado_em)}${ex.atualizado_por_nome ? " por " + ex.atualizado_por_nome : ""}`;
+$("exLinks").innerHTML = ex ? `<a class="btn sm" style="width:auto" href="exercicio.html?empresa=${EID}">Abrir o Plano Anual</a><a class="btn sm ghost" style="width:auto" href="planilha.html?empresa=${EID}">Ver a planilha (7 abas)</a>` : `<span class="badge bloqueado">Plano Anual não começou</span>`;
+montarObs({ el: $("obsPlano"), sb, empresaId: EID, participanteId: null, alvos: ["plano"], rotuloAlvo: "o Plano Anual", admin: true });
+montarObs({ el: $("obsGeral"), sb, empresaId: EID, participanteId: null, alvos: ["geral"], rotuloAlvo: "a empresa", admin: true });
+
+// pessoas
+const PP = porParticipante(ats);
+const ap = (parts||[]).filter(p => p.status === "aprovado");
+$("dec").innerHTML = htmlDecisoes(decisoes(ap.map(p => ({ nome: p.nome, regs: PP[p.id] || {} }))));
+const ROT = { pendente:"Aguardando liberação", aprovado:"Liberado", bloqueado:"Bloqueado" };
+$("pessoas").innerHTML = (parts||[]).map(p => {
+  if (p.status !== "aprovado") return `<div class="pess"><div class="pess-h"><div><b>${esc(p.nome)}</b><small>${esc(p.cargo||"")} · ${esc(p.email||"")}</small></div><span class="badge ${p.status}">${ROT[p.status]}</span></div></div>`;
+  const lista = itens(PP[p.id] || {}, ex, `&p=${p.id}`), pc = pct(lista), f = lista.filter(i => i.st === "feito").length;
+  return `<div class="pess"><div class="pess-h"><div><b>${esc(p.nome)}</b><small>${esc(p.cargo||"")}${p.email ? " · " + esc(p.email) : ""}${p.whatsapp ? " · " + esc(p.whatsapp) : ""}</small></div>
+      <div class="pc">${pc}%<small><br>${f} de ${lista.length}</small></div></div>
+    <div class="pess-b"><div><p class="h4">Tudo o que existe na imersão</p>${htmlChecklist(lista)}</div>
+      <div><p class="h4">Próximas pendências</p>${htmlPendencias(lista, 5)}</div></div></div>`;
+}).join("") || `<div class="bloco"><p class="sub">Nenhum participante cadastrado.</p></div>`;
+
+// todas as observações
+const nomeP = id => (parts||[]).find(p => p.id === id)?.nome;
+const AL = { geral:"Empresa (geral)", plano:"Plano Anual", visita:"Matriz da visita", dia1:"Matriz do 1º dia", dia2:"Matriz do 2º dia" };
+const rotAlvo = a => AL[a] || (a?.startsWith("fer:") ? FER[a.slice(4)]?.nome : a);
+async function todas(){
+  const { data } = await sb.from("observacoes").select("id,alvo,texto,autor,criado_em,participante_id").eq("empresa_id", EID).order("criado_em", { ascending:false });
+  $("obsN").textContent = `${(data||[]).length}`;
+  $("obsTodas").innerHTML = (data||[]).map(o => `<div class="obs-it"><span class="alvo">${esc(rotAlvo(o.alvo))}${o.participante_id ? " · para " + esc(nomeP(o.participante_id)||"") : ""}</span><br>${esc(o.texto)}<small><span>${esc(o.autor)} · ${fmt(o.criado_em)}</span><button type="button" data-ap="${o.id}">Apagar</button></small></div>`).join("") || `<p class="vazio-b">Nenhuma observação ainda.</p>`;
+  $("obsTodas").querySelectorAll("[data-ap]").forEach(b => b.onclick = async () => { if (!confirm("Apagar esta observação?")) return; await sb.from("observacoes").delete().eq("id", b.dataset.ap); todas(); });
+}
+todas();
+</script>
+</body>
+</html>

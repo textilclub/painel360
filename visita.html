@@ -62,6 +62,23 @@
   .fer-link b{display:block;font:700 16px var(--f-display);color:#fff}
   .fer-link small{color:var(--gold-hi);font-size:13.5px}
   .fer-link .go{color:var(--gold-hi)}
+  .modos{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--paper-2);border-radius:12px;padding:5px;margin-bottom:18px}
+  .modos button{min-height:46px;border:0;border-radius:9px;background:transparent;font:600 14.5px var(--f-body);color:var(--ink-2);cursor:pointer}
+  .modos button[aria-selected="true"]{background:var(--ink);color:#fff}
+  .modos .cont{display:inline-block;min-width:22px;padding:1px 7px;border-radius:999px;background:var(--gold);color:#0b0b0a;font:700 12px var(--f-display);margin-left:4px}
+  .vnota{border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:10px;background:var(--paper)}
+  .vnota-cab{display:flex;justify-content:space-between;align-items:center;gap:8px;font:600 12.5px var(--f-body);color:var(--muted);margin-bottom:6px}
+  .vnota-cab button{border:1px solid var(--line-2);background:var(--surface);color:var(--err);border-radius:8px;min-height:34px;min-width:34px;display:grid;place-items:center;cursor:pointer}
+  .vnota .lados{margin-top:0}
+  .add-nota{width:100%;min-height:46px;border:1.5px dashed var(--line-2);border-radius:12px;background:transparent;font:600 14px var(--f-body);color:var(--ink-2);display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;margin-top:10px}
+  .add-nota:hover{border-color:var(--ink);color:var(--ink)}
+  .ger-area{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px;margin-bottom:12px}
+  .ger-area h3{font:700 17px var(--f-display);margin-bottom:8px;display:flex;gap:8px;align-items:center}
+  .ger-area h3 small{margin-left:auto;font:600 12px var(--f-body);color:var(--muted)}
+  .ger-it{border-left:4px solid var(--line-2);background:var(--paper);border-radius:8px;padding:10px 12px;margin-top:8px;font-size:14.5px;line-height:1.5}
+  .ger-it.minha{border-left-color:var(--gold)}
+  .ger-it .q{font-size:13px;color:var(--muted);margin-bottom:4px}.ger-it .q b{color:var(--ink)}
+  .ger-it p{margin:2px 0;white-space:pre-wrap}.ger-it p span{font:700 11px var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--gold-ink);margin-right:6px}
   .corpo{position:relative;z-index:2;margin-top:-56px;max-width:980px}
 
   /* barra de status fixa */
@@ -172,6 +189,13 @@
       <div class="fita"><i id="stBar" style="width:0%"></i></div>
     </div>
 
+    <div class="modos" role="tablist" aria-label="Ver anotações">
+      <button type="button" role="tab" data-modo="minhas" aria-selected="true" id="mMinhas">Minhas anotações</button>
+      <button type="button" role="tab" data-modo="gerais" aria-selected="false">Anotações gerais da empresa <span class="cont" id="contGer">0</span></button>
+    </div>
+    <div id="obsV"></div>
+    <div id="geraisV" hidden></div>
+    <div id="minhasV">
     <div class="como">
       <div><b><span data-ic="factory"></span>1. Observe</b><span id="como1"></span></div>
       <div><b><span data-ic="building"></span>2. Compare</b>Escreva como isso funciona hoje na sua empresa e marque a distância.</div>
@@ -227,13 +251,14 @@
         <div id="iaAgente"></div>
       </div>
     </div>
-    <div id="dosSocios"></div>
+    </div>
   </div>
 </main>
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { montarAgente } from "./agente.js";
+import { montarObs } from "./obs.js";
 const C = window.TC_CONFIG; const sb = createClient(C.SUPABASE_URL, C.SUPABASE_KEY);
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -316,11 +341,16 @@ let alvo = eu;
 if (alvoId !== eu?.id) { const { data } = await sb.from("participantes").select("id,nome,empresa_id,empresas(nome)").eq("id", alvoId).maybeSingle(); alvo = data; }
 if (!alvo) { location.replace("painel.html"); throw new Error("não encontrado"); }
 $("mQuem").innerHTML = ic("building","sm") + esc(alvo.nome) + (alvo.empresas?.nome ? " · " + esc(alvo.empresas.nome) : "");
-if (RO) { document.body.classList.add("ro"); $("banner").innerHTML = `<div class="banner">Você está vendo a matriz de <b>${esc(alvo.nome)}</b> (somente leitura).${adm ? ` <a href="admin.html#atividades">Voltar ao administrador</a>` : ""}</div>`; }
+if (RO) { document.body.classList.add("ro"); $("banner").innerHTML = `<div class="banner">Você está vendo a matriz de <b>${esc(alvo.nome)}</b> (somente leitura).${adm ? ` <a href="admin.html#acoes">Voltar ao administrador</a>` : ""}</div>`; }
 
 const { data:reg } = await sb.from("atividades").select("dados,status,atualizado_em").eq("participante_id", alvoId).eq("tipo",DIA).maybeSingle();
 const D = Object.assign({ areas:{}, fortes:["","",""], oport:["","",""], acoes:[{},{},{}], compromisso:false }, reg?.dados || {});
-AREAS.forEach(a => D.areas[a.k] = Object.assign({ vi:"", eu:"", nivel:null, foco:false }, D.areas[a.k] || {}));
+const novoId = () => Math.random().toString(36).slice(2, 10);
+function migrarAreas(dd, por){ AREAS.forEach(a => { const v = dd.areas[a.k] = Object.assign({ vi:"", eu:"", nivel:null, foco:false }, dd.areas[a.k] || {});
+  if (!Array.isArray(v.notas) || !v.notas.length) v.notas = [{ id:novoId(), vi:v.vi||"", eu:v.eu||"", ts:(v.vi||v.eu) ? (reg?.atualizado_em || new Date().toISOString()) : "", por:(v.vi||v.eu) ? por : "" }]; }); return dd; }
+migrarAreas(D, alvo.nome);
+// mantém vi/eu como texto único (usado pelas ferramentas e pelo administrador)
+function sincronizar(k){ const v = D.areas[k], j = c => v.notas.map(n => String(n[c]||"").trim()).filter(Boolean).join("\n"); v.vi = j("vi"); v.eu = j("eu"); }
 if (reg?.atualizado_em) status(`Salvo em ${new Date(reg.atualizado_em).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})}`, true);
 
 // ---------- salvar ----------
@@ -336,7 +366,19 @@ function salvar(imediato=false){
 }
 
 // ---------- matriz ----------
-const feita = a => (D.areas[a.k].vi.trim() || D.areas[a.k].eu.trim()) && D.areas[a.k].nivel !== null;
+const feita = a => D.areas[a.k].notas.some(n => String(n.vi||"").trim() || String(n.eu||"").trim()) && D.areas[a.k].nivel !== null;
+const fmtTs = ts => ts ? new Date(ts).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"}) : "";
+function notasHTML(a){ const v = D.areas[a.k], muitas = v.notas.length > 1;
+  return v.notas.map((n, ni) => `<div class="${muitas ? "vnota" : ""}" data-nota="${a.k}-${ni}">
+      ${muitas ? `<div class="vnota-cab"><span>Anotação ${ni+1}${n.por ? " · " + esc(n.por) : ""}${n.ts ? " · " + fmtTs(n.ts) : ""}</span>${RO ? "" : `<button type="button" data-delnota="${a.k}-${ni}" aria-label="Excluir anotação" title="Excluir">${ic("trash","sm")}</button>`}</div>` : ""}
+      <div class="lados">
+        <div class="lado vi"><label><span class="tag">${CFG.ladoLa[0]}</span>${CFG.ladoLa[1]}</label>
+          <textarea data-k="${a.k}" data-ni="${ni}" data-c="vi" placeholder="${CFG.phLa}" ${RO?"disabled":""}>${esc(n.vi)}</textarea></div>
+        <div class="lado eu"><label><span class="tag">Aqui</span>Como é na minha empresa</label>
+          <textarea data-k="${a.k}" data-ni="${ni}" data-c="eu" placeholder="${CFG.phAqui}" ${RO?"disabled":""}>${esc(n.eu)}</textarea></div>
+      </div></div>`).join("")
+    + (RO ? "" : `<button type="button" class="add-nota" data-addnota="${a.k}">${ic("plus","sm")} Adicionar outra anotação sobre ${a.t}</button>`);
+}
 function renderAreas(){
   $("areas").innerHTML = AREAS.map((a,i) => { const v = D.areas[a.k]; return `
     <article class="area ${feita(a)?"feita":""}" data-k="${a.k}">
@@ -345,23 +387,30 @@ function renderAreas(){
         <div><h3>${a.t}</h3><p class="dica">${a.d}</p></div>
         <button class="estrela" type="button" data-foco="${a.k}" aria-pressed="${v.foco}" aria-label="Quero agir nesta área" title="Quero agir nesta área">★</button>
       </div>
-      <div class="lados">
-        <div class="lado vi"><label for="vi_${a.k}"><span class="tag">${CFG.ladoLa[0]}</span>${CFG.ladoLa[1]}</label>
-          <textarea id="vi_${a.k}" data-k="${a.k}" data-c="vi" placeholder="${CFG.phLa}" ${RO?"disabled":""}>${esc(v.vi)}</textarea></div>
-        <div class="lado eu"><label for="eu_${a.k}"><span class="tag">Aqui</span>Como é na minha empresa</label>
-          <textarea id="eu_${a.k}" data-k="${a.k}" data-c="eu" placeholder="${CFG.phAqui}" ${RO?"disabled":""}>${esc(v.eu)}</textarea></div>
-      </div>
+      <div class="notas-area" id="na-${a.k}">${notasHTML(a)}</div>
       <div class="escala"><div class="q">Comparando, a minha empresa…</div>
         <div class="chips" role="group" aria-label="Distância da minha empresa">${ESCALA.map(([n,txt]) => `<button type="button" data-nv="${a.k}" data-v="${n}" aria-pressed="${v.nivel===n}" ${RO?"disabled":""}>${txt}</button>`).join("")}</div>
       </div>
     </article>`; }).join("");
-  $("areas").querySelectorAll("textarea").forEach(ta => ta.addEventListener("input", () => { D.areas[ta.dataset.k][ta.dataset.c] = ta.value; marcar(ta.dataset.k); salvar(); }));
+  AREAS.forEach(a => ligarNotas(a));
   $("areas").querySelectorAll("[data-nv]").forEach(b => b.onclick = () => {
     const k = b.dataset.nv, v = +b.dataset.v; D.areas[k].nivel = D.areas[k].nivel === v ? null : v;
     b.parentElement.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(+x.dataset.v === D.areas[k].nivel)));
     marcar(k); salvar(); });
   $("areas").querySelectorAll("[data-foco]").forEach(b => b.onclick = () => {
     const k = b.dataset.foco; D.areas[k].foco = !D.areas[k].foco; b.setAttribute("aria-pressed", String(D.areas[k].foco)); marcar(k); salvar(); });
+}
+function ligarNotas(a){
+  const box = $("na-" + a.k); if (!box) return;
+  box.querySelectorAll("textarea").forEach(ta => ta.addEventListener("input", () => {
+    const n = D.areas[ta.dataset.k].notas[+ta.dataset.ni]; n[ta.dataset.c] = ta.value; n.ts = new Date().toISOString(); n.por = eu?.nome || n.por;
+    sincronizar(ta.dataset.k); marcar(ta.dataset.k); salvar(); }));
+  box.querySelectorAll("[data-addnota]").forEach(b => b.onclick = () => {
+    D.areas[a.k].notas.push({ id:novoId(), vi:"", eu:"", ts:"", por:"" }); box.innerHTML = notasHTML(a); ligarNotas(a);
+    const ul = box.querySelectorAll("[data-nota]"); ul[ul.length-1]?.querySelector("textarea")?.focus(); });
+  box.querySelectorAll("[data-delnota]").forEach(b => b.onclick = () => {
+    if (!confirm("Excluir esta anotação?")) return; const ni = +b.dataset.delnota.split("-").pop();
+    D.areas[a.k].notas.splice(ni, 1); sincronizar(a.k); box.innerHTML = notasHTML(a); ligarNotas(a); marcar(a.k); salvar(); });
 }
 function marcar(k){
   const a = AREAS.find(x => x.k === k); document.querySelector(`.area[data-k="${k}"]`)?.classList.toggle("feita", !!feita(a));
@@ -476,11 +525,40 @@ MINHAS 3 AÇÕES
 ${D.acoes.map((a,i)=>`${i+1}. ${t(a.o)||"[P] não definida"} · responsável: ${t(a.q)||"[P]"} · prazo: ${a.p||"[P]"}`).join("\n")}`;
 }
 
-// ---------- matriz dos sócios (somente leitura) ----------
-if (!RO && eu?.empresa_id) {
-  const { data:outros } = await sb.from("atividades").select("participante_id,status,participantes(nome)").eq("empresa_id", eu.empresa_id).eq("tipo",DIA).neq("participante_id", eu.id);
-  if (outros?.length) $("dosSocios").innerHTML = outros.map(o => `<div class="socio">Seu sócio <b>${esc(o.participantes?.nome||"")}</b> também fez a matriz${o.status==="concluido"?" e concluiu":""}. <a href="visita.html?dia=${DIA}&p=${o.participante_id}">Ver a matriz dele</a></div>`).join("");
+// ---------- anotações gerais da empresa ----------
+const { data:socRows } = alvo.empresa_id ? await sb.from("atividades").select("participante_id,status,dados,atualizado_em,participantes(nome)").eq("empresa_id", alvo.empresa_id).eq("tipo",DIA).neq("participante_id", alvoId) : { data:[] };
+const SOCIOS = (socRows||[]).map(r => { const d = Object.assign({ areas:{}, fortes:[], oport:[], acoes:[] }, r.dados || {}); migrarAreas(d, r.participantes?.nome); return { id:r.participante_id, nome:r.participantes?.nome||"Sócio", status:r.status, dados:d }; });
+const todos = () => [{ id:alvo.id, nome:alvo.nome, dados:D, eu:true }, ...SOCIOS];
+const NIV = ["Não faço","Faço pouco","Faço parecido","Igual ou melhor"];
+function contarGerais(){ return todos().reduce((s,p) => s + AREAS.reduce((a,ar) => a + (p.dados.areas[ar.k]?.notas||[]).filter(n => String(n.vi||"").trim() || String(n.eu||"").trim()).length, 0), 0); }
+function geraisHTML(){
+  const P = todos(), t = x => String(x||"").trim(), nome = p => p.eu && !RO ? "Você" : p.nome;
+  const areas = AREAS.map(a => {
+    const itens = []; P.forEach(p => (p.dados.areas[a.k]?.notas||[]).forEach(n => { if (t(n.vi) || t(n.eu)) itens.push({ p, n }); }));
+    itens.sort((x,y) => String(y.n.ts||"").localeCompare(String(x.n.ts||"")));
+    const niveis = P.filter(p => p.dados.areas[a.k]?.nivel != null).map(p => `${esc(nome(p))}: ${NIV[p.dados.areas[a.k].nivel]}${p.dados.areas[a.k].foco ? " ★" : ""}`);
+    return `<div class="ger-area"><h3>${a.t}<small>${itens.length} ${itens.length===1?"anotação":"anotações"}</small></h3>
+      ${niveis.length ? `<p class="sub" style="font-size:13.5px;margin-bottom:4px">${niveis.join(" · ")}</p>` : ""}
+      ${itens.map(({p,n}) => `<div class="ger-it ${p.eu?"minha":""}"><div class="q"><b>${esc(p.eu && !RO ? "Você" : (n.por || p.nome))}</b>${n.ts ? " · " + fmtTs(n.ts) : ""}</div>
+        ${t(n.vi) ? `<p><span>${CFG.ladoLa[0]}</span>${esc(n.vi)}</p>` : ""}${t(n.eu) ? `<p><span>Aqui</span>${esc(n.eu)}</p>` : ""}</div>`).join("") || `<p class="sub" style="font-size:14px">Ninguém da empresa anotou sobre ${a.t} ainda.</p>`}</div>`;
+  }).join("");
+  const comp = P.map(p => { const ac = (p.dados.acoes||[]).filter(x => t(x.o)); const fo = (p.dados.fortes||[]).filter(t), op = (p.dados.oport||[]).filter(t);
+    if (!ac.length && !fo.length && !op.length) return "";
+    return `<div class="ger-it ${p.eu?"minha":""}"><div class="q"><b>${esc(nome(p))}</b>${p.dados.compromisso ? " · ✓ compromisso assumido" : ""}</div>
+      ${fo.length ? `<p><span>Pontos fortes</span>${fo.map(esc).join("; ")}</p>` : ""}${op.length ? `<p><span>Lacunas</span>${op.map(esc).join("; ")}</p>` : ""}
+      ${ac.map((x,i) => `<p><span>Ação ${i+1}</span>${esc(x.o)}${x.q ? " · " + esc(x.q) : ""}${x.p ? " · " + esc(x.p) : ""}</p>`).join("")}</div>`; }).join("");
+  return `<p class="sub" style="margin-bottom:14px">${P.length > 1 ? `Tudo o que ${P.map(p => esc(p.eu && !RO ? "você" : p.nome.split(" ")[0])).join(", ")} anotaram em ${CFG.nome.toLowerCase()}, das anotações mais recentes para as mais antigas.` : "Por enquanto só você da sua empresa anotou aqui. Quando um sócio anotar, aparece aqui com o nome dele."}</p>
+    ${areas}<div class="ger-area"><h3>Reflexão e compromisso de cada um</h3>${comp || `<p class="sub" style="font-size:14px">Ninguém preencheu ainda.</p>`}</div>`;
 }
+$("contGer").textContent = contarGerais();
+if (RO) $("mMinhas").textContent = "Anotações de " + alvo.nome.split(" ")[0];
+document.querySelectorAll(".modos [data-modo]").forEach(b => b.onclick = () => {
+  const g = b.dataset.modo === "gerais";
+  document.querySelectorAll(".modos [data-modo]").forEach(x => x.setAttribute("aria-selected", String(x === b)));
+  $("minhasV").hidden = g; $("geraisV").hidden = !g; document.querySelector(".status").hidden = g;
+  if (g) { $("contGer").textContent = contarGerais(); $("geraisV").innerHTML = geraisHTML(); }
+});
+montarObs({ el: $("obsV"), sb, empresaId: alvo.empresa_id, participanteId: alvo.id, alvos: [DIA], rotuloAlvo: CFG.nome, admin: !!adm });
 
 const pq = new URLSearchParams(location.search).get("p");
 $("dtabs").innerHTML = Object.entries(DIAS).map(([k,c]) => `<a href="visita.html?dia=${k}${pq?"&p="+encodeURIComponent(pq):""}"${k===DIA?' aria-current="page"':""}><b>${c.nome}</b><small>${c.data}</small></a>`).join("");

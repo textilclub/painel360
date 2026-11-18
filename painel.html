@@ -66,6 +66,16 @@
   .dia span{color:var(--muted);font-size:14px}
   a.dia:hover b{color:var(--gold-ink)}
   .adm{margin-top:4px}
+  .bloco h3 .sub2{margin-left:auto;font:600 11.5px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .mini{font-size:13px;color:var(--muted);margin-top:8px}
+  .h4{font:700 12px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-ink);margin-top:18px}
+  .tudo summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .tudo summary::-webkit-details-marker{display:none}.tudo summary h3{margin:0}
+  .tudo .ver{font:600 13px var(--f-body);color:var(--gold-ink);text-decoration:underline}
+  .tudo[open] .ver{display:none}
+  .links a{display:flex;justify-content:space-between;align-items:center;min-height:46px;border-top:1px solid var(--line);text-decoration:none;color:var(--ink);font-weight:600;font-size:15px}
+  .links a:hover{color:var(--gold-ink)}
+  .socio .pp{font:700 13px var(--f-display);color:var(--ink-2)}
 
   @media (min-width:900px){
     .corpo{grid-template-columns:minmax(0,7fr) minmax(300px,4fr);align-items:start;gap:26px}
@@ -131,45 +141,41 @@
 
     <div class="page corpo">
       <div class="col-a">
-        <!-- 1 ação principal -->
-        <a href="exercicio.html" class="excard" id="exCard">
-          <div class="ex-top">
-            <div class="eyebrow">Antes da imersão · Exercício de casa</div>
-            <span class="badge pendente" id="exBadge">Não iniciado</span>
-          </div>
-          <h2>Planejamento 2027</h2>
-          <p class="exsub" id="exSub">Preencha com seu sócio antes do dia 19. Leva cerca de 30 minutos e salva sozinho.</p>
-          <div class="ex-prog">
-            <div class="fita" role="img" aria-label="Progresso do exercício"><i id="exProg" style="width:0%"></i></div>
-            <div class="lbl"><span id="exEtapa">8 etapas simples</span><span id="exPct"></span></div>
-          </div>
-          <div class="exres" id="exRes"></div>
-          <div class="exbtn"><span id="exBtn">Começar</span><span id="icBtn"></span></div>
-        </a>
+        <section class="bloco" aria-labelledby="hNum">
+          <h3 id="hNum"><span data-ic="trend"></span>Números da empresa<small class="sub2">Plano Anual 2027 · projeção</small></h3>
+          <div class="nums" id="nums"><p class="vazio-b">Carregando…</p></div>
+          <p class="mini" id="numsQuem"></p>
+        </section>
 
-        <ul class="atalhos">
-          <li><a class="at" href="cronograma.html"><span class="ico" data-ic="calendar"></span><span><b>Cronograma</b><small>O que acontece em cada módulo e o que muda na sua confecção.</small></span><span class="go" data-ic="chev"></span></a></li>
-          <li><a class="at" href="palestrantes.html"><span class="ico" data-ic="users"></span><span><b>Palestrantes</b><small>Quem vai conduzir os módulos da imersão.</small></span><span class="go" data-ic="chev"></span></a></li>
-          <li><a class="at" href="local.html"><span class="ico" data-ic="pin"></span><span><b>Local, hotéis e restaurantes</b><small>Aporta Hall, Setor Serrinha. Onde comer e onde ficar por perto.</small></span><span class="go" data-ic="chev"></span></a></li>
-          <li><a class="at" href="visita.html"><span class="ico" data-ic="clip"></span><span><b>Atividades da imersão</b><small>O que vi × minha empresa: visita técnica, 1º dia e 2º dia.</small></span><span class="go" data-ic="chev"></span></a></li>
-          <li><a class="at" href="visita.html?dia=visita#compromissoEx"><span class="ico" data-ic="target"></span><span><b>Compromisso da visita (18/11)</b><small>O card das três ações, com a IA PRODUÇÃO 360 opcional.</small></span><span class="go" data-ic="chev"></span></a></li>
-          <li><a class="at" href="ferramentas.html"><span class="ico" data-ic="layers"></span><span><b>Ferramentas 360° com IA (19 e 20/11)</b><small>Do Diagnóstico 360 ao One Page 2027, com o Agente Estrategista.</small></span><span class="go" data-ic="chev"></span></a></li>
-          <li><div class="at off"><span class="ico" data-ic="folder"></span><span><b>Materiais</b><small>Slides, planilhas e arquivos de apoio.</small></span><span class="em-breve">Em breve</span></div></li>
-        </ul>
+        <section class="bloco" aria-labelledby="hProg">
+          <h3 id="hProg"><span data-ic="target"></span>Seu progresso na imersão</h3>
+          <div class="prog"><div class="p" id="pPct">0<small>%</small></div><div><div class="fita"><i id="pBar" style="width:0%"></i></div><p class="mini" id="pTxt"></p></div></div>
+          <h4 class="h4">O que falta agora</h4>
+          <div id="pend"></div>
+        </section>
+
+        <section class="bloco" aria-labelledby="hDec">
+          <h3 id="hDec"><span data-ic="check"></span>Decisões já registradas pela empresa</h3>
+          <div id="dec"></div>
+        </section>
+
+        <details class="bloco tudo">
+          <summary><h3><span data-ic="clip"></span>Todas as ações da imersão</h3><span class="ver">Ver lista</span></summary>
+          <div id="chk" style="margin-top:12px"></div>
+        </details>
       </div>
 
       <aside class="col-b">
-        <section class="bloco" aria-labelledby="hDatas">
-          <h3 id="hDatas"><span data-ic="calendar"></span>Datas</h3>
-          <div class="dias">
-            <a class="dia" href="cronograma.html"><span class="d"><small>Qua</small>18</span><span><b>Visita técnica</b><span>Siqueira Gaipo</span></span></a>
-            <a class="dia" href="cronograma.html"><span class="d"><small>Qui</small>19</span><span><b>1º dia da imersão</b><span>Aporta Hall</span></span></a>
-            <a class="dia" href="cronograma.html"><span class="d"><small>Sex</small>20</span><span><b>2º dia da imersão</b><span>Aporta Hall</span></span></a>
-          </div>
-        </section>
+        <div id="obsP"></div>
         <section class="bloco" aria-labelledby="hEquipe">
           <h3 id="hEquipe"><span data-ic="users"></span>Sua empresa</h3>
           <div class="socios" id="socios"></div>
+        </section>
+        <section class="bloco links">
+          <h3><span data-ic="calendar"></span>Imersão</h3>
+          <a href="cronograma.html">Cronograma <span data-ic="chev"></span></a>
+          <a href="palestrantes.html">Palestrantes <span data-ic="chev"></span></a>
+          <a href="local.html">Local, hotéis e restaurantes <span data-ic="chev"></span></a>
         </section>
       </aside>
     </div>
@@ -178,6 +184,9 @@
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import { itens, pct, decisoes, porParticipante, htmlNumeros, htmlPendencias, htmlChecklist, htmlDecisoes, CSS_RESUMO, fmt } from "./progresso.js";
+import { obsRecentes } from "./obs.js";
+{ const st = document.createElement("style"); st.textContent = CSS_RESUMO; document.head.appendChild(st); }
 const C = window.TC_CONFIG;
 const sb = createClient(C.SUPABASE_URL, C.SUPABASE_KEY);
 const $ = id => document.getElementById(id);
@@ -185,7 +194,7 @@ const esc = s => String(s??"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;","
 const ROT = { pendente:"Aguardando", aprovado:"Liberado", bloqueado:"Bloqueado" };
 document.querySelectorAll(".ev").forEach(e=>e.textContent=C.EVENTO);
 document.querySelectorAll("[data-ic]").forEach(e=>e.innerHTML=IC(e.dataset.ic, e.classList.contains("ico")?"lg":""));
-$("icEmp").innerHTML = IC("building","sm"); $("icBtn").innerHTML = IC("chev2");
+$("icEmp").innerHTML = IC("building","sm");
 ["aSupPend","aSupBloq"].forEach(i => $(i).href = "https://wa.me/" + C.WHATSAPP_SUPORTE);
 
 const { data:{ session } } = await sb.auth.getSession();
@@ -209,24 +218,27 @@ else {
   else if (eu.status==="bloqueado"){ $("vBloq").classList.remove("hide"); }
   else {
     $("oEmp").textContent = empTxt;
-    const { data:time } = await sb.from("participantes").select("id,nome,cargo,status").eq("empresa_id", eu.empresa_id).order("criado_em");
-    $("socios").innerHTML = (time||[]).map(p => `<div class="socio"><div>${esc(p.nome)}${p.id===eu.id?" (você)":""}<small>${esc(p.cargo||"")}</small></div><span class="badge ${p.status}">${ROT[p.status]||p.status}</span></div>`).join("");
     $("vOk").classList.remove("hide");
-    const { data:ex } = await sb.from("exercicios").select("status,regime,resumo,atualizado_em,atualizado_por_nome").eq("empresa_id", eu.empresa_id).maybeSingle();
-    if (ex){
-      const etapa = (ex.resumo?.etapa ?? 0), done = ex.status === "concluido";
-      const pct = done ? 100 : Math.round(etapa/8*100);
-      $("exProg").style.width = pct + "%";
-      $("exEtapa").textContent = done ? "Exercício concluído" : `Etapa ${Math.min(etapa+1,8)} de 8`;
-      $("exPct").textContent = pct + "%";
-      $("exBadge").className = "badge " + (done ? "aprovado" : "pendente");
-      $("exBadge").textContent = done ? "Concluído" : "Em andamento";
-      $("exBtn").textContent = done ? "Ver resultado" : "Continuar";
-      const quem = ex.atualizado_por_nome ? " por " + ex.atualizado_por_nome.split(" ")[0] : "";
-      $("exSub").textContent = `${ex.regime === "presumido" ? "Lucro Presumido" : ex.regime === "simples" ? "Simples Nacional" : ""} · atualizado em ${new Date(ex.atualizado_em).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})}${quem}`;
-      const r = ex.resumo || {}, brl = v => "R$ " + Math.round(v||0).toLocaleString("pt-BR");
-      if (r.receita) $("exRes").innerHTML = `<span>Faturamento/ano <b>${brl(r.receita)}</b></span><span>Lucro/ano <b style="color:${r.resultado>=0?"var(--ok)":"var(--err)"}">${brl(r.resultado)}</b></span>`;
-    }
+    const [{ data:time }, { data:ex }, { data:ats }] = await Promise.all([
+      sb.from("participantes").select("id,nome,cargo,status").eq("empresa_id", eu.empresa_id).order("criado_em"),
+      sb.from("exercicios").select("empresa_id,status,regime,resumo,atualizado_em,atualizado_por_nome").eq("empresa_id", eu.empresa_id).maybeSingle(),
+      sb.from("atividades").select("participante_id,tipo,dados,status,atualizado_em").eq("empresa_id", eu.empresa_id)
+    ]);
+    const PP = porParticipante(ats);
+    $("nums").innerHTML = htmlNumeros(ex, "exercicio.html");
+    if (ex?.atualizado_em) $("numsQuem").textContent = `Atualizado em ${fmt(ex.atualizado_em)}${ex.atualizado_por_nome ? " por " + ex.atualizado_por_nome : ""}. Para ver ou mudar, abra o Plano Anual no menu.`;
+    const lista = itens(PP[eu.id] || {}, ex), pc = pct(lista), feitos = lista.filter(i => i.st === "feito").length;
+    $("pPct").innerHTML = pc + "<small>%</small>"; $("pBar").style.width = pc + "%";
+    $("pTxt").textContent = `${feitos} de ${lista.length} ações concluídas · ${lista.filter(i => i.st === "andamento").length} em andamento`;
+    $("pend").innerHTML = htmlPendencias(lista, 4);
+    $("chk").innerHTML = htmlChecklist(lista);
+    const ap = (time||[]).filter(p => p.status === "aprovado");
+    $("dec").innerHTML = htmlDecisoes(decisoes(ap.map(p => ({ nome: p.id === eu.id ? "Você" : p.nome, regs: PP[p.id] || {} }))));
+    $("socios").innerHTML = (time||[]).map(p => { const pp = p.status === "aprovado" ? pct(itens(PP[p.id] || {}, ex)) : null;
+      return `<div class="socio"><div>${esc(p.nome)}${p.id===eu.id?" (você)":""}<small>${esc(p.cargo||"")}</small></div>${pp !== null ? `<span class="pp" title="Progresso na imersão">${pp}%</span>` : `<span class="badge ${p.status}">${ROT[p.status]||p.status}</span>`}</div>`; }).join("");
+    const obs = await obsRecentes(sb, eu.empresa_id, eu.id, 4);
+    if (obs.length) $("obsP").innerHTML = `<div class="obs"><div class="obs-t"><i>TC</i>Observações da Têxtil Club</div>${obs.map(o => `<div class="obs-it">${esc(o.texto)}<small><span>${esc(o.autor||"Têxtil Club")} · ${fmt(o.criado_em)}</span></small></div>`).join("")}</div>`;
+    document.querySelectorAll("[data-ic]").forEach(e=>{ if(!e.innerHTML) e.innerHTML=IC(e.dataset.ic, e.classList.contains("ico")?"lg":""); });
   }
 }
 </script>

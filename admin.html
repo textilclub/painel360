@@ -80,9 +80,9 @@
   </section>
 
   <section class="bloco-a" id="exercicios">
-    <div class="eyebrow">Exercício de casa</div>
-    <h1 style="font-size:clamp(1.4rem,1.1rem + 1.4vw,1.9rem);margin-top:8px">Planejamento 2027, empresa por empresa</h1>
-    <p class="sub">Veja como está cada empresa. <b>Resultado</b> abre o painel da empresa; <b>Planilha</b> mostra as 7 abas e permite baixar o Excel preenchido.</p>
+    <div class="eyebrow">Plano Anual</div>
+    <h1 style="font-size:clamp(1.4rem,1.1rem + 1.4vw,1.9rem);margin-top:8px">Plano Anual 2027, empresa por empresa</h1>
+    <p class="sub">Veja como está cada empresa. <b>Visão completa</b> mostra tudo o que a empresa preencheu (e o que falta) e permite deixar observações da Têxtil Club; <b>Resultado</b> abre o Plano Anual; <b>Planilha</b> mostra as 7 abas.</p>
     <div class="stats">
       <div class="stat"><b id="eTot">–</b><span>Empresas liberadas</span></div>
       <div class="stat"><b id="eNao" style="color:var(--err)">–</b><span>Não começaram</span></div>
@@ -96,10 +96,10 @@
       </table>
     </div>
   </section>
-  <section class="bloco-a" id="atividades">
-    <div class="eyebrow">Atividades da imersão</div>
+  <section class="bloco-a" id="acoes">
+    <div class="eyebrow">Ações da imersão</div>
     <h1 style="font-size:clamp(1.4rem,1.1rem + 1.4vw,1.9rem);margin-top:8px">O que vi × minha empresa, dia a dia</h1>
-    <p class="sub">Uma matriz por participante em cada dia. Toque no dia para abrir a matriz em modo leitura.</p>
+    <p class="sub">Uma matriz e um conjunto de ferramentas por participante em cada dia. Toque em <b>Ver</b> para abrir em modo leitura e deixar observações.</p>
     <div class="stats">
       <div class="stat"><b id="vTot">–</b><span>Participantes liberados</span></div>
       <div class="stat"><b id="vV" style="color:var(--ok)">–</b><span>Concluíram a visita</span></div>
@@ -200,7 +200,7 @@ async function carregarEx(){
       <td data-l="Andamento">${prog}${x?`<div class="fita mini-fita" aria-hidden="true"><i style="width:${pct}%"></i></div>`:""}</td>
       <td data-l="Faturamento/ano"><span class="num">${r.receita?brl(r.receita):"–"}</span></td>
       <td data-l="Lucro/ano">${r.receita?`<span class="num" style="color:${r.resultado>=0?"var(--ok)":"var(--err)"}">${brl(r.resultado)}</span><small>margem ${((r.margem||0)*100).toLocaleString("pt-BR",{maximumFractionDigits:1})}%</small>`:"–"}</td>
-      <td data-l="">${x?`<div class="acts"><a class="btn sm" href="exercicio.html?empresa=${e.id}">Resultado</a><a class="btn sm ghost" href="planilha.html?empresa=${e.id}">Planilha</a></div>`:""}</td>
+      <td data-l=""><div class="acts"><a class="btn sm" href="cliente.html?e=${e.id}">Visão completa</a>${x?`<a class="btn sm ghost" href="exercicio.html?empresa=${e.id}">Resultado</a><a class="btn sm ghost" href="planilha.html?empresa=${e.id}">Planilha</a>`:""}</div></td>
     </tr>`;
   }).join("");
 }
@@ -208,7 +208,7 @@ carregarEx();
 const DIAS_V = { visita:8, dia1:8, dia2:8 };
 async function carregarVisitas(){
   const [{ data:ps }, { data:ats }] = await Promise.all([
-    sb.from("participantes").select("id,nome,status,empresas(nome)").eq("status","aprovado").order("nome"),
+    sb.from("participantes").select("id,nome,status,empresa_id,empresas(nome)").eq("status","aprovado").order("nome"),
     sb.from("atividades").select("participante_id,tipo,status,dados,atualizado_em").in("tipo", [...Object.keys(DIAS_V),"fer_dia1","fer_dia2"])
   ]);
   const m = {}; (ats||[]).forEach(a => m[a.participante_id+"|"+a.tipo] = a);
@@ -229,7 +229,7 @@ async function carregarVisitas(){
     const n = lst.filter(k => a.dados?.[k]?.ok).length;
     return `<td data-l="${rot}"><span class="badge ${n===lst.length?"aprovado":"pendente"}">${n} de ${lst.length} concluídas</span><div class="fita mini-fita" aria-hidden="true"><i style="width:${n/lst.length*100}%"></i></div><div class="acts" style="margin-top:8px"><a class="btn sm ghost" href="ferramentas.html?dia=${dia}&p=${p.id}">Ver</a></div></td>`; };
   $("vLista").innerHTML = lista.map(p => `<tr>
-      <td data-l="Participante"><b>${esc(p.nome)}</b><small>${esc(p.empresas?.nome||"")}</small></td>
+      <td data-l="Participante"><b>${esc(p.nome)}</b><small><a href="cliente.html?e=${p.empresa_id}">${esc(p.empresas?.nome||"")}</a></small></td>
       ${cel(p,"visita","Visita · 18/11")}${cel(p,"dia1","1º dia · 19/11")}${celF(p,"fer_dia1","Ferramentas 19/11","dia1")}${cel(p,"dia2","2º dia · 20/11")}${celF(p,"fer_dia2","Ferramentas 20/11","dia2")}
     </tr>`).join("");
 }

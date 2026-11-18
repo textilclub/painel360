@@ -36,12 +36,12 @@ export const FER = {
     obj: "Avaliar posicionamento e mix de produto sob margem, demanda e capacidade", saida: "Matriz de portfólio com decisões e hipótese explícita",
     grupos: [
       { t: "Posicionamento", campos: [A("posic", "Como a sua marca se posiciona", "Para quem vende, por que escolhem você, faixa de preço")] },
-      ...[1, 2, 3].map(n => ({ t: `Linha ${n}`, dois: true, campos: [
-        T(`l${n}_nome`, "Nome da linha", n === 1 ? "Ex.: camisetas básicas" : n === 2 ? "Ex.: uniformes corporativos" : "Ex.: moda fitness", false),
-        T(`l${n}_cli`, "Cliente ideal", "Quem compra"), T(`l${n}_preco`, "Preço médio", "R$ por peça"), T(`l${n}_vol`, "Volume (peças/mês)", "Ex.: 2.000"),
-        T(`l${n}_marg`, "Margem", "Ex.: 30% ou 'não sei'"), T(`l${n}_ped`, "Pedidos e prazo", "Ex.: pedido mínimo 50; prazo 20 dias")] })) ],
+      { t: "Linhas de produto", item: "linha", dois: true, campos: [
+        T("nome", "Nome da linha", "Ex.: camisetas básicas, uniformes corporativos, moda fitness", false),
+        T("cli", "Cliente ideal", "Quem compra"), T("preco", "Preço médio", "R$ por peça"), T("vol", "Volume (peças/mês)", "Ex.: 2.000"),
+        T("marg", "Margem", "Ex.: 30% ou 'não sei'"), T("ped", "Pedidos e prazo", "Ex.: pedido mínimo 50; prazo 20 dias")] } ],
     out: [
-      { b: "lin", tipo: "linhas", t: "Matriz de portfólio", n: 3, obr: 1, rotIn: "l{n}_nome",
+      { b: "lin", tipo: "linhas", t: "Matriz de portfólio", n: 3, obr: 1, rotIn: { g: 1, c: "nome" },
         cols: [{ k: "dec", l: "Decisão", tipo: "sel", op: ["", "ACELERAR", "CORRIGIR", "REDUZIR", "VALIDAR"] }, { k: "ev", l: "Evidência e risco", ph: "Por que essa decisão" },
           { k: "hip", l: "Hipótese a validar", ph: "O que ainda precisa ser confirmado" }, { k: "st", l: "Status", tipo: "sel", op: ANALISE }] } ] },
 
@@ -178,7 +178,7 @@ export const FER = {
     usa: ["prioridades", "orcamento", "financeiro", "kpis", "projetos", "noventa", "auditar", "painel"],
     grupos: [
       { t: "Visão", campos: [A("visao", "Onde queremos chegar em 31/12/2027", "")] },
-      { t: "Os cinco números de 2027", dois: true, campos: [1, 2, 3, 4, 5].map(n => T("n" + n, "Número " + n, n === 1 ? "Ex.: faturamento R$ 6 mi" : n === 2 ? "Ex.: margem líquida 10%" : "")) } ],
+      { t: "Os cinco números de 2027", unico: true, dois: true, campos: [1, 2, 3, 4, 5].map(n => T("n" + n, "Número " + n, n === 1 ? "Ex.: faturamento R$ 6 mi" : n === 2 ? "Ex.: margem líquida 10%" : "")) } ],
     out: [
       { b: "visao", tipo: "campo", l: "Visão de futuro", ph: "Onde queremos chegar em 31/12/2027", obr: true },
       { b: "num", tipo: "linhas", t: "Os cinco números de 2027", n: 5, obr: 3, cols: [{ k: "v", l: "Meta", ph: "" }] },
@@ -203,7 +203,7 @@ export const numero = s => { const t = String(s || "").replace(/[^\d,.-]/g, "");
 export function rotulos(F, bl, dados) {
   if (bl.rot) return bl.rot;
   return [...Array(bl.n).keys()].map(i => {
-    if (bl.rotIn) { const v = String(dados?.in?.[bl.rotIn.replace("{n}", i + 1)]?.v || "").trim(); return v || `Linha ${i + 1}`; }
+    if (bl.rotIn) { const v = String(dados?.g?.[bl.rotIn.g]?.[i]?.c?.[bl.rotIn.c]?.v || "").trim(); return v || `Linha ${i + 1}`; }
     return `${i + 1}`;
   });
 }
@@ -240,4 +240,40 @@ export function faltaTexto(k) {
   const F = FER[k];
   const p = F.out.filter(bl => bl.obr).map(bl => bl.tipo === "campo" ? bl.l.toLowerCase() : `${bl.obr === ((bl.rot || []).length || bl.n) ? "todas as linhas de" : "pelo menos " + bl.obr + (bl.obr > 1 ? " linhas de" : " linha de")} "${bl.t}"`);
   return "Para concluir, preencha: " + p.join("; ") + ".";
+}
+
+// ---------- anotações (várias por tema) ----------
+export const novoId = () => Math.random().toString(36).slice(2, 10);
+export function novaNota(por) { return { id: novoId(), t: "", c: {}, ts: new Date().toISOString(), por: por || "" }; }
+// Converte o formato antigo (um campo por tema em dados.in) para listas de anotações em dados.g
+export function migrar(k, dados, por) {
+  const F = FER[k]; if (!F) return dados;
+  dados.g = dados.g || {};
+  const inn = dados.in || {};
+  F.grupos.forEach((g, gi) => {
+    if (Array.isArray(dados.g[gi]) && dados.g[gi].length) return;
+    const lista = [];
+    if (k === "produto" && gi === 1) {
+      [1, 2, 3].forEach(n => { const c = {}; ["nome", "cli", "preco", "vol", "marg", "ped"].forEach(f => { const v = inn[`l${n}_${f}`]; if (v && String(v.v || "").trim()) c[f] = v; });
+        if (Object.keys(c).length) lista.push({ ...novaNota(por), c }); });
+    } else {
+      const c = {}; g.campos.forEach(f => { const v = inn[f.k]; if (v && String(v.v || "").trim()) c[f.k] = v; });
+      if (Object.keys(c).length) lista.push({ ...novaNota(por), c });
+    }
+    dados.g[gi] = lista.length ? lista : [novaNota(por)];
+  });
+  return dados;
+}
+// Anotações de um tema em texto (para a IA)
+export function notasTexto(F, gi, lista, opts = {}) {
+  const g = F.grupos[gi], tag = f => f ? `[${f}]` : "", t = x => String(x || "").trim();
+  const vazias = n => !t(n.t) && g.campos.every(c => !t(n.c?.[c.k]?.v));
+  const uteis = (lista || []).filter(n => !vazias(n));
+  if (!uteis.length) return opts.pularVazio ? "" : g.campos.map(c => `- ${c.l}: [P] não informado`).join("\n");
+  return uteis.map((n, i) => {
+    const cab = uteis.length > 1 || t(n.t) || opts.autor ? `Anotação ${i + 1}${t(n.t) ? " — " + t(n.t) : ""}${opts.autor && n.por ? ` (por ${n.por}${n.ts ? ", " + new Date(n.ts).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : ""})` : ""}\n` : "";
+    return cab + g.campos.map(c => { const v = n.c?.[c.k] || {}; const tx = t(v.v);
+      if (!tx) return `- ${c.l}: [P] não informado`;
+      return `- ${c.l}: ${c.f ? (tag(v.f) || "[H]") + " " : ""}${tx}`; }).join("\n");
+  }).join("\n");
 }

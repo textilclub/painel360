@@ -101,3 +101,52 @@ export function converterRegime(celulas, de, para) {
   }
   return out;
 }
+
+// ---------- importar planilha preenchida (xlsx) ----------
+// Lê só as células de entrada do modelo e devolve { regime, celulas, campos }.
+export async function lerPlanilha(arquivo) {
+  const zip = await window.JSZip.loadAsync(arquivo);
+  const txt = async p => { const f = zip.file(p); return f ? f.async("string") : null; };
+  const wb = await txt("xl/workbook.xml"), rels = await txt("xl/_rels/workbook.xml.rels");
+  if (!wb || !rels) throw new Error("O arquivo não é uma planilha Excel (.xlsx) válida.");
+  const dp = new DOMParser();
+  const W = dp.parseFromString(wb, "application/xml"), Rr = dp.parseFromString(rels, "application/xml");
+  const alvoRel = {}; [...Rr.getElementsByTagName("Relationship")].forEach(r => { let t = r.getAttribute("Target"); t = t.startsWith("/") ? t.slice(1) : "xl/" + t.replace(/^\.\//, ""); alvoRel[r.getAttribute("Id")] = t; });
+  const abas = {}; [...W.getElementsByTagName("sheet")].forEach(s => { const id = s.getAttribute("r:id") || s.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id"); abas[s.getAttribute("name")] = alvoRel[id]; });
+  const ssXml = await txt("xl/sharedStrings.xml");
+  const SS = ssXml ? [...dp.parseFromString(ssXml, "application/xml").getElementsByTagName("si")].map(si => [...si.getElementsByTagName("t")].map(t => t.textContent).join("")) : [];
+  const lerAba = async nome => {
+    const p = abas[nome]; if (!p) return null; const x = await txt(p); if (!x) return null;
+    const S = dp.parseFromString(x, "application/xml"), out = {}; let maxRow = 0;
+    [...S.getElementsByTagName("c")].forEach(c => {
+      const r = c.getAttribute("r"); if (!r) return; const row = +r.replace(/[A-Z]+/, ""); if (row > maxRow) maxRow = row;
+      const t = c.getAttribute("t"), v = c.getElementsByTagName("v")[0]?.textContent;
+      let val = null;
+      if (t === "s") val = v !== undefined ? SS[+v] : null;
+      else if (t === "inlineStr") val = [...c.getElementsByTagName("t")].map(e => e.textContent).join("");
+      else if (t === "str" || t === "e") val = v ?? null;
+      else if (t === "b") val = v === "1";
+      else if (v !== undefined && v !== "") val = parseFloat(v);
+      out[r] = val;
+    });
+    return { out, maxRow };
+  };
+  const orc = await lerAba("Orçamento"), pv = await lerAba("Projeção de Vendas");
+  if (!orc || !pv || !abas["Premissas"]) throw new Error("Esta planilha não é a planilha do Planejamento 2027 da imersão. Baixe a planilha pela plataforma, preencha e envie de novo.");
+  const b7 = String(orc.out["B7"] || "").toUpperCase();
+  const regime = b7.includes("SIMPLES") ? "simples" : b7.includes("PIS") ? "presumido" : null;
+  if (!regime) throw new Error("Não foi possível identificar o regime (Simples ou Presumido) desta planilha.");
+  if (pv.maxRow < 300) throw new Error("Esta é a versão antiga da planilha (poucos produtos). Baixe a planilha pela plataforma (100 produtos), preencha e envie de novo.");
+  const M = await carregarModelo(regime), celulas = {}; let campos = 0;
+  for (const [aba, refs] of Object.entries(M.inputs)) {
+    const dados = aba === "Orçamento" ? orc : aba === "Projeção de Vendas" ? pv : await lerAba(aba);
+    if (!dados) continue;
+    for (const [ref, tipo] of Object.entries(refs)) {
+      let v = dados.out[ref]; if (v === undefined || v === null || v === "") continue;
+      if (tipo === "num" && typeof v !== "number") { const n = parse(v); if (n === null) continue; v = n; }
+      if (tipo === "txt" && typeof v === "number") v = String(v);
+      celulas[`${aba}!${ref}`] = v; campos++;
+    }
+  }
+  return { regime, celulas, campos, modelo: M };
+}
