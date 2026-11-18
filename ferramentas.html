@@ -96,7 +96,7 @@
   <section class="faixa fh"><div class="faixa-in">
     <div class="eyebrow">1º dia · Quinta, 19/11 · Aporta Hall</div>
     <h1>Ferramentas <em>360°</em> com IA</h1>
-    <p class="sub">Três ferramentas para usar durante o dia. Você preenche os dados da sua empresa, a plataforma monta o comando para o Agente Estrategista e você registra o que decidiu.</p>
+    <p class="sub">Três ferramentas para usar durante o dia. Você preenche os dados da sua empresa, o Agente Estrategista analisa na hora e você registra o que decidiu.</p>
     <div id="quemF" style="margin-top:16px;color:var(--muted-dark);font-size:14.5px"></div>
   </div></section>
 
@@ -109,23 +109,12 @@
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import { montarAgente } from "./agente.js";
 const C = window.TC_CONFIG; const sb = createClient(C.SUPABASE_URL, C.SUPABASE_KEY);
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const ic = (n, c) => (window.IC ? IC(n, c) : "");
 const TIPO = "fer_dia1";
-
-const CONTROLE = `CONTROLE: Nunca inventar dados; apresentar hipótese como hipótese; decisão final é do empresário. Questione incoerências entre produção, vendas, marca/produto, finanças, pessoas e estratégia. Nunca fabrique percentuais, margens, capacidades ou valores. Se houver informação insuficiente, entregue a estrutura preenchível e as perguntas necessárias, sem conclusões numéricas.`;
-const FORMATO = s => `FORMATO DE ENTREGA: ${s}. Em toda tabela, sinalize: [R] dado real informado, [H] hipótese/estimativa ou [P] informação pendente. Para cada recomendação, escreva evidência, impacto, responsável sugerido, prazo a confirmar e dependências. Distinga decisão confirmada pelo empresário de opção ainda em análise.`;
-const PROMPT = (mod, obj, ins, proc, fmt) => `Você é o Agente Estrategista Confecção 360°, atuando como conselheiro crítico de um empresário brasileiro da indústria do vestuário. Execute o módulo ${mod}. Objetivo: ${obj}.
-
-CONTEXTO: use exclusivamente informações fornecidas pelo participante e os registros anteriores desta mesma empresa. Antes da análise, solicite somente os dados essenciais que faltarem: ${ins}. Não confunda projeções com histórico, nem faturamento com lucro.
-
-PROCESSO OBRIGATÓRIO: ${proc}
-
-${FORMATO(fmt)}
-
-${CONTROLE}`;
 
 const PILARES = [
   ["producao","Produção"],["vendas","Vendas"],["marca","Marca/Produto"],["fin","Gestão/Financeiro"],["pessoas","Liderança/Pessoas"],["estrat","Estratégia"]
@@ -202,7 +191,7 @@ const [{ data:reg }, { data:vis }, { data:exc }] = await Promise.all([
   alvo.empresa_id ? sb.from("exercicios").select("regime,resumo").eq("empresa_id", alvo.empresa_id).maybeSingle() : Promise.resolve({ data:null })
 ]);
 const D = reg?.dados || {};
-ORDEM.forEach(k => D[k] = Object.assign({ in:{}, out:{}, ia:"", ok:false }, D[k] || {}));
+ORDEM.forEach(k => D[k] = Object.assign({ in:{}, out:{}, chat:[], ok:false }, D[k] || {}));
 let atual = ORDEM.includes(location.hash.slice(1)) ? location.hash.slice(1) : (ORDEM.find(k => !D[k].ok) || "diag");
 
 // ---------- salvar ----------
@@ -255,7 +244,7 @@ function comando(k){
     const brl = v => "R$ " + Math.round(v||0).toLocaleString("pt-BR");
     extra += `\n\nREGISTRO ANTERIOR — PLANEJAMENTO 2027 (exercício de casa; é PROJEÇÃO, não histórico)\n- Regime: ${exc.regime==="presumido"?"Lucro Presumido":"Simples Nacional"}\n- Faturamento projetado 2027: [H] ${brl(exc.resumo.receita)}\n- Resultado projetado 2027: [H] ${brl(exc.resumo.resultado)}`;
   }
-  return `${PROMPT(F.nome, F.obj, F.ins, F.proc, F.saida)}
+  return `MÓDULO ${F.nome}
 
 === DADOS DA EMPRESA ===
 Empresa: ${alvo.empresas?.nome || ""}
@@ -302,38 +291,31 @@ function tela(){
       ${F.grupos.map((g,i) => `<div class="grupo"><h3>${F.grupos.length>3?`<span class="k">${i+1}</span>`:""}${g.t}</h3><div class="campos ${g.dois?"dois":""}">${g.campos.map(c => campo(k,c)).join("")}</div></div>`).join("")}
     </section>
 
-    <section class="passo cmd"><header><span class="n">2</span><div><h2>Comando para o Agente Estrategista</h2><p>O comando já leva o prompt do módulo ${F.nome} e os seus dados. Copie e cole no agente (ou no ChatGPT).</p></div></header>
-      ${k==="prod" && vis?.dados?.areas ? `<div class="aviso">Incluímos as lacunas e ações da sua visita técnica do dia 18.</div>` : ""}
-      <textarea id="cmd" readonly></textarea>
-      <div class="botoes so-edit"><button class="btn" id="bCopiar" type="button">${ic("clip","sm")}Copiar comando</button><a class="btn ghost" href="https://chatgpt.com/" target="_blank" rel="noopener">Abrir o ChatGPT</a><span class="hint" id="cpOk"></span></div>
+    <section class="passo"><header><span class="n">2</span><div><h2>Análise do Agente Estrategista</h2><p>A IA lê os seus dados${k==="prod" && vis?.dados?.areas ? ", as lacunas da sua visita técnica" : ""} e responde aqui, no formato do módulo ${F.nome}. Pode conversar com ela para aprofundar.</p></div></header>
+      <div id="agente"></div>
     </section>
 
-    <section class="passo"><header><span class="n">3</span><div><h2>Registro de saída</h2><p>Depois da conversa com a IA e da discussão na mesa, registre aqui o que ficou decidido.</p></div></header>
+    <section class="passo"><header><span class="n">3</span><div><h2>Registro de saída</h2><p>Depois da análise da IA e da discussão na mesa, registre aqui o que ficou decidido.</p></div></header>
       ${saida(k)}
-      <div class="campo" style="margin-top:12px"><label>Resposta da IA (opcional: cole aqui para guardar)</label><textarea data-ia="1" style="min-height:120px" ${RO?"disabled":""}>${esc(D[k].ia||"")}</textarea></div>
       <div id="fim" style="margin-top:16px"></div>
     </section>`;
-  $("cmd").value = comando(k);
+  montarAgente({ el: $("agente"), sb, modulo: k, ro: RO, dados: () => comando(k), conversa: () => D[k].chat, salvar: c => { D[k].chat = c; salvar(); } });
 
   // eventos
   $("tela").querySelectorAll("[data-in]").forEach(el => el.addEventListener(el.tagName==="SELECT"?"change":"input", () => {
     const c = el.dataset.in, cur = D[k].in[c] || { v:"", f:"" }; cur.v = el.value;
     if (!cur.f && el.value.trim()) { const def = el.closest(".campo").querySelector('[data-f="H"]'); if (def) { cur.f = "H"; el.closest(".campo").querySelectorAll(".rhp button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.f==="H"))); } }
-    D[k].in[c] = cur; $("cmd").value = comando(k); salvar();
+    D[k].in[c] = cur; salvar();
     if (k==="produto" && /_nome$/.test(c)) { const n = c[1]; const h = $("tela").querySelectorAll(".passo")[2].querySelectorAll(".grupo h3")[n-1]; if (h) h.innerHTML = `<span class="k">${n}</span>${esc(el.value.trim()||"Linha "+n)}`; }
   }));
   $("tela").querySelectorAll(".rhp button").forEach(b => b.onclick = () => {
     const c = b.dataset.k, cur = D[k].in[c] || { v:"", f:"" }; cur.f = cur.f === b.dataset.f ? "" : b.dataset.f; D[k].in[c] = cur;
     b.parentElement.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.f === cur.f)));
-    $("cmd").value = comando(k); salvar(); });
+    salvar(); });
   $("tela").querySelectorAll("[data-out]").forEach(el => el.addEventListener(el.tagName==="SELECT"?"change":"input", () => { D[k].out[el.dataset.out] = el.value; salvar(); fim(); }));
   $("tela").querySelectorAll("[data-dec]").forEach(b => b.onclick = () => { const n = b.dataset.dec; D[k].out["d"+n] = D[k].out["d"+n] === b.dataset.v ? "" : b.dataset.v;
     b.parentElement.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.v === D[k].out["d"+n]))); salvar(); fim(); });
   $("tela").querySelectorAll("[data-conf]").forEach(el => el.onchange = () => { D[k].out["c"+el.dataset.conf] = el.checked; salvar(); });
-  $("tela").querySelector("[data-ia]").addEventListener("input", e => { D[k].ia = e.target.value; salvar(); });
-  const bc = $("bCopiar"); if (bc) bc.onclick = async () => {
-    try { await navigator.clipboard.writeText($("cmd").value); } catch { $("cmd").select(); document.execCommand("copy"); }
-    $("cpOk").textContent = "Copiado. Agora cole no agente."; setTimeout(() => $("cpOk").textContent = "", 4000); };
   fim();
 }
 

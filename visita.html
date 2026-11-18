@@ -51,7 +51,11 @@
   .ia p{font-size:14.5px;line-height:1.5;color:var(--ink-2);margin:4px 0 10px}
   .ia textarea{min-height:180px;font-size:13.5px;background:var(--surface)}
   .ia .btn{margin:10px 10px 14px 0}
-  .ro .cartao-acts,.ro .ia{display:none!important}
+  .ro .cartao-acts{display:none!important}
+  .ia{padding:16px}
+  .ia-cab{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+  .ia-cab .op{font:700 11px var(--f-body);letter-spacing:.1em;text-transform:uppercase;background:var(--ink);color:var(--gold-hi);border-radius:999px;padding:4px 10px}
+  .ia-cab b{font:700 15.5px var(--f-display)}
   #matriz,#compromissoEx{scroll-margin-top:190px}
   .fer-link{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;background:#000;color:#fff;border-radius:var(--r-lg);padding:14px 16px;margin-bottom:16px;text-decoration:none;min-height:64px}
   .fer-link .ico{width:42px;height:42px;border-radius:10px;background:var(--gold);color:#0b0b0a;display:grid;place-items:center}
@@ -217,12 +221,11 @@
         <div class="cartao-acts" id="cartaoActs"></div>
       </div>
       <div class="compromisso" id="compromisso"></div>
-      <details class="ia" id="iaBox" hidden>
-        <summary><span class="op">Opcional</span><b>Aprofunde com a IA: PRODUÇÃO 360</b></summary>
-        <p>O comando abaixo já leva a sua matriz, a sua reflexão e as suas 3 ações. Copie e cole no agente Estrategista Confecção 360° (ou no ChatGPT). Ele analisa gargalos e capacidade, revisa a ordem das ações e sugere o primeiro passo de cada uma.</p>
-        <textarea id="iaTxt" readonly></textarea>
-        <button class="btn ghost" id="iaCopiar" type="button">Copiar comando</button><span class="hint" id="iaOk"></span>
-      </details>
+      <div class="ia" id="iaBox" hidden>
+        <div class="ia-cab"><span class="op">Opcional</span><b>Aprofunde com a IA: PRODUÇÃO 360</b></div>
+        <p>O Agente Estrategista lê a sua matriz, a sua reflexão e as suas 3 ações. Ele aponta os gargalos, revisa a ordem das ações e sugere o primeiro passo de cada uma.</p>
+        <div id="iaAgente"></div>
+      </div>
     </div>
     <div id="dosSocios"></div>
   </div>
@@ -230,6 +233,7 @@
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import { montarAgente } from "./agente.js";
 const C = window.TC_CONFIG; const sb = createClient(C.SUPABASE_URL, C.SUPABASE_KEY);
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -440,16 +444,24 @@ function renderCard(soCard){
   };
   iaTexto();
 }
+let agMontado = false;
 function iaTexto(){
-  if (!EXT.ia || RO) return;
-  $("iaBox").hidden = false;
+  if (!EXT.ia || agMontado) return;
+  agMontado = true; $("iaBox").hidden = false;
+  montarAgente({ el: $("iaAgente"), sb, modulo: "prod_visita", ro: RO, dados: iaDados,
+    conversa: () => D.ia_chat || [], salvar: c => { D.ia_chat = c; salvar(true); } });
+}
+function iaDados(){
   const t = s => String(s||"").trim();
   const mat = AREAS.map(a => { const v = D.areas[a.k]; if (!t(v.vi) && !t(v.eu) && v.nivel==null) return null;
-    return `- ${a.t}${v.foco?" (quero agir)":""}: vi "${t(v.vi)||"—"}" | na minha empresa "${t(v.eu)||"—"}" | ${v.nivel==null?"sem avaliação":NIVEL_TXT[v.nivel]}`; }).filter(Boolean).join("\n") || "- (ainda não preenchi a matriz)";
-  const lst = arr => arr.map((x,i)=>`${i+1}. ${t(x)||"—"}`).join("\n");
-  $("iaTxt").value = `PRODUÇÃO 360
+    return `- ${a.t}${v.foco?" (quero agir)":""}: vi "${t(v.vi)||"—"}" | na minha empresa "${t(v.eu)||"—"}" | ${v.nivel==null?"sem avaliação":NIVEL_TXT[v.nivel]}`; }).filter(Boolean).join("\n") || "- [P] matriz ainda não preenchida";
+  const lst = arr => arr.map((x,i)=>`${i+1}. ${t(x)||"[P] não informado"}`).join("\n");
+  return `MÓDULO PRODUÇÃO 360 — VISITA TÉCNICA (18/11)
 
-Sou ${alvo.nome||""}, da ${alvo.empresas?.nome||"minha confecção"}. Hoje participei de uma visita técnica a uma indústria têxtil (Imersão Método Confecção 360°) e comparei o que vi com a minha empresa.
+=== DADOS DA EMPRESA ===
+Empresa: ${alvo.empresas?.nome||""}
+Participante: ${alvo.nome||""}
+Contexto: hoje visitei uma indústria têxtil e comparei o que vi com a minha confecção. As observações abaixo são percepções minhas [H], não medições.
 
 MINHA MATRIZ (área: o que vi | como é na minha empresa | distância)
 ${mat}
@@ -461,18 +473,7 @@ LACUNAS NA MINHA EMPRESA
 ${lst(D.oport)}
 
 MINHAS 3 AÇÕES
-${D.acoes.map((a,i)=>`${i+1}. ${t(a.o)||"—"} · responsável: ${t(a.q)||"—"} · prazo: ${a.p||"—"}`).join("\n")}
-
-Aja como consultor de produção para confecções. Com base nisso:
-1. Quais gargalos e limitações de capacidade essas lacunas indicam na minha produção?
-2. As minhas 3 ações atacam os gargalos certos? Em que ordem devo fazê-las e por quê?
-3. Qual o primeiro passo de cada ação nos próximos 7 dias?
-4. Que indicador simples devo acompanhar em cada ação para saber se está funcionando?
-Se faltar alguma informação importante, me faça até 3 perguntas antes de responder.`;
-  $("iaCopiar").onclick = async () => {
-    try { await navigator.clipboard.writeText($("iaTxt").value); } catch { $("iaTxt").select(); document.execCommand("copy"); }
-    $("iaOk").textContent = "Copiado. Agora cole no agente."; setTimeout(()=>$("iaOk").textContent="", 4000);
-  };
+${D.acoes.map((a,i)=>`${i+1}. ${t(a.o)||"[P] não definida"} · responsável: ${t(a.q)||"[P]"} · prazo: ${a.p||"[P]"}`).join("\n")}`;
 }
 
 // ---------- matriz dos sócios (somente leitura) ----------
