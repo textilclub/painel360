@@ -356,12 +356,16 @@ if (reg?.atualizado_em) status(`Salvo em ${new Date(reg.atualizado_em).toLocaleS
 // ---------- salvar ----------
 let t = null;
 function status(txt, ok){ const s=$("salvo"); s.textContent=txt; s.className="salvo"+(ok?" ok":""); }
+let pendente = false;
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && pendente) salvar(true); });
+window.addEventListener("pagehide", () => { if (pendente) salvar(true); });
 function salvar(imediato=false){
-  if (RO) return; clearTimeout(t); status("Salvando…");
-  t = setTimeout(async () => {
+  if (RO) return; clearTimeout(t); status("Salvando…"); pendente = true;
+  t = setTimeout(async () => { pendente = false;
     const { error } = await sb.from("atividades").upsert({ participante_id: eu.id, tipo:DIA, empresa_id: eu.empresa_id, dados: D,
       status: D.compromisso ? "concluido" : "rascunho", atualizado_em: new Date().toISOString() });
-    status(error ? "Não salvou: verifique a internet" : "Salvo automaticamente", !error);
+    if (error) { pendente = true; setTimeout(() => { if (pendente) salvar(true); }, 5000); }
+    status(error ? "Não salvou: verifique a internet (tentando de novo…)" : "Salvo automaticamente · os sócios já podem ver", !error);
   }, imediato ? 0 : 700);
 }
 
@@ -527,7 +531,18 @@ ${D.acoes.map((a,i)=>`${i+1}. ${t(a.o)||"[P] não definida"} · responsável: ${
 
 // ---------- anotações gerais da empresa ----------
 const { data:socRows } = alvo.empresa_id ? await sb.from("atividades").select("participante_id,status,dados,atualizado_em,participantes(nome)").eq("empresa_id", alvo.empresa_id).eq("tipo",DIA).neq("participante_id", alvoId) : { data:[] };
-const SOCIOS = (socRows||[]).map(r => { const d = Object.assign({ areas:{}, fortes:[], oport:[], acoes:[] }, r.dados || {}); migrarAreas(d, r.participantes?.nome); return { id:r.participante_id, nome:r.participantes?.nome||"Sócio", status:r.status, dados:d }; });
+const socio = r => { const d = Object.assign({ areas:{}, fortes:[], oport:[], acoes:[] }, r.dados || {}); migrarAreas(d, r.participantes?.nome); return { id:r.participante_id, nome:r.participantes?.nome||"Sócio", status:r.status, dados:d }; };
+const SOCIOS = (socRows||[]).map(socio);
+let socAssin = JSON.stringify((socRows||[]).map(r => [r.participante_id, r.atualizado_em]));
+async function atualizarSocios(forcar){
+  if (!alvo.empresa_id) return;
+  const { data } = await sb.from("atividades").select("participante_id,status,dados,atualizado_em,participantes(nome)").eq("empresa_id", alvo.empresa_id).eq("tipo",DIA).neq("participante_id", alvoId);
+  if (!data) return; const as = JSON.stringify(data.map(r => [r.participante_id, r.atualizado_em]));
+  if (as === socAssin && !forcar) return; socAssin = as; SOCIOS.splice(0, SOCIOS.length, ...data.map(socio));
+  $("contGer").textContent = contarGerais(); if (!$("geraisV").hidden) $("geraisV").innerHTML = geraisHTML();
+}
+setInterval(() => { if (document.visibilityState === "visible") atualizarSocios(); }, 15000);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") atualizarSocios(); });
 const todos = () => [{ id:alvo.id, nome:alvo.nome, dados:D, eu:true }, ...SOCIOS];
 const NIV = ["Não faço","Faço pouco","Faço parecido","Igual ou melhor"];
 function contarGerais(){ return todos().reduce((s,p) => s + AREAS.reduce((a,ar) => a + (p.dados.areas[ar.k]?.notas||[]).filter(n => String(n.vi||"").trim() || String(n.eu||"").trim()).length, 0), 0); }
@@ -556,7 +571,7 @@ document.querySelectorAll(".modos [data-modo]").forEach(b => b.onclick = () => {
   const g = b.dataset.modo === "gerais";
   document.querySelectorAll(".modos [data-modo]").forEach(x => x.setAttribute("aria-selected", String(x === b)));
   $("minhasV").hidden = g; $("geraisV").hidden = !g; document.querySelector(".status").hidden = g;
-  if (g) { $("contGer").textContent = contarGerais(); $("geraisV").innerHTML = geraisHTML(); }
+  if (g) { $("contGer").textContent = contarGerais(); $("geraisV").innerHTML = geraisHTML(); atualizarSocios(true); }
 });
 montarObs({ el: $("obsV"), sb, empresaId: alvo.empresa_id, participanteId: alvo.id, alvos: [DIA], rotuloAlvo: CFG.nome, admin: !!adm });
 

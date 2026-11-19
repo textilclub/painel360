@@ -208,7 +208,18 @@ const D = reg?.dados || {};
 ORDEM.forEach(k => { D[k] = Object.assign({ in:{}, out:{}, chat:[], ok:false }, D[k] || {}); migrar(k, D[k], alvo.nome); });
 // anotações dos sócios (mesma empresa, mesmo dia)
 const { data:socRows } = alvo.empresa_id ? await sb.from("atividades").select("participante_id,dados,atualizado_em,participantes(nome)").eq("empresa_id", alvo.empresa_id).eq("tipo", TIPO).neq("participante_id", alvoId) : { data:[] };
-const SOCIOS = (socRows||[]).map(r => { const d = r.dados || {}; ORDEM.forEach(k => { if (d[k]) migrar(k, d[k], r.participantes?.nome); }); return { id:r.participante_id, nome:r.participantes?.nome || "Sócio", dados:d }; });
+const socio = r => { const d = r.dados || {}; ORDEM.forEach(k => { if (d[k]) migrar(k, d[k], r.participantes?.nome); }); return { id:r.participante_id, nome:r.participantes?.nome || "Sócio", dados:d }; };
+const SOCIOS = (socRows||[]).map(socio);
+// atualiza as anotações dos sócios sem recarregar a página (a cada 15 s e ao voltar para a aba)
+let socAssin = JSON.stringify((socRows||[]).map(r => [r.participante_id, r.atualizado_em]));
+async function atualizarSocios(forcar){
+  if (!alvo.empresa_id) return;
+  const { data } = await sb.from("atividades").select("participante_id,dados,atualizado_em,participantes(nome)").eq("empresa_id", alvo.empresa_id).eq("tipo", TIPO).neq("participante_id", alvoId);
+  if (!data) return; const as = JSON.stringify(data.map(r => [r.participante_id, r.atualizado_em]));
+  if (as === socAssin && !forcar) return; socAssin = as; SOCIOS.splice(0, SOCIOS.length, ...data.map(socio));
+  if (modo === "gerais") tela(); else { const c = document.querySelector(".modos .cont"); if (c) c.textContent = contarGerais(atual); }
+}
+setInterval(() => { if (document.visibilityState === "visible") atualizarSocios(); }, 15000);
 let modo = "minhas", incluirSocios = false;
 const dadosDe = k => D[k] || OUTRO[k];
 let atual = ORDEM.includes(location.hash.slice(1)) ? location.hash.slice(1) : (ORDEM.find(k => !D[k].ok) || ORDEM[0]);
@@ -216,14 +227,19 @@ let atual = ORDEM.includes(location.hash.slice(1)) ? location.hash.slice(1) : (O
 // ---------- salvar ----------
 let tmr = null;
 function status(txt, ok){ const s=$("salvo"); if (s){ s.textContent=txt; s.className="salvo"+(ok?" ok":""); } }
-function salvar(){
-  if (RO) return; clearTimeout(tmr); status("Salvando…");
-  tmr = setTimeout(async () => {
+let pendente = false;
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && pendente) salvar(true); else if (document.visibilityState === "visible") atualizarSocios(); });
+window.addEventListener("pagehide", () => { if (pendente) salvar(true); });
+function salvar(imediato){
+  if (RO) return; clearTimeout(tmr); status("Salvando…"); pendente = true;
+  tmr = setTimeout(async () => { pendente = false;
     const tudo = ORDEM.every(k => D[k].ok);
     const { error } = await sb.from("atividades").upsert({ participante_id: eu.id, tipo: TIPO, empresa_id: eu.empresa_id, dados: D,
       status: tudo ? "concluido" : "rascunho", atualizado_em: new Date().toISOString() });
-    status(error ? "Não salvou: verifique a internet" : "Salvo automaticamente", !error);
-  }, 700);
+    if (error) pendente = true;
+    status(error ? "Não salvou: verifique a internet (tentando de novo…)" : "Salvo automaticamente · os sócios já podem ver", !error);
+    if (error) setTimeout(() => { if (pendente) salvar(true); }, 5000);
+  }, imediato ? 0 : 700);
 }
 
 // ---------- abas ----------
@@ -376,7 +392,7 @@ function tela(){
       ${saidaHTML(k)}
       <div id="fim" style="margin-top:16px"></div>
     </section>`}`;
-  $("tela").querySelectorAll("[data-modo]").forEach(b => b.onclick = () => { modo = b.dataset.modo; tela(); });
+  $("tela").querySelectorAll("[data-modo]").forEach(b => b.onclick = () => { modo = b.dataset.modo; tela(); if (modo === "gerais") atualizarSocios(true); });
   montarObs({ el: $("obsF"), sb, empresaId: alvo.empresa_id, participanteId: alvo.id, alvos: ["fer:" + k], rotuloAlvo: F.nome, admin: !!adm });
   if (modo === "gerais") return;
   montarAgente({ el: $("agente"), sb, modulo: k, ro: RO, dados: () => dadosIA(k), conversa: () => D[k].chat, salvar: c => { D[k].chat = c; salvar(); } });
