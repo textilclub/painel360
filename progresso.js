@@ -1,5 +1,5 @@
 // Progresso e resumo da empresa (usado no painel do participante e na visão do cliente do administrador)
-import { FER, DIAS_FER, rotulos } from "./ferramentas-def.js";
+import { FER, DIAS_FER, rotulos, trilha, radarSVG } from "./ferramentas-def.js";
 
 const t = x => String(x ?? "").trim();
 export const brl = v => "R$ " + Math.round(Number(v) || 0).toLocaleString("pt-BR");
@@ -58,6 +58,8 @@ export function decisoes(rows) {
     const pr = lin("prioridades", f2.prioridades, "p", ["p"]); if (pr.length) out.push({ titulo: "Prioridades 2027", quem: nome, itens: pr });
     const nu = lin("onepage", f2.onepage, "num", ["v"]); if (nu.length) out.push({ titulo: "Os cinco números de 2027 (One Page)", quem: nome, itens: nu });
     const pj = lin("projetos", f2.projetos, "pj", ["nome", "resp", "prazo"]); if (pj.length) out.push({ titulo: "Projetos 2027", quem: nome, itens: pj });
+    const vb = lin("viabilidade", f2.viabilidade, "ent", ["v"]); if (vb.length) out.push({ titulo: "Viabilidade 360 (resultado, capacidade, caixa)", quem: nome, itens: vb });
+    const cp = f2.compromisso?.out || {}; if (t(cp.dec)) out.push({ titulo: "Compromisso 360 · ESCREVA. ASSUMA. EXECUTE.", quem: nome, itens: [`Decisão: ${t(cp.dec)}`, t(cp.sete) && `Próximos 7 dias: ${t(cp.sete)}`, t(cp.resp) && `Responsável: ${t(cp.resp)}`].filter(Boolean) });
   });
   return out;
 }
@@ -136,3 +138,21 @@ export function htmlDecisoes(dec) {
   if (!dec.length) return `<p class="vazio-b">As decisões registradas nas ações (card da visita, Painel de Decisões, Prioridades, Projetos e One Page) aparecem aqui conforme forem preenchidas.</p>`;
   return `<div class="dec">${dec.map(d => `<div class="d"><b>${esc(d.titulo)}</b><small>${esc(d.quem)}</small><ul>${d.itens.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>`).join("")}</div>`;
 }
+
+/** Trilha do Plano 2027 + radar do Diagnóstico para o painel. regs: {tipo: row} */
+export function htmlTrilha(regs, q = "") {
+  const fer = { ...(regs.fer_dia1?.dados || {}), ...(regs.fer_dia2?.dados || {}) };
+  return `<div class="tri">${trilha(fer).map((e, i) => `<a class="${e.st}" href="ferramentas.html?dia=${FER[e.k[0]].dia}${q}#${e.k[0]}"><small>${i + 1} · ${e.fase}</small><b>${esc(e.t)}</b></a>`).join("")}</div>`;
+}
+export function htmlRadar(regs) {
+  const d = regs.fer_dia1?.dados?.diag; if (!d) return "";
+  const P = [["producao","Produção"],["vendas","Vendas"],["marca","Marca/Produto"],["fin","Gestão/Financeiro"],["pessoas","Liderança/Pessoas"],["estrat","Estratégia"]];
+  const v = key => { for (const l of Object.values(d.g || {})) for (const n of (l || [])) { const x = t(n?.c?.[key]?.v); if (x) return x; } return ""; };
+  const it = P.map(([k, l], i) => { const nv = t(d.out?.[`pil${i}_nota`]) || v(`${k}_nota`); return { l, nv, n: nv === "" || nv === "P" ? NaN : +nv }; });
+  if (!it.some(x => x.nv !== "")) return "";
+  return `<div style="display:grid;place-items:center">${radarSVG(it.map(x => ({ l: x.l, n: x.n })))}</div>`;
+}
+export const CSS_TRILHA = `.tri{display:grid;grid-template-columns:repeat(7,minmax(96px,1fr));gap:4px;overflow-x:auto}
+  .tri a{display:grid;gap:3px;align-content:start;min-height:62px;padding:8px;border-radius:10px;background:var(--surface);border:1px solid var(--line);text-decoration:none;color:var(--ink);font:600 12.5px/1.25 var(--f-body)}
+  .tri a small{font:700 10px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .tri a.andamento{border-color:var(--warn)}.tri a.feito{background:var(--ink);color:#fff;border-color:var(--ink)}.tri a.feito small{color:var(--gold-hi)}`;

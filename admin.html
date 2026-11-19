@@ -223,7 +223,7 @@ async function carregarVisitas(){
     const b = a.status==="concluido" ? `<span class="badge aprovado">Concluído</span>` : `<span class="badge pendente">${feitas} de ${tot} áreas</span>`;
     return `<td data-l="${rot}">${b}<div class="fita mini-fita" aria-hidden="true"><i style="width:${a.status==="concluido"?100:feitas/tot*100}%"></i></div><div class="acts" style="margin-top:8px"><a class="btn sm ghost" href="visita.html?dia=${t}&p=${p.id}">Ver</a></div></td>`;
   };
-  const FERS = { fer_dia1:["diag","prod","produto","vendas","oficina","painel"], fer_dia2:["pessoas","financeiro","swot","prioridades","orcamento","kpis","projetos","noventa","auditar","onepage"] };
+  const FERS = { fer_dia1:["iniciar","diag","prod","produto","vendas","oficina","painel"], fer_dia2:["pessoas","financeiro","swot","prioridades","orcamento","viabilidade","kpis","projetos","noventa","auditar","onepage","compromisso"] };
   const celF = (p, tipo, rot, dia) => { const a = m[p.id+"|"+tipo], lst = FERS[tipo];
     if (!a) return `<td data-l="${rot}"><span class="badge bloqueado">Não começou</span></td>`;
     const n = lst.filter(k => a.dados?.[k]?.ok).length;

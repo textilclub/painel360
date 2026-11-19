@@ -147,6 +147,12 @@
           <p class="mini" id="numsQuem"></p>
         </section>
 
+        <section class="bloco" aria-labelledby="hTri">
+          <h3 id="hTri"><span data-ic="arrow"></span>Seu Plano 2027: do conhecimento à execução</h3>
+          <div id="tri"></div>
+          <div id="radar" style="margin-top:14px"></div>
+        </section>
+
         <section class="bloco" aria-labelledby="hProg">
           <h3 id="hProg"><span data-ic="target"></span>Seu progresso na imersão</h3>
           <div class="prog"><div class="p" id="pPct">0<small>%</small></div><div><div class="fita"><i id="pBar" style="width:0%"></i></div><p class="mini" id="pTxt"></p></div></div>
@@ -184,9 +190,9 @@
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-import { itens, pct, decisoes, porParticipante, htmlNumeros, htmlPendencias, htmlChecklist, htmlDecisoes, CSS_RESUMO, fmt } from "./progresso.js";
+import { itens, pct, decisoes, porParticipante, htmlNumeros, htmlPendencias, htmlChecklist, htmlDecisoes, htmlTrilha, htmlRadar, CSS_RESUMO, CSS_TRILHA, fmt } from "./progresso.js";
 import { obsRecentes } from "./obs.js";
-{ const st = document.createElement("style"); st.textContent = CSS_RESUMO; document.head.appendChild(st); }
+{ const st = document.createElement("style"); st.textContent = CSS_RESUMO + CSS_TRILHA; document.head.appendChild(st); }
 const C = window.TC_CONFIG;
 const sb = createClient(C.SUPABASE_URL, C.SUPABASE_KEY);
 const $ = id => document.getElementById(id);
@@ -231,6 +237,8 @@ else {
     $("pPct").innerHTML = pc + "<small>%</small>"; $("pBar").style.width = pc + "%";
     $("pTxt").textContent = `${feitos} de ${lista.length} ações concluídas · ${lista.filter(i => i.st === "andamento").length} em andamento`;
     $("pend").innerHTML = htmlPendencias(lista, 4);
+    $("tri").innerHTML = htmlTrilha(PP[eu.id] || {});
+    const rd = htmlRadar(PP[eu.id] || {}); if (rd) $("radar").innerHTML = `<h4 class="h4">Diagnóstico 360°: onde a empresa está hoje</h4>${rd}`;
     $("chk").innerHTML = htmlChecklist(lista);
     const ap = (time||[]).filter(p => p.status === "aprovado");
     $("dec").innerHTML = htmlDecisoes(decisoes(ap.map(p => ({ nome: p.id === eu.id ? "Você" : p.nome, regs: PP[p.id] || {} }))));

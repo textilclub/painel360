@@ -116,6 +116,29 @@
   .feito{display:flex;gap:12px;align-items:center;background:var(--ok-bg);border:1px solid var(--ok-line);color:var(--ok);border-radius:12px;padding:14px 16px;font-weight:600}
   .banner{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn);border-radius:12px;padding:12px 16px;font-size:14.5px;margin-bottom:16px;font-weight:500}
   .ro .rhp button:not([aria-pressed="true"]),.ro .so-edit{display:none!important}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chips button{min-height:40px;padding:6px 12px;border-radius:999px;border:1.5px solid var(--line-2);background:var(--surface);font:600 13.5px var(--f-body);color:var(--ink-2);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .chips button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .chips button[aria-pressed="true"]::before{content:"✓";color:var(--gold-hi);font-weight:700}
+  .ro .chips button:not([aria-pressed="true"]){display:none}
+  .g-ajuda{font-size:14px;line-height:1.5;color:var(--ink-2);background:var(--surface);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:8px 12px;margin:-2px 0 12px}
+  .calc{background:#0b0b0a;color:#f3eee3;border-radius:var(--r-lg);padding:16px 18px;margin-top:6px}
+  .calc h3{font:700 13px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-hi);margin-bottom:10px;display:flex;gap:8px;align-items:center}
+  .calc ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+  .calc li{display:grid;grid-template-columns:12px 1fr;gap:10px;align-items:start;font-size:14.5px;line-height:1.45}
+  .calc li i{width:10px;height:10px;border-radius:50%;margin-top:6px;background:#8f887a}
+  .calc li.ok i{background:#5fd18b}.calc li.warn i{background:#f0b429}.calc li.err i{background:#ff6b5b}.calc li.info i{background:var(--gold-hi)}
+  .calc li b{color:#fff;font-weight:600}.calc .svg{background:#fbf8f1;border-radius:12px;padding:10px;display:grid;place-items:center;margin:4px 0}
+  .trilha{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:14px}
+  .trilha a{display:grid;gap:3px;align-content:start;min-height:64px;padding:8px 8px 9px;border-radius:10px;background:var(--surface);border:1px solid var(--line);text-decoration:none;color:var(--ink);font:600 12.5px/1.25 var(--f-body)}
+  .trilha a small{font:700 10px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .trilha a.andamento{border-color:var(--warn)}.trilha a.feito{background:var(--ink);color:#fff;border-color:var(--ink)}.trilha a.feito small{color:var(--gold-hi)}
+  .trilha a.feito b::after{content:" ✓";color:var(--gold-hi)}
+  @media (max-width:760px){.trilha{grid-template-columns:repeat(7,minmax(108px,1fr));overflow-x:auto}}
+  .card360{background:#0b0b0a;color:#fff;border-radius:18px;padding:26px 22px;border:2px solid var(--gold);margin:14px 0}
+  .card360 .tt{font:800 clamp(1.3rem,1rem + 1.4vw,1.9rem)/1.1 var(--f-display);letter-spacing:-.02em;color:var(--gold-hi);margin-bottom:16px}
+  .card360 dl{display:grid;gap:12px}.card360 dt{font:700 11.5px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-hi)}.card360 dd{margin:2px 0 0;font-size:17px;line-height:1.45;white-space:pre-wrap}
+  .card360 .rod{margin-top:18px;font:600 11px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:#bdb299}
   .resumo-pilar{display:grid;grid-template-columns:minmax(120px,170px) 90px 1fr;gap:8px;align-items:center}
   @media (max-width:640px){.resumo-pilar{grid-template-columns:1fr 90px}.resumo-pilar .g{grid-column:1/-1}}
 </style>
@@ -133,6 +156,7 @@
   <div class="page corpo">
     <div id="banner"></div>
     <nav class="dtabs" id="dtabs" aria-label="Dia"></nav>
+    <nav class="trilha" id="trilha" aria-label="Trilha do Plano 2027"></nav>
     <div class="ftabs" role="tablist" id="ftabs"></div>
     <div id="tela"></div>
   </div>
@@ -141,7 +165,7 @@
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { montarAgente } from "./agente.js";
-import { FER, DIAS_FER, tipoDia, numero, rotulos, registroTexto, pronto, faltaTexto, migrar, novaNota, notasTexto } from "./ferramentas-def.js";
+import { FER, DIAS_FER, tipoDia, numero, rotulos, registroTexto, pronto, faltaTexto, migrar, novaNota, notasTexto, calcular, calcTexto, preencher, LEG, trilha } from "./ferramentas-def.js";
 import { montarObs } from "./obs.js";
 const C = window.TC_CONFIG; const sb = createClient(C.SUPABASE_URL, C.SUPABASE_KEY);
 const $ = id => document.getElementById(id);
@@ -214,11 +238,13 @@ function abas(){
 const fmtTs = ts => ts ? new Date(ts).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"}) : "";
 function campoNota(k, gi, ei, c, n){
   const v = n.c?.[c.k] || { v:"", f:"" }, dis = RO ? "disabled" : "", at = `data-gi="${gi}" data-ei="${ei}" data-c="${c.k}"`;
-  const rhp = c.f ? `<span class="rhp" role="group" aria-label="Tipo da informação">${["R","H","P"].map(f => `<button type="button" ${at} data-f="${f}" aria-pressed="${v.f===f}" title="${{R:"Real",H:"Estimativa",P:"Pendente"}[f]}" ${dis}>${f}</button>`).join("")}</span>` : "";
+  const rhp = c.f ? `<span class="rhp" role="group" aria-label="Tipo da informação">${["R","H","P"].map(f => `<button type="button" ${at} data-f="${f}" aria-pressed="${v.f===f}" title="${LEG[f][0]}: ${LEG[f][1]}" ${dis}>${f}</button>`).join("")}</span>` : "";
   let inp;
+  if (c.tipo === "chk") { const sel = String(v.v||"").split(";").map(x => x.trim()).filter(Boolean);
+    return `<div class="campo"><label><span>${c.l}</span></label><div class="chips" role="group">${c.op.map(o => `<button type="button" ${at} data-chk="${esc(o)}" aria-pressed="${sel.includes(o)}" ${dis}>${esc(o)}</button>`).join("")}</div></div>`; }
   if (c.tipo === "area") inp = `<textarea ${at} data-in="1" placeholder="${esc(c.ph||"")}" ${dis}>${esc(v.v)}</textarea>`;
-  else if (c.tipo === "sel") inp = `<select ${at} data-in="1" ${dis}>${c.op.map(o => `<option value="${esc(o)}" ${String(v.v)===o?"selected":""}>${o===""?"Sem nota":esc(o)}</option>`).join("")}</select>`;
-  else inp = `<input ${at} data-in="1" value="${esc(v.v)}" placeholder="${esc(c.ph||"")}" ${dis}>`;
+  else if (c.tipo === "sel") inp = `<select ${at} data-in="1" ${dis}>${c.op.map(o => `<option value="${esc(o)}" ${String(v.v)===o?"selected":""}>${esc(c.opl?.[o] ?? (o===""?"Sem nota":o))}</option>`).join("")}</select>`;
+  else inp = `<input ${at} data-in="1" value="${esc(v.v)}" placeholder="${esc(c.ph||"")}" ${c.num ? 'inputmode="decimal"' : ""} ${dis}>`;
   return `<div class="campo"><label><span>${c.l}</span>${rhp}</label>${inp}</div>`;
 }
 function grupoHTML(k, gi){
@@ -230,8 +256,8 @@ function grupoHTML(k, gi){
       <div class="campos ${g.dois?"dois":""}">${g.campos.map(c => campoNota(k, gi, ei, c, n)).join("")}</div>
       ${n.por || n.ts ? `<p class="autor">${esc(n.por||"")}${n.ts ? " · " + fmtTs(n.ts) : ""}</p>` : ""}
     </div>`).join("");
-  return `<div class="grupo" id="grp-${gi}"><h3>${g.t}${!g.unico && lista.length > 1 ? `<span class="qtd">${lista.length} ${item === "linha" ? "linhas" : "anotações"}</span>` : ""}</h3>${notas}
-    ${!RO && !g.unico ? `<button type="button" class="add-nota" data-add="${gi}">${ic("plus","sm")} Adicionar ${item === "linha" ? "outra linha de produto" : "outra anotação sobre " + g.t}</button>` : ""}</div>`;
+  return `<div class="grupo" id="grp-${gi}"><h3>${g.t}${!g.unico && lista.length > 1 ? `<span class="qtd">${lista.length} ${item === "linha" ? "linhas" : item === "gargalo" ? "gargalos" : "anotações"}</span>` : ""}</h3>${g.ajuda ? `<p class="g-ajuda">${g.ajuda}</p>` : ""}${notas}
+    ${!RO && !g.unico ? `<button type="button" class="add-nota" data-add="${gi}">${ic("plus","sm")} Adicionar ${item === "linha" ? "outra linha de produto" : item === "gargalo" ? "outro gargalo" : "outra anotação sobre " + g.t}</button>` : ""}</div>`;
 }
 function ligarGrupo(k, gi){
   const el = $("grp-" + gi); if (!el) return;
@@ -240,13 +266,18 @@ function ligarGrupo(k, gi){
   el.querySelectorAll("[data-in]").forEach(x => x.addEventListener(x.tagName==="SELECT"?"change":"input", () => {
     const n = nota(+x.dataset.gi, +x.dataset.ei), c = x.dataset.c, cur = n.c[c] || { v:"", f:"" }; cur.v = x.value;
     if (!cur.f && x.value.trim()) { const h = x.closest(".campo").querySelector('[data-f="H"]'); if (h) { cur.f = "H"; x.closest(".campo").querySelectorAll(".rhp button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.f==="H"))); } }
-    n.c[c] = cur; tocar(n); salvar();
+    n.c[c] = cur; tocar(n); salvar(); rcalc();
     if (k === "produto" && +x.dataset.gi === 1 && c === "nome") { const s = document.querySelector(`[data-rot="lin${x.dataset.ei}"]`); if (s) s.textContent = x.value.trim() || "Linha " + (+x.dataset.ei + 1); }
   }));
+  el.querySelectorAll("[data-chk]").forEach(b => b.onclick = () => {
+    const n = nota(+b.dataset.gi, +b.dataset.ei), c = b.dataset.c, cur = n.c[c] || { v:"", f:"" };
+    const sel = String(cur.v||"").split(";").map(x => x.trim()).filter(Boolean), o = b.dataset.chk, i = sel.indexOf(o);
+    if (i >= 0) sel.splice(i, 1); else sel.push(o);
+    cur.v = sel.join("; "); n.c[c] = cur; tocar(n); b.setAttribute("aria-pressed", String(i < 0)); salvar(); rcalc(); });
   el.querySelectorAll("[data-tit]").forEach(x => x.addEventListener("input", () => { const n = nota(+x.dataset.gi, +x.dataset.ei); n.t = x.value; tocar(n); salvar(); }));
   el.querySelectorAll(".rhp button").forEach(b => b.onclick = () => {
     const n = nota(+b.dataset.gi, +b.dataset.ei), c = b.dataset.c, cur = n.c[c] || { v:"", f:"" }; cur.f = cur.f === b.dataset.f ? "" : b.dataset.f; n.c[c] = cur; tocar(n);
-    b.parentElement.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.f === cur.f))); salvar(); });
+    b.parentElement.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.f === cur.f))); salvar(); rcalc(); });
   el.querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
     const [g, e] = b.dataset.del.split("-").map(Number); if (!confirm("Excluir esta anotação?")) return;
     D[k].g[g].splice(e, 1); salvar(); redesenhar(k, g); });
@@ -272,13 +303,14 @@ function dadosIA(k){
     const ac = (vis.dados.acoes||[]).filter(a => (a.o||"").trim()).map(a => `- ${a.o.trim()}${a.p?" ("+a.p+")":""}`);
     if (lac.length || ac.length) extra += `\n\nREGISTRO ANTERIOR — VISITA TÉCNICA (18/11)\nLacunas que identifiquei na minha empresa:\n${lac.join("\n")||"- —"}\nAções que me comprometi a fazer:\n${ac.join("\n")||"- —"}`;
   }
+  const ct = calcTexto(k, D[k], dadosDe); if (ct) extra += "\n\n" + ct;
   if (exc?.resumo?.receita) extra += `\n\nREGISTRO ANTERIOR — PLANEJAMENTO 2027 (exercício de casa; é PROJEÇÃO, não histórico)\n- Regime: ${exc.regime==="presumido"?"Lucro Presumido":"Simples Nacional"}\n- Faturamento projetado 2027: [H] ${brl(exc.resumo.receita)}\n- Resultado projetado 2027: [H] ${brl(exc.resumo.resultado)}`;
   return `MÓDULO ${F.nome}
 
 === DADOS DA EMPRESA ===
 Empresa: ${alvo.empresas?.nome || ""}
 Participante: ${alvo.nome || ""}
-Legenda: [R] real · [H] estimativa · [P] pendente
+Legenda: [R] dado real · [H] hipótese · [P] dado pendente
 
 ${linhas}${extra}`;
 }
@@ -287,19 +319,20 @@ ${linhas}${extra}`;
 function saidaHTML(k){
   const F = FER[k], o = D[k].out, dis = RO ? "disabled" : "";
   const ctl = (key, c) => c.tipo === "sel"
-    ? `<select data-out="${key}" aria-label="${esc(c.l)}" ${dis}>${c.op.map(x => `<option value="${esc(x)}" ${String(o[key]||"")===x?"selected":""}>${x===""?"Escolha":esc(x)}</option>`).join("")}</select>`
+    ? `<select data-out="${key}" aria-label="${esc(c.l)}" ${dis}>${c.op.map(x => `<option value="${esc(x)}" ${String(o[key]||"")===x?"selected":""}>${x===""?"Escolha":esc(c.opl?.[x] ?? x)}</option>`).join("")}</select>`
     : `<input data-out="${key}" value="${esc(o[key]||"")}" placeholder="${esc(c.ph||"")}" ${dis}>`;
   return F.out.map(bl => {
     if (bl.tipo === "campo") return `<div class="campo" style="margin-bottom:12px"><label>${bl.l}</label><textarea data-out="${bl.b}" placeholder="${esc(bl.ph||"")}" ${dis}>${esc(o[bl.b]||"")}</textarea></div>`;
     const rot = rotulos(F, bl, D[k]), um = bl.cols.length === 1;
-    if (um) return `<div class="grupo"><h3>${bl.t}</h3><div class="campos">${rot.map((r,i) => `<div class="campo"><label>${bl.rot ? esc(r) : `${bl.cols[0].l} ${i+1}`}</label>${ctl(`${bl.b}${i}_${bl.cols[0].k}`, bl.cols[0])}</div>`).join("")}</div></div>`;
-    return `<div class="grupo"><h3>${bl.t}</h3><div class="campos">${rot.map((r,i) => `
+    const tit = bl.tf ? bl.tf(o) : bl.t;
+    if (um) return `<div class="grupo"><h3>${esc(tit)}</h3><div class="campos">${rot.map((r,i) => `<div class="campo"><label>${bl.rot ? esc(r) : `${bl.cols[0].l} ${i+1}`}</label>${ctl(`${bl.b}${i}_${bl.cols[0].k}`, bl.cols[0])}</div>`).join("")}</div></div>`;
+    return `<div class="grupo"><h3>${esc(tit)}</h3><div class="campos">${rot.map((r,i) => `
       <div class="grupo" style="background:var(--surface);margin:0"><h3><span class="k">${bl.rot ? "•" : i+1}</span><span data-rot="${bl.b}${i}">${esc(bl.rot || bl.rotIn ? r : `${bl.cols[0].l.split(" (")[0]} ${i+1}`)}</span></h3>
         <div class="linha-out">${bl.cols.map(c => `<div class="campo"><label>${c.l}</label>${ctl(`${bl.b}${i}_${c.k}`, c)}</div>`).join("")}${bl.calc ? `<div class="receita" data-rec="${bl.b}${i}"></div>` : ""}</div></div>`).join("")}</div>
       ${bl.calc ? `<p class="receita" style="margin-top:10px" data-tot="${bl.b}"></p>` : ""}</div>`;
   }).join("");
 }
-function calcular(k){
+function calcOrc(k){
   FER[k].out.filter(bl => bl.calc).forEach(bl => {
     let tot = 0; const o = D[k].out;
     for (let i = 0; i < bl.n; i++) { const q = numero(o[`${bl.b}${i}_q`]), p = numero(o[`${bl.b}${i}_pr`]), el = document.querySelector(`[data-rec="${bl.b}${i}"]`);
@@ -311,6 +344,8 @@ function calcular(k){
 // ---------- tela ----------
 function tela(){
   const k = atual, F = FER[k];
+  if (!RO && preencher(k, D[k], dadosDe, eu?.nome)) salvar();
+  desenharTrilha();
   const usados = (F.usa || []).filter(u => registroTexto(u, dadosDe(u))).map(u => FER[u].nome);
   const nGer = contarGerais(k);
   $("tela").innerHTML = `
@@ -327,8 +362,9 @@ function tela(){
     ${modo === "gerais" ? geraisHTML(k) : `
     <section class="passo"><header><span class="n">1</span><div><h2>Seus dados</h2><p>Preencha o que souber, em quantas anotações quiser por tema. Marque se cada informação é real, estimada ou pendente.</p></div></header>
       ${usados.length ? `<div class="usa">${ic("check","sm")} A IA também vai receber o que você registrou em: <b>${usados.join(", ")}</b>.</div>` : ""}
-      <div class="legenda"><span><b class="t-R">R</b>Real (tenho o número)</span><span><b class="t-H">H</b>Estimativa (hipótese)</span><span><b class="t-P">P</b>Pendente (preciso levantar)</span></div>
+      <div class="legenda">${["R","H","P"].map(f => `<span title="${LEG[f][1]}"><b class="t-${f}">${f}</b>${LEG[f][0]} <small style="color:var(--muted)">(${LEG[f][1].toLowerCase()})</small></span>`).join("")}</div>
       ${F.grupos.map((g, gi) => grupoHTML(k, gi)).join("")}
+      <div id="calcBox"></div>
     </section>
 
     <section class="passo"><header><span class="n">2</span><div><h2>Análise do Agente Estrategista</h2><p>A IA lê os seus dados e responde aqui, no formato do módulo ${F.nome}. Pode conversar com ela para aprofundar.</p></div></header>
@@ -346,8 +382,46 @@ function tela(){
   montarAgente({ el: $("agente"), sb, modulo: k, ro: RO, dados: () => dadosIA(k), conversa: () => D[k].chat, salvar: c => { D[k].chat = c; salvar(); } });
   const inc = $("incSoc"); if (inc) inc.onchange = () => { incluirSocios = inc.checked; };
   F.grupos.forEach((g, gi) => ligarGrupo(k, gi));
-  $("tela").querySelectorAll("[data-out]").forEach(el => el.addEventListener(el.tagName==="SELECT"?"change":"input", () => { D[k].out[el.dataset.out] = el.value; salvar(); calcular(k); fim(); }));
-  calcular(k); fim();
+  $("tela").querySelectorAll("[data-out]").forEach(el => el.addEventListener(el.tagName==="SELECT"?"change":"input", () => { D[k].out[el.dataset.out] = el.value; salvar(); calcOrc(k); fim(); rcalc(); }));
+  calcOrc(k); fim(); rcalc();
+}
+
+// ---------- contas automáticas ----------
+function rcalc(){
+  const el = $("calcBox"); if (!el) return;
+  const L = calcular(atual, D[atual], dadosDe);
+  el.innerHTML = L.length ? `<div class="calc"><h3>${ic("trend","sm")} Contas e checagens da ferramenta</h3><ul>${L.map(i => i.svg ? `<li class="info"><i></i><div><b>${esc(i.l)}</b><div class="svg">${i.svg}</div></div></li>` : `<li class="${i.st||"info"}"><i></i><span><b>${esc(i.l)}:</b> ${esc(i.v)}</span></li>`).join("")}</ul></div>` : "";
+}
+// ---------- trilha do Plano 2027 ----------
+function desenharTrilha(){
+  const fer = {}; Object.keys(FER).forEach(k => { const d = dadosDe(k); if (d) fer[k] = d; });
+  $("trilha").innerHTML = trilha(fer).map((e, i) => { const k = e.k.find(x => ORDEM.includes(x)), dia = FER[e.k[0]].dia;
+    return `<a class="${e.st}" href="${k ? "#" + k : `ferramentas.html?dia=${dia}${pq ? "&p=" + encodeURIComponent(pq) : ""}#${e.k[0]}`}" data-trilha="${k || ""}"><small>${i + 1} · ${e.fase}</small><b>${esc(e.t)}</b></a>`; }).join("");
+  $("trilha").querySelectorAll("[data-trilha]").forEach(a => { if (a.dataset.trilha) a.onclick = ev => { ev.preventDefault(); document.querySelector(`[data-t="${a.dataset.trilha}"]`)?.click(); }; });
+}
+
+// ---------- card do Compromisso 360 ----------
+function cardHTML(){
+  const o = D.compromisso?.out || {}, t = x => esc(String(x || "").trim()) || "—";
+  return `<div class="card360" id="card360"><div class="tt">ESCREVA. ASSUMA. EXECUTE.</div><dl>
+    <div><dt>A decisão mais importante do meu Plano 2027</dt><dd>${t(o.dec)}</dd></div>
+    <div><dt>O que acontece nos próximos 7 dias</dt><dd>${t(o.sete)}</dd></div>
+    <div><dt>Responsável por iniciar</dt><dd>${t(o.resp)}</dd></div></dl>
+    <p class="rod">${esc(alvo.empresas?.nome || "")} · ${esc(alvo.nome || "")} · Imersão Método Confecção 360° · Têxtil Club</p></div>
+    <div class="botoes"><button class="btn" type="button" id="bCard">${ic("download","sm")}Baixar o card (imagem)</button><a class="btn ghost" id="bZap" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(`ESCREVA. ASSUMA. EXECUTE.\n\nMinha decisão mais importante para 2027: ${o.dec||""}\nPróximos 7 dias: ${o.sete||""}\nResponsável: ${o.resp||""}\n\nImersão Método Confecção 360° · Têxtil Club`)}">${ic("chat","sm")}Enviar no WhatsApp</a></div>`;
+}
+function baixarCard(){
+  const o = D.compromisso?.out || {}, W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H; const g = cv.getContext("2d");
+  g.fillStyle = "#0b0b0a"; g.fillRect(0, 0, W, H); g.fillStyle = "#B8912F"; g.fillRect(0, 0, W, 14); g.fillRect(0, H - 14, W, 14);
+  const quebra = (txt, x, y, larg, lh, max) => { const pal = String(txt || "—").split(/\s+/); let l = "", n = 0;
+    for (const p of pal) { const t2 = l ? l + " " + p : p; if (g.measureText(t2).width > larg && l) { g.fillText(l, x, y); y += lh; l = p; if (++n >= max - 1) break; } else l = t2; }
+    g.fillText(l, x, y); return y + lh; };
+  g.fillStyle = "#E3C77A"; g.font = "800 72px Poppins, Arial"; let y = 150; ["ESCREVA.", "ASSUMA.", "EXECUTE."].forEach(w => { g.fillText(w, 80, y); y += 82; });
+  y += 40;
+  [["A DECISÃO MAIS IMPORTANTE DO MEU PLANO 2027", o.dec], ["O QUE ACONTECE NOS PRÓXIMOS 7 DIAS", o.sete], ["RESPONSÁVEL POR INICIAR", o.resp]].forEach(([r, v]) => {
+    g.fillStyle = "#E3C77A"; g.font = "700 26px Arial"; g.fillText(r, 80, y); y += 52; g.fillStyle = "#ffffff"; g.font = "500 38px Arial"; y = quebra(v, 80, y, W - 160, 50, 5) + 34; });
+  g.fillStyle = "#BDB299"; g.font = "600 24px Arial"; g.fillText(`${alvo.empresas?.nome || ""} · Imersão Método Confecção 360° · Têxtil Club`, 80, H - 70);
+  const a = document.createElement("a"); a.download = "compromisso-360.png"; a.href = cv.toDataURL("image/png"); a.click();
 }
 
 // ---------- anotações gerais da empresa ----------
@@ -375,7 +449,7 @@ function geraisHTML(k){
 
 function fim(){
   const k = atual, el = $("fim"); if (!el) return;
-  const extra = FER[k].onepage ? `<div class="botoes"><button class="btn ghost" type="button" id="bImp">${ic("download","sm")}Imprimir / salvar PDF do One Page</button></div>` : "";
+  const extra = FER[k].onepage ? `<div class="botoes"><button class="btn ghost" type="button" id="bImp">${ic("download","sm")}Imprimir / salvar PDF do One Page</button></div>` : FER[k].card ? cardHTML() : "";
   if (D[k].ok) el.innerHTML = `<div class="feito">${ic("check")}Ferramenta concluída. Você ainda pode ajustar o registro.</div>${extra}${RO?"":proximo(k)}`;
   else if (RO) el.innerHTML = `<p class="sub">Ainda não concluiu esta ferramenta.</p>${extra}`;
   else {
@@ -383,6 +457,7 @@ function fim(){
     $("bOk").onclick = () => { if (!pronto(k, D[k])) { $("hOk").className = "hint warn"; return; } D[k].ok = true; salvar(); abas(); fim(); };
   }
   const bi = $("bImp"); if (bi) bi.onclick = imprimirOnePage;
+  const bc = $("bCard"); if (bc) bc.onclick = baixarCard;
 }
 function proximo(k){
   const i = ORDEM.indexOf(k), n = ORDEM[i+1];
@@ -406,6 +481,7 @@ function imprimirOnePage(){
   <h2>Visão de futuro</h2><div>${t(o.visao)}</div>
   <h2>Os cinco números de 2027</h2><div class="nums">${[0,1,2,3,4].map(i => `<div>${t(o[`num${i}_v`])}</div>`).join("")}</div>
   <h2>Prioridades estratégicas</h2><ol>${lst("pri",5,"v").map(x => `<li>${esc(x)}</li>`).join("")||"<li>—</li>"}</ol>
+  ${[0,1,2].some(i => String(o[`marca${i}_v`]||"").trim()) ? `<h2>Marca e produto</h2><div>${["Posicionamento","Direção de produto","Portfólio"].map((r,i) => `<div><b>${r}:</b> ${t(o[`marca${i}_v`])}</div>`).join("")}</div>` : ""}
   <h2>Metas e indicadores</h2>${tab("kpi",4,[["o","Objetivo"],["m","Meta"],["k","KPI"]])}
   <h2>Projetos estratégicos</h2>${tab("pj",4,[["p","Projeto"],["r","Responsável"],["z","Prazo"]])}
   <h2>Execução</h2><div class="ex">${["7 dias","30 dias","60 dias","90 dias"].map((r,i) => `<div><b>${r}</b>${t(o[`ex${i}_v`])}</div>`).join("")}</div>

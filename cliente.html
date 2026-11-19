@@ -64,10 +64,10 @@
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-import { itens, pct, decisoes, porParticipante, htmlNumeros, htmlChecklist, htmlDecisoes, htmlPendencias, CSS_RESUMO, fmt, brl } from "./progresso.js";
+import { itens, pct, decisoes, porParticipante, htmlNumeros, htmlChecklist, htmlDecisoes, htmlPendencias, htmlTrilha, htmlRadar, CSS_RESUMO, CSS_TRILHA, fmt, brl } from "./progresso.js";
 import { montarObs } from "./obs.js";
 import { FER } from "./ferramentas-def.js";
-{ const st = document.createElement("style"); st.textContent = CSS_RESUMO; document.head.appendChild(st); }
+{ const st = document.createElement("style"); st.textContent = CSS_RESUMO + CSS_TRILHA; document.head.appendChild(st); }
 const C = window.TC_CONFIG; const sb = createClient(C.SUPABASE_URL, C.SUPABASE_KEY);
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -110,6 +110,7 @@ $("pessoas").innerHTML = (parts||[]).map(p => {
   const lista = itens(PP[p.id] || {}, ex, `&p=${p.id}`), pc = pct(lista), f = lista.filter(i => i.st === "feito").length;
   return `<div class="pess"><div class="pess-h"><div><b>${esc(p.nome)}</b><small>${esc(p.cargo||"")}${p.email ? " · " + esc(p.email) : ""}${p.whatsapp ? " · " + esc(p.whatsapp) : ""}</small></div>
       <div class="pc">${pc}%<small><br>${f} de ${lista.length}</small></div></div>
+    <div style="margin:12px 0">${htmlTrilha(PP[p.id] || {}, `&p=${p.id}`)}${htmlRadar(PP[p.id] || {})}</div>
     <div class="pess-b"><div><p class="h4">Tudo o que existe na imersão</p>${htmlChecklist(lista)}</div>
       <div><p class="h4">Próximas pendências</p>${htmlPendencias(lista, 5)}</div></div></div>`;
 }).join("") || `<div class="bloco"><p class="sub">Nenhum participante cadastrado.</p></div>`;
