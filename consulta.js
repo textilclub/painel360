@@ -157,6 +157,15 @@ async function montarContexto(eu) {
     }
   }
 
+  // Calculadora de vendas (CAC, comissão e OTE)
+  const cv = (ats || []).filter(a => a.tipo === "calc_vendas" && a.dados?.res);
+  if (cv.length) {
+    L.push(`\n=== CALCULADORA "QUANTO CUSTA CADA VENDA?" (CAC, COMISSÃO E OTE) ===`);
+    const R = v => "R$ " + Math.round(v || 0).toLocaleString("pt-BR");
+    cv.forEach(a => { const r = a.dados.res;
+      L.push(`-- ${nomeP(a.participante_id)}${a.dados.concluido ? " (concluiu)" : ""}\nCusto fixo do comercial ${R(r.custoFixoMes)}/mês · cadeira ${R(r.cadeira)}/mês por vendedor · ${r.vendedores} vendedores · marketing ${R(r.mktMes)}/mês\nCAC ${R(r.cac)} · custo por lead ${R(r.cpl)} · conversão ${(r.conv || 0).toFixed(1)}% · desperdício ${R(r.desperdicioMes)}/mês\nMargem por venda ${R(r.margemVenda)} · sobra antes da comissão ${R(r.sobraAntesComissaoMes)}/mês\nEmpresa fica no ano: modelo A ${R(r.empresaFicaAno?.A)} · B ${R(r.empresaFicaAno?.B)} · C ${R(r.empresaFicaAno?.C)}\nOTE ${R(r.ote)} (fixo ${R(r.fixoOte)} + variável ${R(r.varAlvo)}) · meta ${r.metaVendedor} vendas/mês · gatilho ${r.gatilho} · acelerador ${r.acelerador}× · teto ${r.teto ? r.teto + "%" : "sem teto"}\nBônus comportamental máximo ${R(r.bonusMaxMes)}/mês: ${(r.bonusItens || []).join(" | ")}\nChecklist trabalhista: ${r.checklistOk} de ${r.checklistTotal}`); });
+  }
+
   // Observações
   if ((obs || []).length) {
     L.push(`\n=== OBSERVAÇÕES DA TÊXTIL CLUB ===`);

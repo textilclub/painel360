@@ -188,54 +188,35 @@ export const FER = {
           { k: "hip", l: "Hipótese a validar", ph: "O que ainda precisa ser confirmado" }, { k: "st", l: "Status", tipo: "sel", op: ANALISE }] },
       { b: "valid", tipo: "campo", l: "Decisão preliminar: o que validar com produção, comercial e financeiro", ph: "" } ] },
 
-  vendas: { dia: "dia1", nome: "VENDAS 360", curto: "Vendas", quando: "Vendas e Gestão Comercial",
-    obj: "Auditar a equação de metas comerciais sem criar metas não aprovadas", saida: "Equação da meta comercial 2027 + alavanca prioritária + teste de consistência + dados a validar",
+  vendas: { dia: "dia1", nome: "VENDAS 360 · CAC, COMISSÃO E OTE", curto: "Vendas", quando: "Quanto custa cada venda? CAC, comissão e OTE", calculadora: "calculadora.html",
+    obj: "Descobrir quanto custa cada venda e redesenhar comissão, OTE e bonificação do time comercial", saida: "Modelo de comissão escolhido + OTE, meta, gatilho e curva + régua de bonificação + pendências trabalhistas",
     usa: ["diag", "produto", "prod"],
     grupos: [
-      { t: "Meta e histórico", dois: true, campos: [T("meta", "Meta de faturamento proposta para 2027", "Ex.: R$ 6 milhões"), T("fat", "Faturamento anterior (2025/2026)", "Ex.: 2025: R$ 4,2 mi; 2026 até out: R$ 3,9 mi")] },
-      { t: "Carteira de clientes", dois: true, ajuda: "Sua carteira não é uma lista de contatos: é um ativo que precisa ser gerenciado.",
-        campos: [N("clientes", "Clientes compradores (ativos nos últimos 12 meses)", "Ex.: 46"), N("ticket", "Ticket médio por pedido (R$)", "Ex.: 5400"),
-          N("recorr", "Pedidos por cliente em 2027", "Ex.: 3"), T("concent", "Quanto da receita depende dos maiores clientes?", "Ex.: 70% em 12 clientes"),
-          N("crec", "Clientes recorrentes", "Ex.: 30"), N("cest", "Clientes estratégicos", "Ex.: 8"), N("inativos", "Clientes inativos para reativar", "Ex.: 25")] },
-      { t: "Prospecção e conversão", dois: true, ajuda: "ICP → canal → oportunidade qualificada. Volume de contatos não é sinônimo de potencial de vendas.",
-        campos: [T("icp", "Cliente ideal (ICP)", "Ex.: empresas de 50 a 500 funcionários em Goiás"), N("funil", "Oportunidades qualificadas por mês", "Ex.: 35"),
-          N("propostas", "Propostas enviadas por mês", "Ex.: 20"), N("pedidos", "Pedidos fechados de clientes novos por mês", "Ex.: 5"),
-          N("novos", "Clientes novos por mês (se não souber o funil)", "Ex.: 2"), N("freqn", "Pedidos previstos por cliente novo dentro de 2027", "Ex.: 2")] },
-      { t: "Canais, equipe e gestão", campos: [A("canais", "Canais de venda", "Ex.: representantes 50%, loja própria 20%, online 30%"), A("vend", "Vendedores e metas", "Quantos são, quanto cada um vende, se têm meta"),
-        T("crm", "Processo comercial e CRM", "Lead → qualificação → proposta → negociação → pedido. Onde fica registrado?"),
-        C("crmchk", "Toda oportunidade tem:", ["Responsável", "Próxima ação", "Data"]),
-        C("rotina", "Rotina comercial", ["Indicadores acompanhados", "Responsáveis definidos", "Reunião comercial semanal"])] },
-      { t: "As 6 engrenagens da máquina comercial", unico: true, dois: true, campos: [["e_cart", "Carteira"], ["e_prosp", "Prospecção"], ["e_conv", "Conversão"], ["e_tick", "Ticket e mix"], ["e_rec", "Recorrência"], ["e_gest", "Gestão"]].map(([k, l]) => S(k, l + " (nota 0 a 10)", NOTAS, NOTA_L)) },
-      { t: "Clientes que já compraram", campos: [A("recompra", "Quanto do crescimento de 2027 pode vir de recompra, reativação e expansão da carteira?", "Ex.: reativar 10 dos 25 inativos; vender polo para quem só compra camiseta")] } ],
+      { t: "O que os números mostraram", ajuda: "Primeiro faça a calculadora (botão acima) com os números da sua confecção. Depois registre aqui o que você percebeu.",
+        campos: [A("surpresa", "O que mais surpreendeu nos números?", "Ex.: cada cadeira custa R$ 5.600 antes da primeira venda; queimamos R$ 54 mil por ano em leads perdidos"),
+          A("time", "Como o seu time é pago hoje?", "Ex.: 5% sobre o faturamento, sem meta, sem gatilho"), A("mudar", "O que você vai mudar na regra do jogo?", "")] } ],
     calc: x => {
-      const L = [], cl = x.n("clientes"), fr = x.n("recorr"), tk = x.m("ticket"), meta = x.m("meta"), fu = x.n("funil"), pr = x.n("propostas"), pe = x.n("pedidos"), nv = x.n("novos"), fn = x.n("freqn");
-      const cart = cl * fr * tk;
-      if (ok(cart)) L.push({ l: "Receita da carteira atual", v: `${brl(cart)} (${nf(cl)} clientes × ${fr} pedidos × ${brl(tk)})`, st: "info" });
-      else L.push({ l: "Receita da carteira atual", v: "Preencha clientes, pedidos por cliente e ticket médio.", st: "warn" });
-      if (fu > 0 && pr > 0) L.push({ l: "Conversão oportunidade → proposta", v: pctf(pr / fu), st: "info" });
-      if (pr > 0 && pe > 0) L.push({ l: "Conversão proposta → pedido", v: pctf(pe / pr), st: "info" });
-      const novosAno = fu > 0 && pe > 0 ? pe * 12 : (nv > 0 ? nv * 12 : NaN), recN = novosAno * fn * tk;
-      if (ok(recN)) L.push({ l: "Receita de novos clientes", v: `${brl(recN)} (${nf(novosAno)} clientes novos no ano × ${fn} pedidos em 2027 × ${brl(tk)})`, st: "info" });
-      else L.push({ l: "Receita de novos clientes", v: "Preencha oportunidades e pedidos fechados (ou clientes novos por mês) e os pedidos previstos por cliente novo em 2027.", st: "warn" });
-      if (ok(cart)) { const tot = cart + (ok(recN) ? recN : 0);
-        L.push({ l: "Meta comercial fundamentada", v: brl(tot), st: "ok" });
-        if (ok(meta)) { const g = meta - tot; L.push({ l: "Comparação com a meta proposta", v: g > 0 ? `Faltam ${brl(g)} para a meta de ${brl(meta)} (${pctf(g / meta)}). Meta sem plano comercial é apenas um desejo.` : `A equação cobre a meta de ${brl(meta)}.`, st: g > 0 ? (g / meta > .15 ? "err" : "warn") : "ok" }); } }
-      const eng = [["e_cart", "Carteira"], ["e_prosp", "Prospecção"], ["e_conv", "Conversão"], ["e_tick", "Ticket e mix"], ["e_rec", "Recorrência"], ["e_gest", "Gestão"]].map(([k, l]) => ({ l, nv: x.v(k) })).filter(e => e.nv !== "");
-      const num = eng.filter(e => e.nv !== "P");
-      if (num.length) { const m = Math.min(...num.map(e => +e.nv)); L.push({ l: "Engrenagem mais fraca", v: num.filter(e => +e.nv === m).map(e => `${e.l} (${m})`).join(", "), st: m <= 4 ? "err" : m <= 6 ? "warn" : "ok" }); }
-      const crm = ["Responsável", "Próxima ação", "Data"].filter(o => !temChk(x.v("crmchk"), o));
-      if (x.v("crmchk") || x.v("crm")) L.push({ l: "CRM", v: crm.length ? `Oportunidade sem ${crm.join(", ").toLowerCase()} está fora de controle.` : "Responsável, próxima ação e data em toda oportunidade.", st: crm.length ? "warn" : "ok" });
-      const rt = ["Indicadores acompanhados", "Responsáveis definidos", "Reunião comercial semanal"].filter(o => !temChk(x.v("rotina"), o));
-      if (x.v("rotina")) L.push({ l: "Rotina comercial", v: rt.length ? "Falta: " + rt.join(", ").toLowerCase() + ". O que não entra na rotina não vira resultado." : "Completa.", st: rt.length ? "warn" : "ok" });
+      const r = x.of("calc_vendas")?.res, L = [];
+      if (!r) return [{ l: "Calculadora", v: "Ainda não preenchida. Toque em \"Abrir a calculadora\" e responda com os números da sua confecção.", st: "warn" }];
+      L.push({ l: "Cada cadeira de vendedor custa", v: `${brl(r.cadeira)} por mês, antes da primeira venda (custo fixo do comercial ${brl(r.custoFixoMes)}/mês)`, st: "info" });
+      L.push({ l: "CAC (custo de cada venda)", v: `${brl(r.cac)} de estrutura e marketing · custo por lead ${brl(r.cpl)} · conversão ${pctf(r.conv / 100)}`, st: "info" });
+      L.push({ l: "Desperdício", v: `${brl(r.desperdicioMes)}/mês (${brl(r.desperdicioMes * 12)}/ano) em ${nf(r.perdidosMes)} leads que não compraram`, st: r.desperdicioMes > 0 ? "warn" : "ok" });
+      L.push({ l: "Sobra antes da comissão", v: `${brl(r.sobraAntesComissaoMes)}/mês · margem por venda ${brl(r.margemVenda)}`, st: r.sobraAntesComissaoMes >= 0 ? "ok" : "err" });
+      L.push({ l: "Empresa fica com, no ano", v: `A (faturamento) ${brl(r.empresaFicaAno.A)} · B (margem) ${brl(r.empresaFicaAno.B)} · C (margem − desperdício + bônus) ${brl(r.empresaFicaAno.C)}`, st: "info" });
+      L.push({ l: "OTE do vendedor", v: `${brl(r.ote)} (fixo ${brl(r.fixoOte)} + variável ${brl(r.varAlvo)}) · meta ${nf(r.metaVendedor)} vendas/mês · gatilho ${nf(r.gatilho)} · acelerador ${r.acelerador}× ${r.teto > 0 ? "até " + nf(r.teto) + "% da meta" : "sem teto"}`, st: "ok" });
+      L.push({ l: "Bonificação comportamental", v: `até ${brl(r.bonusMaxMes)}/mês por vendedor (${(r.bonusItens || []).length} itens)${r.varAlvo && r.bonusMaxMes > r.varAlvo ? ". Atenção: passou do variável de vendas." : ""}`, st: r.varAlvo && r.bonusMaxMes > r.varAlvo ? "err" : "info" });
+      L.push({ l: "Cuidados trabalhistas", v: `${r.checklistOk} de ${r.checklistTotal} itens resolvidos · DSR sobre a comissão ≈ ${brl(r.dsrMes)}/mês por vendedor`, st: r.checklistOk >= r.checklistTotal ? "ok" : "warn" });
       return L; },
+    pre: x => { const r = x.of("calc_vendas")?.res; if (!r) return {};
+      return { ote0_v: brl(r.ote) + ` (fixo ${brl(r.fixoOte)} + variável ${brl(r.varAlvo)})`, ote1_v: `${nf(r.metaVendedor)} vendas por mês`, ote2_v: `${nf(r.gatilho)} vendas por mês`, ote3_v: `${r.acelerador}× ${r.teto > 0 ? "até " + nf(r.teto) + "% da meta" : "sem teto"}`,
+        regua: [(r.condicoesBonus || []).length ? "Condições: " + r.condicoesBonus.join("; ") : "", ...(r.bonusItens || [])].filter(Boolean).join("\n"), jur: (r.pendencias || []).slice(0, 8).join("\n") }; },
     out: [
-      { b: "eqn", tipo: "linhas", t: "Equação da meta comercial 2027", rot: ["Receita da carteira atual", "Receita de novos clientes", "Meta comercial fundamentada"], obr: 2,
-        cols: [{ k: "conta", l: "Conta", ph: "Ex.: 46 clientes × 3 pedidos × R$ 5.400" }, { k: "v", l: "Valor", ph: "R$" }] },
-      { b: "alav", tipo: "linhas", t: "Alavanca prioritária de crescimento", rot: ["Alavanca"], obr: 1,
-        cols: [{ k: "a", l: "Alavanca", tipo: "sel", op: ["", "Novos clientes", "Recorrência", "Ticket médio", "Canais de venda", "Reativação"] }, { k: "por", l: "Por quê", ph: "" }] },
-      { b: "teste", tipo: "linhas", t: "Teste de consistência: sua meta resiste?", rot: ["Clientes: temos clientes e oportunidades suficientes?", "Conversão: é realista?", "Margem: mix e margem fazem sentido?", "Capacidade: a fábrica consegue entregar?"], obr: 4,
-        cols: [{ k: "st", l: "Resposta", tipo: "sel", op: SNN }, { k: "obs", l: "Observação", ph: "" }] },
-      { b: "validar", tipo: "campo", l: "Dados que precisam ser validados", ph: "", obr: true } ] },
+      { b: "modelo", tipo: "linhas", t: "A regra do jogo que vou adotar", rot: ["Modelo de comissão"], obr: 1,
+        cols: [{ k: "m", l: "Modelo", tipo: "sel", op: ["", "A · Sobre o faturamento", "B · Sobre a margem", "C · Margem − desperdício + bônus"] }, { k: "por", l: "Por quê", ph: "" }] },
+      { b: "ote", tipo: "linhas", t: "O OTE do vendedor", rot: ["OTE (fixo + variável no alvo)", "Meta por vendedor", "Gatilho mínimo", "Acelerador e teto"], obr: 2, cols: [{ k: "v", l: "Valor", ph: "Vem da calculadora" }, { k: "obs", l: "Observação", ph: "" }] },
+      { b: "regua", tipo: "campo", l: "Régua de bonificação comportamental", ph: "Vem da calculadora" },
+      { b: "jur", tipo: "campo", l: "Pendências com o contador e o advogado trabalhista", ph: "Vem da calculadora" },
+      { b: "prox", tipo: "campo", l: "Próximo passo: o que faço na volta para a empresa", ph: "Ex.: reunião com o contador dia 25; apresentar a régua ao time em 1º/12", obr: true } ] },
 
   oficina: { dia: "dia1", nome: "OFICINA 360 — ANÁLISE CRUZADA", curto: "Análise cruzada", quando: "Oficina Confecção 360° — Aplicação na minha empresa",
     obj: "Cruzar decisões comerciais, produtivas e de portfólio na mesma empresa", saida: "Matriz cruzada: evidência / decisão inicial / pendência por pilar + conflitos",

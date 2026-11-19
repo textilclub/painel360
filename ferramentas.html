@@ -125,6 +125,12 @@
   .chips button[aria-pressed="true"]::before{content:"✓";color:var(--gold-hi);font-weight:700}
   .ro .chips button:not([aria-pressed="true"]){display:none}
   .g-ajuda{font-size:14px;line-height:1.5;color:var(--ink-2);background:var(--surface);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:8px 12px;margin:-2px 0 12px}
+  .calcCta{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;background:#0b0b0a;color:#f3eee3;border:1.5px solid var(--gold);border-radius:var(--r-lg);padding:18px 20px;margin-bottom:16px}
+  .calcCta small{display:block;font:700 11px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-hi)}
+  .calcCta b{display:block;font:800 1.25rem/1.2 var(--f-display);margin:4px 0}.calcCta p{font-size:14.5px;line-height:1.45;color:#cfc8b8;margin:0}
+  .calcCta .btn{white-space:nowrap;background:var(--gold);color:#0b0b0a;border-color:var(--gold)}
+  .calcSt{display:inline-block;margin-top:8px;font:600 12.5px var(--f-body);color:#f0b429}.calcSt.ok{color:#5fd18b}
+  @media (max-width:640px){.calcCta{grid-template-columns:1fr}.calcCta .btn{justify-self:stretch;text-align:center}}
   .calc{background:#0b0b0a;color:#f3eee3;border-radius:var(--r-lg);padding:16px 18px;margin-top:6px}
   .calc h3{font:700 13px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-hi);margin-bottom:10px;display:flex;gap:8px;align-items:center}
   .calc ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
@@ -201,12 +207,12 @@ $("quemF").innerHTML = ic("building","sm") + " " + esc(alvo.nome) + (alvo.empres
 if (RO) { document.body.classList.add("ro"); $("banner").innerHTML = `<div class="banner">Você está vendo as ferramentas de <b>${esc(alvo.nome)}</b> (somente leitura).${adm ? ` <a href="admin.html#acoes">Voltar ao administrador</a>` : ""}</div>`; }
 
 const [{ data:regs }, { data:vis }, { data:exc }] = await Promise.all([
-  sb.from("atividades").select("tipo,dados,atualizado_em").eq("participante_id", alvoId).in("tipo", ["fer_dia1","fer_dia2"]),
+  sb.from("atividades").select("tipo,dados,atualizado_em").eq("participante_id", alvoId).in("tipo", ["fer_dia1","fer_dia2","calc_vendas"]),
   sb.from("atividades").select("dados").eq("participante_id", alvoId).eq("tipo","visita").maybeSingle(),
   alvo.empresa_id ? sb.from("exercicios").select("regime,resumo").eq("empresa_id", alvo.empresa_id).maybeSingle() : Promise.resolve({ data:null })
 ]);
 const reg = (regs||[]).find(r => r.tipo === TIPO);
-const OUTRO = (regs||[]).find(r => r.tipo !== TIPO)?.dados || {};
+const OUTRO = (regs||[]).find(r => r.tipo !== TIPO && r.tipo.startsWith("fer_"))?.dados || {};
 const D = reg?.dados || {};
 ORDEM.forEach(k => { D[k] = Object.assign({ in:{}, out:{}, chat:[], ok:false }, D[k] || {}); migrar(k, D[k], alvo.nome); });
 // anotações dos sócios (mesma empresa, mesmo dia)
@@ -225,7 +231,15 @@ async function atualizarSocios(forcar){
 }
 setInterval(() => { if (document.visibilityState === "visible") atualizarSocios(); }, 15000);
 let modo = "minhas", incluirSocios = false;
-const dadosDe = k => D[k] || OUTRO[k];
+const EXTRA = { calc_vendas: (regs||[]).find(r => r.tipo === "calc_vendas")?.dados };
+const dadosDe = k => D[k] || OUTRO[k] || EXTRA[k];
+// volta da calculadora: recarrega os resultados
+async function atualizarCalc(){
+  const { data } = await sb.from("atividades").select("dados").eq("participante_id", alvoId).eq("tipo", "calc_vendas").maybeSingle();
+  if (!data?.dados || JSON.stringify(data.dados.res) === JSON.stringify(EXTRA.calc_vendas?.res)) return;
+  EXTRA.calc_vendas = data.dados; if (FER[atual]?.calculadora && modo === "minhas") tela();
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") atualizarCalc(); });
 let atual = ORDEM.includes(location.hash.slice(1)) ? location.hash.slice(1) : (ORDEM.find(k => !D[k].ok) || ORDEM[0]);
 
 // ---------- salvar ----------
@@ -388,6 +402,7 @@ function tela(){
     <div id="obsF"></div>
     ${modo === "gerais" ? geraisHTML(k) : `
     <section class="passo"><header><span class="n">1</span><div><h2>Seus dados</h2><p>Preencha o que souber, em quantas anotações quiser por tema. Marque se cada informação é real, estimada ou pendente.</p></div></header>
+      ${F.calculadora ? calcCard(F) : ""}
       ${usados.length ? `<div class="usa">${ic("check","sm")} A IA também vai receber o que você registrou em: <b>${usados.join(", ")}</b>.</div>` : ""}
       <div class="legenda">${["R","H","P"].map(f => `<span title="${LEG[f][1]}"><b class="t-${f}">${f}</b>${LEG[f][0]} <small style="color:var(--muted)">(${LEG[f][1].toLowerCase()})</small></span>`).join("")}</div>
       ${F.grupos.map((g, gi) => grupoHTML(k, gi)).join("")}
@@ -411,6 +426,15 @@ function tela(){
   F.grupos.forEach((g, gi) => ligarGrupo(k, gi));
   $("tela").querySelectorAll("[data-out]").forEach(el => el.addEventListener(el.tagName==="SELECT"?"change":"input", () => { D[k].out[el.dataset.out] = el.value; salvar(); calcOrc(k); fim(); rcalc(); }));
   calcOrc(k); fim(); rcalc();
+}
+
+// ---------- calculadora da palestra (abre em tela cheia) ----------
+function calcCard(F){
+  const c = EXTRA.calc_vendas, feito = c?.concluido, url = `${F.calculadora}${pq ? "?p=" + encodeURIComponent(pq) : ""}`;
+  return `<div class="calcCta"><div><small>Exercício da palestra · Carlos Ribeiro</small><b>Quanto custa cada venda da sua empresa?</b>
+    <p>CAC, comissão, OTE, bonificação e cuidados trabalhistas, com os números da sua confecção. Leva uns 15 minutos e salva sozinho.</p>
+    ${c ? `<span class="calcSt ${feito ? "ok" : ""}">${feito ? "✓ Calculadora concluída" : "Em andamento: continue de onde parou"}</span>` : ""}</div>
+    <a class="btn" href="${url}">${ic("trend","sm")} ${c ? (RO ? "Ver a calculadora" : feito ? "Revisar a calculadora" : "Continuar a calculadora") : "Abrir a calculadora"}</a></div>`;
 }
 
 // ---------- contas automáticas ----------
