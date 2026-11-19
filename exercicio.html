@@ -39,12 +39,13 @@
     </div>
     <div class="ex-body" id="conteudo"><p class="sub">Carregando sua planilha…</p></div>
     <div class="mais">
-      <p><b>Prefere o formato Excel?</b>Veja sua planilha completa, baixe o arquivo, preencha no seu Excel e envie de volta para atualizar aqui.</p>
+      <p><b>Prefere o formato Excel?</b>Veja sua planilha completa, baixe o arquivo, preencha no seu Excel e envie de volta para atualizar aqui. Aceita qualquer versão do Excel (.xlsx, .xls), LibreOffice (.ods) e CSV. Se o seu Excel for muito antigo, use “Baixar em CSV”: edite só a coluna Valor e envie o arquivo de volta.</p>
       <div class="tools">
         <a class="tbtn" id="lPlanilha" href="planilha.html"></a>
         <button class="tbtn" id="bBaixar" type="button"></button>
         <button class="tbtn" id="bEnviar" type="button"></button>
-        <input type="file" id="fEnviar" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
+        <button class="tbtn" id="bCSV" type="button"></button>
+        <input type="file" id="fEnviar" accept=".xlsx,.xlsm,.xlsb,.xls,.ods,.csv,.txt,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" hidden>
       </div>
     </div>
   </div>
@@ -56,7 +57,7 @@
 </div></div>
 
 <script type="module">
-import { sb, $, esc, brl, num, parse, MESES, COLS, COLS_FC, fmtExcel, contexto, carregarModelo, salvarDepois, baixar, converterRegime, lerPlanilha, resumo } from "./app.js";
+import { sb, $, esc, brl, num, parse, MESES, COLS, COLS_FC, fmtExcel, contexto, carregarModelo, salvarDepois, baixar, converterRegime, lerPlanilha, csvEntradas, resumo } from "./app.js";
 import { montarObs } from "./obs.js";
 
 const ctx = await contexto();
@@ -68,7 +69,8 @@ const q = ctx.empresaId && RO ? `?empresa=${ctx.empresaId}` : "";
 $("lPlanilha").href = "planilha.html" + q;
 $("lPlanilha").innerHTML = IC("sheet") + "Ver minha planilha";
 const rotBaixar = () => { $("bBaixar").innerHTML = IC("download") + "Baixar planilha Excel"; }; rotBaixar();
-const rotEnviar = () => { $("bEnviar").innerHTML = IC("refresh") + "Enviar planilha preenchida"; }; rotEnviar();
+const rotEnviar = () => { $("bEnviar").innerHTML = IC("refresh") + "Enviar planilha preenchida (Excel ou CSV)"; }; rotEnviar();
+$("bCSV").innerHTML = IC("sheet") + "Baixar em CSV";
 if (RO) $("bEnviar").hidden = true;
 $("bVoltar").innerHTML = IC("back") + "Voltar";
 if (ctx.reg?.atualizado_em) status(`Salvo em ${new Date(ctx.reg.atualizado_em).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})}${ctx.reg.atualizado_por_nome ? " por " + ctx.reg.atualizado_por_nome.split(" ")[0] : ""}`, true);
@@ -123,20 +125,23 @@ $("bVoltar").onclick=()=>ir(etapa-1);
 $("bProx").onclick=()=>{ if(etapa===7) location.href = RO ? "admin.html" : "painel.html"; else ir(etapa+1); };
 $("bBaixar").onclick=async()=>{ if(!D.regime) return aviso("Escolha o regime de tributação primeiro."); const b=$("bBaixar"); b.disabled=true; b.textContent="Gerando planilha…"; try{ await baixar(ctx, motor, M); } catch(e){ alert("Não foi possível gerar: "+e.message); } b.disabled=false; rotBaixar(); };
 $("bEnviar").onclick = () => $("fEnviar").click();
+$("bCSV").onclick = async () => { if (!D.regime) return aviso("Escolha o regime de tributação primeiro."); const Mx = M || await carregarModelo(D.regime);
+  const blob = new Blob([csvEntradas(Mx, D.celulas || {}, D.regime)], { type: "text/csv;charset=utf-8" }), a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = `plano-anual-2027-${D.regime}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); };
 $("fEnviar").onchange = async e => {
   const f = e.target.files[0]; e.target.value = ""; if (!f) return;
   const b = $("bEnviar"); b.disabled = true; b.textContent = "Lendo planilha…";
   try {
-    const r = await lerPlanilha(f);
+    const r = await lerPlanilha(f, D.regime);
     const nomeReg = x => x === "presumido" ? "Lucro Presumido" : "Simples Nacional";
     if (D.regime && D.regime !== r.regime && !confirm(`A planilha enviada é do ${nomeReg(r.regime)}, mas o exercício da empresa está no ${nomeReg(D.regime)}.\n\nQuer mudar o exercício para ${nomeReg(r.regime)} e usar os dados da planilha?`)) throw null;
     // simula o resultado com os dados novos
-    const cel = { ...r.celulas }; for (const [k, v] of Object.entries(r.modelo.padrao)) if (cel[k] === undefined && v !== undefined && v !== null) cel[k] = v;
+    const cel = r.parcial && r.regime === D.regime ? { ...D.celulas, ...r.celulas } : { ...r.celulas }; for (const [k, v] of Object.entries(r.modelo.padrao)) if (cel[k] === undefined && v !== undefined && v !== null) cel[k] = v;
     const novo = resumo(window.TC_MOTOR.criar(r.modelo, cel)), antes = motor ? resumo(motor) : null;
     const mud = Object.keys({ ...D.celulas, ...cel }).filter(k => String(D.celulas[k] ?? "") !== String(cel[k] ?? "")).length;
-    const msg = `Planilha lida: ${nomeReg(r.regime)}, ${r.campos} campos preenchidos.\n${mud} campos vão mudar no exercício da empresa.\n\n`
+    const msg = `Planilha lida: ${nomeReg(r.regime)}, ${r.campos} campos preenchidos.\n${r.aviso ? r.aviso + "\n" : ""}${mud} campos vão mudar no exercício da empresa.\n\n`
       + (antes ? `Faturamento 2027: ${brl(antes.receita)} → ${brl(novo.receita)}\nResultado 2027: ${brl(antes.resultado)} → ${brl(novo.resultado)}` : `Faturamento 2027: ${brl(novo.receita)}\nResultado 2027: ${brl(novo.resultado)}`)
-      + `\n\nOs dados da planilha substituem os dados atuais do exercício. Confirmar?`;
+      + (r.parcial ? `\n\nOs campos do arquivo substituem os mesmos campos do exercício; o restante continua como está. Confirmar?` : `\n\nOs dados da planilha substituem os dados atuais do exercício. Confirmar?`);
     if (!confirm(msg)) throw null;
     D.regime = r.regime; D.celulas = cel; D.etapa = Math.max(D.etapa || 0, 7);
     await prepararMotor(); salvar(true); render();
