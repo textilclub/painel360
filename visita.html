@@ -75,6 +75,9 @@
   .ger-area{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px;margin-bottom:12px}
   .ger-area h3{font:700 17px var(--f-display);margin-bottom:8px;display:flex;gap:8px;align-items:center}
   .ger-area h3 small{margin-left:auto;font:600 12px var(--f-body);color:var(--muted)}
+  .soc{margin-top:10px;border:1px dashed var(--line-2);border-radius:10px;padding:8px 12px;background:var(--surface)}
+  .soc summary{cursor:pointer;font:600 13.5px var(--f-body);color:var(--ink-2);min-height:32px;display:flex;align-items:center;gap:6px}
+  .soc summary b{display:inline-block;min-width:20px;padding:0 6px;border-radius:999px;background:var(--gold);color:#0b0b0a;font:700 12px var(--f-display);text-align:center}
   .ger-it{border-left:4px solid var(--line-2);background:var(--paper);border-radius:8px;padding:10px 12px;margin-top:8px;font-size:14.5px;line-height:1.5}
   .ger-it.minha{border-left-color:var(--gold)}
   .ger-it .q{font-size:13px;color:var(--muted);margin-bottom:4px}.ger-it .q b{color:var(--ink)}
@@ -392,6 +395,7 @@ function renderAreas(){
         <button class="estrela" type="button" data-foco="${a.k}" aria-pressed="${v.foco}" aria-label="Quero agir nesta área" title="Quero agir nesta área">★</button>
       </div>
       <div class="notas-area" id="na-${a.k}">${notasHTML(a)}</div>
+      <div id="sa-${a.k}">${sociosArea(a)}</div>
       <div class="escala"><div class="q">Comparando, a minha empresa…</div>
         <div class="chips" role="group" aria-label="Distância da minha empresa">${ESCALA.map(([n,txt]) => `<button type="button" data-nv="${a.k}" data-v="${n}" aria-pressed="${v.nivel===n}" ${RO?"disabled":""}>${txt}</button>`).join("")}</div>
       </div>
@@ -403,6 +407,13 @@ function renderAreas(){
     marcar(k); salvar(); });
   $("areas").querySelectorAll("[data-foco]").forEach(b => b.onclick = () => {
     const k = b.dataset.foco; D.areas[k].foco = !D.areas[k].foco; b.setAttribute("aria-pressed", String(D.areas[k].foco)); marcar(k); salvar(); });
+}
+// anotações dos sócios na própria área (sem precisar trocar de aba)
+function sociosArea(a){
+  if (typeof SOCIOS === "undefined") return ""; const t = x => String(x||"").trim(), itens = [];
+  SOCIOS.forEach(p => (p.dados.areas?.[a.k]?.notas||[]).forEach(n => { if (t(n.vi) || t(n.eu)) itens.push({ p, n }); }));
+  if (!itens.length) return ""; itens.sort((x,y) => String(y.n.ts||"").localeCompare(String(x.n.ts||"")));
+  return `<details class="soc"><summary>Anotações dos sócios <b>${itens.length}</b> ${[...new Set(itens.map(i => i.p.nome.split(" ")[0]))].map(esc).join(", ")}</summary>${itens.map(({p,n}) => `<div class="ger-it"><div class="q"><b>${esc(n.por || p.nome)}</b>${n.ts ? " · " + fmtTs(n.ts) : ""}</div>${t(n.vi) ? `<p><span>${CFG.ladoLa[0]}</span>${esc(n.vi)}</p>` : ""}${t(n.eu) ? `<p><span>Aqui</span>${esc(n.eu)}</p>` : ""}</div>`).join("")}</details>`;
 }
 function ligarNotas(a){
   const box = $("na-" + a.k); if (!box) return;
@@ -540,6 +551,7 @@ async function atualizarSocios(forcar){
   if (!data) return; const as = JSON.stringify(data.map(r => [r.participante_id, r.atualizado_em]));
   if (as === socAssin && !forcar) return; socAssin = as; SOCIOS.splice(0, SOCIOS.length, ...data.map(socio));
   $("contGer").textContent = contarGerais(); if (!$("geraisV").hidden) $("geraisV").innerHTML = geraisHTML();
+  AREAS.forEach(a => { const el = $("sa-" + a.k); if (el) { const aberto = el.querySelector("details")?.open; el.innerHTML = sociosArea(a); if (aberto) el.querySelector("details")?.setAttribute("open", ""); } });
 }
 setInterval(() => { if (document.visibilityState === "visible") atualizarSocios(); }, 15000);
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") atualizarSocios(); });
@@ -578,7 +590,7 @@ montarObs({ el: $("obsV"), sb, empresaId: alvo.empresa_id, participanteId: alvo.
 const pq = new URLSearchParams(location.search).get("p");
 $("dtabs").innerHTML = Object.entries(DIAS).map(([k,c]) => `<a href="visita.html?dia=${k}${pq?"&p="+encodeURIComponent(pq):""}"${k===DIA?' aria-current="page"':""}><b>${c.nome}</b><small>${c.data}</small></a>`).join("");
 if (DIA !== "visita") $("dtabs").insertAdjacentHTML("afterend", `<a class="fer-link" href="ferramentas.html?dia=${DIA}${pq?"&p="+encodeURIComponent(pq):""}"><span class="ico">${ic("layers")}</span><span><b>Ferramentas 360° com IA do dia</b><small>${DIA==="dia1" ? "Visão 2027 · Diagnóstico · Produção · Produto · Vendas · Análise cruzada · Painel de decisões" : "Pessoas · Financeiro · SWOT · Prioridades · Orçamento · KPIs · Projetos · 90 dias · Auditoria · One Page"}</small></span><span class="go">${ic("chev")}</span></a>`);
-renderAreas(); resumo(); renderEntrega();
+renderAreas(); resumo(); renderEntrega(); AREAS.forEach(a => { const el = $("sa-" + a.k); if (el) el.innerHTML = sociosArea(a); });
 if (location.hash) setTimeout(() => document.querySelector(location.hash)?.scrollIntoView({ behavior:"smooth", block:"start" }), 150);
 </script>
 </body>

@@ -39,6 +39,9 @@
   .add-nota{width:100%;min-height:48px;border:1.5px dashed var(--line-2);border-radius:12px;background:transparent;font:600 14.5px var(--f-body);color:var(--ink-2);display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
   .add-nota:hover{border-color:var(--ink);color:var(--ink)}
   .grupo>h3 .qtd{margin-left:auto;font:600 12px var(--f-body);color:var(--muted);letter-spacing:.04em}
+  .soc{margin-top:10px;border:1px dashed var(--line-2);border-radius:10px;padding:8px 12px;background:var(--surface)}
+  .soc summary{cursor:pointer;font:600 13.5px var(--f-body);color:var(--ink-2);min-height:32px;display:flex;align-items:center;gap:6px}
+  .soc summary b{display:inline-block;min-width:20px;padding:0 6px;border-radius:999px;background:var(--gold);color:#0b0b0a;font:700 12px var(--f-display);text-align:center}
   .nota.ger.minha{border-left:4px solid var(--gold)}
   .quem-anotou{font-size:13.5px;color:var(--muted);margin-bottom:6px}.quem-anotou b{color:var(--ink)}
   .nota.ger dl{display:grid;gap:4px}.nota.ger dt{font:600 12.5px var(--f-body);color:var(--ink-2)}.nota.ger dt b{font-size:10.5px;padding:1px 5px;border-radius:5px}
@@ -217,7 +220,8 @@ async function atualizarSocios(forcar){
   const { data } = await sb.from("atividades").select("participante_id,dados,atualizado_em,participantes(nome)").eq("empresa_id", alvo.empresa_id).eq("tipo", TIPO).neq("participante_id", alvoId);
   if (!data) return; const as = JSON.stringify(data.map(r => [r.participante_id, r.atualizado_em]));
   if (as === socAssin && !forcar) return; socAssin = as; SOCIOS.splice(0, SOCIOS.length, ...data.map(socio));
-  if (modo === "gerais") tela(); else { const c = document.querySelector(".modos .cont"); if (c) c.textContent = contarGerais(atual); }
+  if (modo === "gerais") tela(); else { const c = document.querySelector(".modos .cont"); if (c) c.textContent = contarGerais(atual);
+    FER[atual].grupos.forEach((g, gi) => { const el = $("sg-" + gi); if (el) { const ab = el.querySelector("details")?.open; el.innerHTML = sociosGrupo(atual, gi); if (ab) el.querySelector("details")?.setAttribute("open", ""); } }); }
 }
 setInterval(() => { if (document.visibilityState === "visible") atualizarSocios(); }, 15000);
 let modo = "minhas", incluirSocios = false;
@@ -273,7 +277,14 @@ function grupoHTML(k, gi){
       ${n.por || n.ts ? `<p class="autor">${esc(n.por||"")}${n.ts ? " · " + fmtTs(n.ts) : ""}</p>` : ""}
     </div>`).join("");
   return `<div class="grupo" id="grp-${gi}"><h3>${g.t}${!g.unico && lista.length > 1 ? `<span class="qtd">${lista.length} ${item === "linha" ? "linhas" : item === "gargalo" ? "gargalos" : "anotações"}</span>` : ""}</h3>${g.ajuda ? `<p class="g-ajuda">${g.ajuda}</p>` : ""}${notas}
+    <div id="sg-${gi}">${sociosGrupo(k, gi)}</div>
     ${!RO && !g.unico ? `<button type="button" class="add-nota" data-add="${gi}">${ic("plus","sm")} Adicionar ${item === "linha" ? "outra linha de produto" : item === "gargalo" ? "outro gargalo" : "outra anotação sobre " + g.t}</button>` : ""}</div>`;
+}
+function sociosGrupo(k, gi){
+  const g = FER[k].grupos[gi], t = x => String(x||"").trim(), itens = [];
+  SOCIOS.forEach(p => (p.dados[k]?.g?.[gi] || []).forEach(n => { if (t(n.t) || g.campos.some(c => t(n.c?.[c.k]?.v))) itens.push({ p, n }); }));
+  if (!itens.length) return ""; itens.sort((a, b) => String(b.n.ts||"").localeCompare(String(a.n.ts||"")));
+  return `<details class="soc"><summary>Anotações dos sócios <b>${itens.length}</b> ${[...new Set(itens.map(i => i.p.nome.split(" ")[0]))].map(esc).join(", ")}</summary>${itens.map(({ p, n }) => `<div class="nota ger"><p class="quem-anotou"><b>${esc(n.por || p.nome)}</b>${n.ts ? " · " + fmtTs(n.ts) : ""}${t(n.t) ? ` · <i>${esc(n.t)}</i>` : ""}</p><dl>${g.campos.filter(c => t(n.c?.[c.k]?.v)).map(c => `<dt>${c.l}</dt><dd>${esc(n.c[c.k].v)}</dd>`).join("")}</dl></div>`).join("")}</details>`;
 }
 function ligarGrupo(k, gi){
   const el = $("grp-" + gi); if (!el) return;
