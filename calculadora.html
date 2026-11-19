@@ -956,6 +956,7 @@ window.salvarCalc = () => { if (RO) return; clearTimeout(tmr); st("Salvando…")
 window.concluirCalc = () => { if (RO) { location.href = document.getElementById("volta").href; return; } concluido = true; window.salvarCalc();
   setTimeout(() => location.href = document.getElementById("volta").href, 1200); };
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && tmr) window.salvarCalc(); });
+if (!location.hash && Number.isInteger(sv.tela) && sv.tela > 0 && sv.tela < S.length && !sv.concluido) i = sv.tela;
 window.iniciarCalc();
 </script>
 </body>
