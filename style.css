@@ -186,3 +186,7 @@ table{max-width:100%}
 .tabela-scroll,.tbl-wrap{overflow-x:auto;max-width:100%}
 html,body{overflow-x:clip}
 button,.btn,a.btn,select,input[type=checkbox]+label{touch-action:manipulation}
+.top-btn.ico{padding:0;width:44px;justify-content:center}
+.top-btn.ico span{display:none}
+.top-btn[aria-current="page"]{border-color:var(--gold-hi);color:#fff}
+@media (min-width:1280px){.top-btn.ico{width:auto;padding:0 14px}.top-btn.ico span{display:inline}}

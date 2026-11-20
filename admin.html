@@ -45,6 +45,21 @@
     td[data-l=""]::before{display:none}
     .acts .btn{flex:1}
   }
+  dialog.ed{border:0;border-radius:var(--r-lg);padding:0;width:min(620px,calc(100vw - 24px));max-height:calc(100dvh - 24px);background:var(--surface);color:var(--ink);box-shadow:0 30px 80px rgba(0,0,0,.35)}
+  dialog.ed::backdrop{background:rgba(11,11,10,.6)}
+  .ed form{display:flex;flex-direction:column;max-height:calc(100dvh - 24px)}
+  .ed .cab{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line)}
+  .ed .cab h2{font:700 1.25rem var(--f-display);letter-spacing:-.02em;margin:0}
+  .ed .fx{width:44px;height:44px;border-radius:50%;border:1px solid var(--line-2);background:none;cursor:pointer;font-size:20px;line-height:1;color:var(--ink)}
+  .ed .corpo-e{padding:18px 20px 4px;overflow:auto}
+  .ed h3{font:700 12px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-ink);margin:4px 0 12px}
+  .ed h3.s2{margin-top:10px;padding-top:16px;border-top:1px solid var(--line)}
+  .ed .aviso{font-size:13px;color:var(--muted);margin:-8px 0 14px;line-height:1.4}
+  .ed .rod{display:flex;gap:10px;align-items:center;justify-content:flex-end;flex-wrap:wrap;padding:14px 20px;border-top:1px solid var(--line);background:var(--paper)}
+  .ed .rod .st{margin-right:auto;font-size:14px;font-weight:600}
+  .ed .rod .st.err{color:var(--err)}.ed .rod .st.ok{color:var(--ok)}
+  .ed .rod .btn{width:auto;min-width:130px}
+  @media (max-width:560px){.ed .row{grid-template-columns:1fr;gap:0}.ed .row.uf{grid-template-columns:1fr 92px;gap:14px}.ed .rod .btn{flex:1}.ed .rod .st{flex-basis:100%}}
 </style>
 </head>
 <body>
@@ -125,6 +140,29 @@
   </section>
 </div>
 </main>
+<dialog class="ed" id="dEd" aria-labelledby="edT">
+  <form method="dialog" id="fEd" novalidate>
+    <div class="cab"><h2 id="edT">Editar cadastro</h2><button type="button" class="fx" id="edX" aria-label="Fechar">×</button></div>
+    <div class="corpo-e">
+      <h3>Participante</h3>
+      <div class="field"><label for="edNome">Nome completo</label><input id="edNome" required></div>
+      <div class="row">
+        <div class="field"><label for="edCargo">Função</label><select id="edCargo"><option value="">Selecione</option><option>Sócio(a) / Proprietário(a)</option><option>Gestor(a)</option><option>Colaborador(a)</option></select></div>
+        <div class="field"><label for="edWpp">WhatsApp</label><input id="edWpp" inputmode="tel" placeholder="(62) 99999-9999"></div>
+      </div>
+      <div class="field"><label for="edEmail">E-mail de login</label><input id="edEmail" readonly><p class="hint">O e-mail de login é trocado no Supabase (Authentication → Users).</p></div>
+      <h3 class="s2">Empresa</h3>
+      <p class="aviso" id="edSoc"></p>
+      <div class="field"><label for="edENome">Nome da empresa</label><input id="edENome" required></div>
+      <div class="row uf">
+        <div class="field"><label for="edCid">Cidade</label><input id="edCid"></div>
+        <div class="field"><label for="edUf">UF</label><input id="edUf" maxlength="2" style="text-transform:uppercase"></div>
+      </div>
+      <div class="field"><label for="edCnpj">CNPJ</label><input id="edCnpj" inputmode="numeric" maxlength="18"></div>
+    </div>
+    <div class="rod"><span class="st" id="edSt" aria-live="polite"></span><button type="button" class="btn ghost" id="edCancel">Cancelar</button><button type="submit" class="btn" id="edSalvar">Salvar</button></div>
+  </form>
+</dialog>
 <style>
   .avpal{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:14px}
   .avc{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
@@ -186,9 +224,10 @@ function render(){
       <td data-l="Empresa">${esc(e.nome)}<small>${fCnpj(e.cnpj)}${e.cidade?" · "+esc(e.cidade)+"/"+esc(e.uf||""):""}</small><small>${socios} participante${socios>1?"s":""}</small></td>
       <td data-l="Contato"><small style="color:var(--ink);margin:0">${esc(p.email)}</small>${wpp}</td>
       <td data-l="Situação"><span class="badge ${p.status}">${ROT[p.status]||p.status}</span></td>
-      <td data-l=""><div class="acts">${btn("aprovado","Liberar")}${btn("bloqueado","Bloquear","ghost")}${p.status!=="pendente"?btn("pendente","Voltar para aguardando","ghost"):""}</div></td>
+      <td data-l=""><div class="acts"><button type="button" class="btn sm ghost" data-edit="${p.id}">Editar</button>${btn("aprovado","Liberar")}${btn("bloqueado","Bloquear","ghost")}${p.status!=="pendente"?btn("pendente","Voltar para aguardando","ghost"):""}</div></td>
     </tr>`;
   }).join("");
+  document.querySelectorAll("#lista button[data-edit]").forEach(b=>b.onclick=()=>abrirEdicao(b.dataset.edit));
   document.querySelectorAll("#lista button[data-id]").forEach(b=>b.onclick=async()=>{
     b.disabled=true;
     const st=b.dataset.st;
@@ -200,6 +239,43 @@ function render(){
   });
 }
 carregar();
+
+/* ===== edição de cadastro (admin) ===== */
+const soN = v => String(v||"").replace(/\D/g,"");
+let edP = null;
+function edSt(t,c=""){ $("edSt").textContent=t; $("edSt").className="st "+c; }
+function abrirEdicao(id){
+  edP = todos.find(x=>x.id===id); if (!edP) return;
+  const e = edP.empresas||{}, soc = todos.filter(x=>x.empresa_id===edP.empresa_id && x.id!==edP.id);
+  $("edT").textContent = "Editar: " + (edP.nome||"participante");
+  $("edNome").value = edP.nome||""; $("edWpp").value = fTel(edP.whatsapp); $("edEmail").value = edP.email||"";
+  if (edP.cargo && ![...$("edCargo").options].some(o=>o.value===edP.cargo)) $("edCargo").add(new Option(edP.cargo, edP.cargo));
+  $("edCargo").value = edP.cargo||"";
+  $("edENome").value = e.nome||""; $("edCid").value = e.cidade||""; $("edUf").value = e.uf||""; $("edCnpj").value = fCnpj(e.cnpj);
+  $("edSoc").textContent = soc.length ? `Os dados da empresa valem também para ${soc.map(x=>x.nome).join(", ")}.` : "";
+  edSt(""); $("dEd").showModal(); $("edNome").focus();
+}
+$("edX").onclick = $("edCancel").onclick = () => $("dEd").close();
+$("edCnpj").oninput = ev => { const d=soN(ev.target.value).slice(0,14); ev.target.value = d.length===14 ? fCnpj(d) : d; };
+$("fEd").onsubmit = async ev => {
+  ev.preventDefault(); if (!edP) return;
+  const nome=$("edNome").value.trim(), w=soN($("edWpp").value), en=$("edENome").value.trim(), cnpj=soN($("edCnpj").value);
+  if (!nome) return edSt("Informe o nome do participante.","err");
+  if (w && (w.length<10||w.length>11)) return edSt("WhatsApp com DDD (10 ou 11 números).","err");
+  if (!en) return edSt("Informe o nome da empresa.","err");
+  if (cnpj.length!==14) return edSt("CNPJ precisa ter 14 números.","err");
+  $("edSalvar").disabled=true; edSt("Salvando…");
+  const r1 = await sb.from("participantes").update({ nome, cargo:$("edCargo").value||null, whatsapp:w||null }).eq("id", edP.id).select("id");
+  let err = r1.error || (!r1.data?.length ? { message:"Sem permissão para editar este participante." } : null);
+  if (!err && edP.empresa_id){
+    const r2 = await sb.from("empresas").update({ nome:en, cidade:$("edCid").value.trim()||null, uf:$("edUf").value.trim().toUpperCase()||null, cnpj }).eq("id", edP.empresa_id).select("id");
+    err = r2.error || (!r2.data?.length ? { message:"Sem permissão para editar esta empresa." } : null);
+    if (err && /duplicate|unique/i.test(err.message)) err = { message:"Já existe outra empresa com esse CNPJ." };
+  }
+  $("edSalvar").disabled=false;
+  if (err) return edSt(err.message,"err");
+  edSt("Salvo ✓","ok"); await carregar(); setTimeout(()=>$("dEd").close(), 600);
+};
 
 async function carregarEx(){
   const { data:emps } = await sb.from("empresas").select("id,nome,cidade,uf,participantes(status),exercicios(status,regime,resumo,atualizado_em,atualizado_por_nome)").order("nome");

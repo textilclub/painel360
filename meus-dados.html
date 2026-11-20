@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meus dados · Imersão Método Confecção 360°</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+<style>
+  .md{max-width:680px;margin:0 auto;padding:26px clamp(18px,5vw,24px) 60px}
+  .md h1{font-size:clamp(1.9rem,1.3rem + 2.6vw,2.6rem);letter-spacing:-.035em;margin:8px 0 8px}
+  .md .sub{font-size:16px;line-height:1.55;color:var(--ink-2);max-width:54ch}
+  .cx{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px 20px 6px;margin-top:22px}
+  .cx h2{font:700 1.2rem var(--f-display);letter-spacing:-.02em;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+  .cx h2 .i{color:var(--gold-ink)}
+  .trava{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.4}
+  .acoes{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:6px 0 18px}
+  .acoes .btn{width:auto;min-width:180px}
+  .acoes .st{font-size:14px;color:var(--muted)}
+  .acoes .st.ok{color:var(--ok);font-weight:600}.acoes .st.err{color:var(--err);font-weight:600}
+  @media (max-width:520px){.row{grid-template-columns:1fr;gap:0}.acoes .btn{width:100%}}
+</style>
+</head>
+<body>
+<script src="ui.js" data-page="meusdados"></script>
+<main class="wrap">
+<div class="md">
+  <div class="eyebrow">Meu cadastro</div>
+  <h1>Meus dados</h1>
+  <p class="sub">Confira e corrija seus dados e os da sua empresa. As mudanças aparecem para a equipe da Têxtil Club e para os seus sócios.</p>
+  <div class="msg" id="msg" role="alert"></div>
+
+  <form class="cx" id="fPessoa" novalidate>
+    <h2><span data-ic="users"></span>Seus dados</h2>
+    <div class="field"><label for="nome">Nome completo</label><input id="nome" autocomplete="name" required></div>
+    <div class="row">
+      <div class="field"><label for="cargo">Sua função</label>
+        <select id="cargo"><option value="">Selecione</option><option>Sócio(a) / Proprietário(a)</option><option>Gestor(a)</option><option>Colaborador(a)</option></select></div>
+      <div class="field"><label for="wpp">WhatsApp</label><input id="wpp" inputmode="tel" autocomplete="tel" placeholder="(62) 99999-9999"></div>
+    </div>
+    <div class="field"><label for="email">E-mail de login</label><input id="email" readonly>
+      <p class="trava">Para trocar o e-mail de login, fale com o suporte.</p></div>
+    <div class="acoes"><button class="btn" type="submit" id="bPessoa">Salvar meus dados</button><span class="st" id="stPessoa" aria-live="polite"></span></div>
+  </form>
+
+  <form class="cx" id="fEmp" novalidate>
+    <h2><span data-ic="building"></span>Sua empresa</h2>
+    <div class="field"><label for="enome">Nome da empresa</label><input id="enome" required></div>
+    <div class="row uf">
+      <div class="field"><label for="ecid">Cidade</label><input id="ecid"></div>
+      <div class="field"><label for="euf">UF</label><input id="euf" maxlength="2" style="text-transform:uppercase"></div>
+    </div>
+    <div class="field"><label for="ecnpj">CNPJ</label><input id="ecnpj" readonly>
+      <p class="trava">O CNPJ só pode ser alterado pela equipe da Têxtil Club.</p></div>
+    <div class="acoes"><button class="btn" type="submit" id="bEmp">Salvar dados da empresa</button><span class="st" id="stEmp" aria-live="polite"></span></div>
+  </form>
+
+  <form class="cx" id="fSenha" novalidate>
+    <h2><span data-ic="lock"></span>Trocar senha</h2>
+    <div class="row">
+      <div class="field"><label for="s1">Nova senha</label><input id="s1" type="password" minlength="6" autocomplete="new-password"></div>
+      <div class="field"><label for="s2">Repita a nova senha</label><input id="s2" type="password" minlength="6" autocomplete="new-password"></div>
+    </div>
+    <div class="acoes"><button class="btn ghost" type="submit" id="bSenha">Trocar senha</button><span class="st" id="stSenha" aria-live="polite"></span></div>
+  </form>
+</div>
+</main>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+const C = window.TC_CONFIG, sb = createClient(C.SUPABASE_URL, C.SUPABASE_KEY);
+const $ = id => document.getElementById(id);
+const so = s => String(s || "").replace(/\D/g, "");
+const fCnpj = c => (c || "").replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
+const fTel = t => (t || "").replace(/^(\d{2})(\d{4,5})(\d{4})$/, "($1) $2-$3");
+document.querySelectorAll("[data-ic]").forEach(s => s.outerHTML = window.IC ? IC(s.dataset.ic) : "");
+
+const { data: { session } } = await sb.auth.getSession();
+if (!session) { location.replace("index.html"); throw new Error("sem sessão"); }
+const { data: adm } = await sb.rpc("is_admin"); if (adm) window.TC_UI?.mostrarAdmin?.();
+const { data: eu } = await sb.from("participantes").select("id,nome,email,cargo,whatsapp,status,empresa_id,empresas(nome,cidade,uf,cnpj)").eq("id", session.user.id).maybeSingle();
+
+if (!eu) { $("fPessoa").remove(); $("fEmp").remove(); }
+else {
+  $("nome").value = eu.nome || ""; $("wpp").value = fTel(eu.whatsapp); $("email").value = eu.email || session.user.email;
+  if (eu.cargo && ![...$("cargo").options].some(o => o.value === eu.cargo)) $("cargo").add(new Option(eu.cargo, eu.cargo));
+  $("cargo").value = eu.cargo || "";
+  const e = eu.empresas || {};
+  $("enome").value = e.nome || ""; $("ecid").value = e.cidade || ""; $("euf").value = e.uf || ""; $("ecnpj").value = fCnpj(e.cnpj);
+  if (eu.status !== "aprovado") { $("fEmp").querySelectorAll("input,button").forEach(x => x.disabled = true); $("stEmp").textContent = "Disponível depois que seu acesso for liberado."; }
+}
+$("wpp").oninput = ev => { const d = so(ev.target.value).slice(0, 11); ev.target.value = d.length > 10 ? fTel(d) : d.replace(/^(\d{2})(\d{0,4})(\d{0,4}).*/, (m, a, b, c) => a + (b ? " " + b : "") + (c ? "-" + c : "")); };
+
+function st(id, txt, cls = "") { $(id).textContent = txt; $(id).className = "st " + cls; }
+async function enviar(btn, stId, fn){
+  btn.disabled = true; st(stId, "Salvando…");
+  try { const err = await fn(); if (err) throw err; st(stId, "Salvo ✓", "ok"); }
+  catch (e) { st(stId, (e.message || "Não salvou").replace(/^.*?:\s*/, ""), "err"); }
+  btn.disabled = false;
+}
+$("fPessoa").onsubmit = ev => { ev.preventDefault();
+  if (!$("nome").value.trim()) return st("stPessoa", "Informe o seu nome.", "err");
+  const w = so($("wpp").value); if (w && (w.length < 10 || w.length > 11)) return st("stPessoa", "WhatsApp com DDD, só números.", "err");
+  enviar($("bPessoa"), "stPessoa", async () => (await sb.rpc("editar_meu_cadastro", { p_nome: $("nome").value, p_cargo: $("cargo").value, p_whatsapp: w })).error);
+};
+$("fEmp").onsubmit = ev => { ev.preventDefault();
+  if (!$("enome").value.trim()) return st("stEmp", "Informe o nome da empresa.", "err");
+  enviar($("bEmp"), "stEmp", async () => (await sb.rpc("editar_minha_empresa", { p_nome: $("enome").value, p_cidade: $("ecid").value, p_uf: $("euf").value })).error);
+};
+$("fSenha").onsubmit = ev => { ev.preventDefault();
+  const a = $("s1").value, b = $("s2").value;
+  if (a.length < 6) return st("stSenha", "Use pelo menos 6 caracteres.", "err");
+  if (a !== b) return st("stSenha", "As duas senhas não são iguais.", "err");
+  enviar($("bSenha"), "stSenha", async () => { const r = (await sb.auth.updateUser({ password: a })).error; if (!r) { $("s1").value = $("s2").value = ""; } return r; });
+};
+document.querySelectorAll("#fPessoa input, #fPessoa select, #fEmp input").forEach(i => i.addEventListener("input", () => { const f = i.closest("form").id === "fEmp" ? "stEmp" : "stPessoa"; if ($(f).textContent === "Salvo ✓") st(f, ""); }));
+</script>
+</body>
+</html>

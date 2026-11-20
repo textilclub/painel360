@@ -22,6 +22,7 @@
     chat: '<path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/>',
     logout: '<path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4M15 8l4 4-4 4M19 12H9"/>',
     building: '<path d="M5 21V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v17M15 9h3a1 1 0 0 1 1 1v11M3 21h18M9 7h2M9 11h2M9 15h2"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>',
     users: '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 5.2a3 3 0 0 1 0 5.6M18 14.4c1.8.8 3 2.6 3 5.6"/>',
     car: '<path d="M5 16v-5l2-5h10l2 5v5M3 16h18v3H3zM7.5 13h.01M16.5 13h.01"/>',
     utensils: '<path d="M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 3c-2 1.5-3 4-3 7h3v11"/>',
@@ -73,6 +74,7 @@
   ${nav("nav-inline")}
   <div class="topo-dir">
     <span class="quem" id="quem"></span>
+    <a class="top-btn ico" href="meus-dados.html"${page === "meusdados" ? ' aria-current="page"' : ""} aria-label="Meus dados" title="Meus dados">${IC("user")}<span>Meus dados</span></a>
     <a class="top-btn" href="${wa}" target="_blank" rel="noopener" aria-label="Falar com o suporte pelo WhatsApp">${IC("chat")}<span>Suporte</span></a>
     <button class="top-btn sair" id="sair" type="button" aria-label="Sair">${IC("logout")}<span>Sair</span></button>
   </div>
@@ -90,7 +92,7 @@ ${nav("subnav")}`;
   });
 
   // IA de consulta: ícone fixo nas páginas do participante
-  if (page !== "admin" && page !== "cliente" && page !== "avaliacao") { const s = document.createElement("script"); s.type = "module"; s.src = "consulta.js"; document.head.appendChild(s); }
+  if (page !== "admin" && page !== "cliente" && page !== "avaliacao" && page !== "meusdados") { const s = document.createElement("script"); s.type = "module"; s.src = "consulta.js"; document.head.appendChild(s); }
 
   window.TC_UI = { mostrarAdmin() { document.querySelectorAll(".nl-admin").forEach(a => a.classList.remove("hide")); } };
 
