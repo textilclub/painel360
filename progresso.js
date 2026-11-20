@@ -97,12 +97,13 @@ export const CSS_RESUMO = `
   .chk{display:grid;gap:14px}
   .chk h4{font:700 12px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-ink);margin-bottom:6px}
   .chk ul{list-style:none;display:grid;gap:4px;margin:0;padding:0}
-  .chk li a{display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:center;padding:8px 10px;border-radius:9px;text-decoration:none;color:var(--ink);font-size:14.5px}
+  .chk li a{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-radius:9px;text-decoration:none;color:var(--ink);font-size:14.5px}
   .chk li a:hover{background:var(--paper)}
   .chk .bola{width:20px;height:20px;border-radius:50%;border:2px solid var(--line-2);display:grid;place-items:center}
   .chk .feito .bola{background:var(--ok);border-color:var(--ok);color:#fff}.chk .feito .bola svg{width:13px;height:13px}
   .chk .andamento .bola{border-color:var(--warn);background:conic-gradient(var(--warn) 50%,transparent 0)}
   .chk li small{color:var(--muted);font-size:12.5px;white-space:nowrap}
+  @media (max-width:560px){.chk li a{grid-template-columns:22px minmax(0,1fr);row-gap:2px;padding:10px 8px}.chk li small{grid-column:2;white-space:normal}}
   .dec{display:grid;gap:10px}
   .dec .d{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:10px;padding:12px 14px}
   .dec .d b{font:700 14.5px var(--f-display)}.dec .d small{color:var(--muted);font-size:12.5px;margin-left:6px}
