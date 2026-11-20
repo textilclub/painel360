@@ -28,7 +28,13 @@
   .back{background:none;border:1px solid var(--line);color:var(--mut);width:44px;height:44px;border-radius:50%;font-size:1.1rem;cursor:pointer;flex:none}
   .back:disabled{opacity:0;pointer-events:none}
   .chap{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);flex:1}
-  .taxi{text-align:right;line-height:1.1}
+  .taxi{text-align:right;line-height:1.1;flex:none;margin-left:auto}
+  .chap{min-width:0}
+  @media (max-width:560px){
+    .top{flex-wrap:wrap;row-gap:6px;padding:10px 14px}
+    .chap{order:9;flex-basis:100%}
+    .taxi b{font-size:1rem}
+  }
   .taxi span{display:block;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
   .taxi b{font-family:var(--display);font-size:1.15rem;color:var(--red)}
   .taxi.hide{visibility:hidden}
