@@ -77,7 +77,8 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt
 const IC = (n, c) => (window.IC ? window.IC(n, c) : "");
 
 export const CSS_RESUMO = `
-  .nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+  .nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:12px}
+  .num{min-width:0;overflow-wrap:anywhere}
   .num{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
   .num small{display:block;font:600 11.5px var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
   .num b{display:block;font:700 clamp(1.25rem,1rem + 1vw,1.6rem)/1.2 var(--f-display);letter-spacing:-.02em;margin-top:6px}
@@ -152,7 +153,7 @@ export function htmlRadar(regs) {
   if (!it.some(x => x.nv !== "")) return "";
   return `<div style="display:grid;place-items:center">${radarSVG(it.map(x => ({ l: x.l, n: x.n })))}</div>`;
 }
-export const CSS_TRILHA = `.tri{display:grid;grid-template-columns:repeat(7,minmax(96px,1fr));gap:4px;overflow-x:auto}
-  .tri a{display:grid;gap:3px;align-content:start;min-height:62px;padding:8px;border-radius:10px;background:var(--surface);border:1px solid var(--line);text-decoration:none;color:var(--ink);font:600 12.5px/1.25 var(--f-body)}
+export const CSS_TRILHA = `.tri{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px}
+  .tri a{display:grid;gap:3px;align-content:start;min-height:64px;min-width:0;overflow-wrap:anywhere;padding:8px;border-radius:10px;background:var(--surface);border:1px solid var(--line);text-decoration:none;color:var(--ink);font:600 12.5px/1.25 var(--f-body)}
   .tri a small{font:700 10px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
   .tri a.andamento{border-color:var(--warn)}.tri a.feito{background:var(--ink);color:#fff;border-color:var(--ink)}.tri a.feito small{color:var(--gold-hi)}`;

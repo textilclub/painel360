@@ -51,7 +51,8 @@
 
   /* lateral */
   .bloco{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px 20px}
-  .bloco h3{margin-bottom:12px;display:flex;align-items:center;gap:10px}
+  .bloco h3{margin-bottom:12px;display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap}
+  .col-a>*,.col-b>*,.corpo>*{min-width:0}
   .bloco h3 .i{color:var(--gold-ink)}
   .emp-n{font:600 17px var(--f-display);letter-spacing:-.01em}
   .socios{display:grid;gap:0;margin-top:10px}
@@ -66,7 +67,7 @@
   .dia span{color:var(--muted);font-size:14px}
   a.dia:hover b{color:var(--gold-ink)}
   .adm{margin-top:4px}
-  .bloco h3 .sub2{margin-left:auto;font:600 11.5px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .bloco h3 .sub2{margin-left:auto;text-align:right;font:600 11.5px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
   .mini{font-size:13px;color:var(--muted);margin-top:8px}
   .h4{font:700 12px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-ink);margin-top:18px}
   .tudo summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -79,8 +80,8 @@
 
   @media (min-width:900px){
     .corpo{grid-template-columns:minmax(0,7fr) minmax(300px,4fr);align-items:start;gap:26px}
-    .col-a{display:grid;gap:22px}
-    .col-b{display:grid;gap:18px}
+    .col-a{display:grid;gap:22px;grid-template-columns:minmax(0,1fr);min-width:0}
+    .col-b{display:grid;gap:18px;grid-template-columns:minmax(0,1fr);min-width:0}
     .excard{padding:30px 32px 28px}
     .exbtn{width:fit-content;padding:0 28px}
   }

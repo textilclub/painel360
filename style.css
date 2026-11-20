@@ -177,3 +177,12 @@ td b{font-weight:650}
   tbody tr:hover td{background:none}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+
+/* ===== Proteções globais de layout (evita sobreposição) ===== */
+img,svg,video,canvas{max-width:100%;height:auto}
+.card,.bloco,section,article,aside,main,form,fieldset{min-width:0}
+h1,h2,h3,h4,p,li,b,strong,small,span,a,label,td,th{overflow-wrap:break-word}
+table{max-width:100%}
+.tabela-scroll,.tbl-wrap{overflow-x:auto;max-width:100%}
+html,body{overflow-x:clip}
+button,.btn,a.btn,select,input[type=checkbox]+label{touch-action:manipulation}
