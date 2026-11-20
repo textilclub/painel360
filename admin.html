@@ -113,8 +113,29 @@
       </table>
     </div>
   </section>
+  <section class="bloco-a" id="avaliacoes">
+    <div class="eyebrow">Avaliação da imersão</div>
+    <h1 style="font-size:clamp(1.4rem,1.1rem + 1.4vw,1.9rem);margin-top:8px">O que os participantes acharam</h1>
+    <p class="sub">Médias de 1 a 5 estrelas, depoimentos e comentários por palestrante. Atualiza ao abrir a página.</p>
+    <div class="stats" id="avStats"></div>
+    <div id="avPal" class="avpal"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 6px"><button class="btn ghost" type="button" id="avCsv">Baixar avaliações (CSV)</button></div>
+    <h2 style="font:700 1.15rem var(--f-display);margin:22px 0 8px">Depoimentos</h2>
+    <div id="avDep"></div>
+  </section>
 </div>
 </main>
+<style>
+  .avpal{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:14px}
+  .avc{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  .avc b{font:700 16px var(--f-display)}.avc .m{font:800 26px var(--f-display);color:var(--gold-ink);margin:4px 0}
+  .avc .m small{font:600 13px var(--f-body);color:var(--muted)}
+  .avc details{margin-top:6px}.avc summary{cursor:pointer;font-size:13.5px;font-weight:600;min-height:32px}
+  .avc details p,.avdep p{font-size:14px;line-height:1.5;margin:6px 0;color:var(--ink-2)}
+  .avdep{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px}
+  .avdep .q{font-size:13px;color:var(--muted)}.avdep .ok{color:var(--ok);font-weight:600}
+  .est{color:#C99A1E;letter-spacing:1px}
+</style>
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
@@ -234,6 +255,32 @@ async function carregarVisitas(){
     </tr>`).join("");
 }
 carregarVisitas();
+carregarAvaliacoes();
+async function carregarAvaliacoes(){
+  const PAL = [["tarcisio","Tarcísio Gaipo"],["carlos","Carlos Ribeiro"],["thaissa","Thaíssa Lorena"],["claudinei","Claudinei Soares"],["magda","Magda de Paula"],["matheus","Matheus Eller"],["marlon","Pr. Marlon"]];
+  const [{ data:ats }, { data:ps }] = await Promise.all([
+    sb.from("atividades").select("participante_id,status,dados,atualizado_em").eq("tipo","avaliacao"),
+    sb.from("participantes").select("id,nome,empresas(nome)") ]);
+  const P = Object.fromEntries((ps||[]).map(p => [p.id, p])), L = (ats||[]).filter(a => a.dados);
+  const env = L.filter(a => a.status === "concluido");
+  const media = k => { const n = L.map(a => +a.dados.notas?.[k]).filter(v => v > 0); return { m: n.length ? n.reduce((x,y)=>x+y,0)/n.length : 0, n: n.length }; };
+  const est = m => "★".repeat(Math.round(m)) + "☆".repeat(5 - Math.round(m));
+  const g = media("geral");
+  $("avStats").innerHTML = `<div class="stat"><b>${env.length}</b><span>Avaliações enviadas</span></div><div class="stat"><b>${L.length - env.length}</b><span>Em rascunho</span></div><div class="stat"><b style="color:var(--gold-ink)">${g.n ? g.m.toFixed(1).replace(".",",") : "–"}</b><span>Nota da imersão (${g.n})</span></div>`;
+  $("avPal").innerHTML = PAL.map(([k, nome]) => { const r = media(k), cs = L.filter(a => String(a.dados.coment?.[k]||"").trim());
+    return `<div class="avc"><b>${esc(nome)}</b><div class="m">${r.n ? r.m.toFixed(1).replace(".",",") : "–"} <small><span class="est">${r.n ? est(r.m) : ""}</span> · ${r.n} nota${r.n === 1 ? "" : "s"}</small></div>
+      ${cs.length ? `<details><summary>${cs.length} comentário${cs.length > 1 ? "s" : ""}</summary>${cs.map(a => `<p>“${esc(a.dados.coment[k])}” <span style="color:var(--muted)">— ${esc(P[a.participante_id]?.nome || "")}</span></p>`).join("")}</details>` : ""}</div>`; }).join("");
+  const deps = L.filter(a => String(a.dados.dep||"").trim() || String(a.dados.leva||"").trim()).sort((a,b) => String(b.atualizado_em).localeCompare(String(a.atualizado_em)));
+  $("avDep").innerHTML = deps.length ? deps.map(a => { const p = P[a.participante_id], n = +a.dados.notas?.geral || 0;
+    return `<div class="avdep"><div class="q"><b style="color:var(--ink)">${esc(p?.nome || "")}</b> · ${esc(p?.empresas?.nome || "")} · <span class="est">${est(n)}</span>${a.dados.autoriza ? ` · <span class="ok">autoriza divulgar</span>` : ""}${a.status !== "concluido" ? " · rascunho" : ""}</div>
+      ${String(a.dados.leva||"").trim() ? `<p><b>Leva de mais importante:</b> ${esc(a.dados.leva)}</p>` : ""}${String(a.dados.dep||"").trim() ? `<p><b>Depoimento:</b> ${esc(a.dados.dep)}</p>` : ""}</div>`; }).join("") : `<p class="sub">Nenhum depoimento ainda.</p>`;
+  $("avCsv").onclick = () => {
+    const q = v => { const t = String(v ?? ""); return /[;"\n]/.test(t) ? `"${t.replace(/"/g,'""')}"` : t; };
+    const cab = ["Participante","Empresa","Status","Nota imersão","Leva de mais importante","Depoimento","Autoriza divulgar", ...PAL.flatMap(([,n]) => [`Nota ${n}`, `Comentário ${n}`])];
+    const lin = L.map(a => { const p = P[a.participante_id], d = a.dados; return [p?.nome, p?.empresas?.nome, a.status === "concluido" ? "Enviada" : "Rascunho", d.notas?.geral || "", d.leva, d.dep, d.autoriza ? "Sim" : "Não", ...PAL.flatMap(([k]) => [d.notas?.[k] || "", d.coment?.[k] || ""])].map(q).join(";"); });
+    const blob = new Blob(["\uFEFF" + [cab.map(q).join(";"), ...lin].join("\r\n")], { type: "text/csv;charset=utf-8" }), el = document.createElement("a");
+    el.href = URL.createObjectURL(blob); el.download = "avaliacoes-imersao-360.csv"; el.click(); };
+}
 </script>
 </body>
 </html>

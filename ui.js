@@ -62,8 +62,8 @@
 
   const pre = page === "cliente" ? "admin.html" : "";
   const links = (page === "admin" || page === "cliente")
-    ? [["participantes", pre + "#participantes", "Participantes"], ["exercicios", pre + "#exercicios", "Plano Anual das empresas"], ["acoes", pre + "#acoes", "Ações"]]
-    : [["painel", "painel.html", "Início"], ["exercicio", "exercicio.html", "Plano Anual"], ["visita", "visita.html", "Ações"], ["cronograma", "cronograma.html", "Cronograma"], ["palestrantes", "palestrantes.html", "Palestrantes"], ["local", "local.html", "Local"]];
+    ? [["participantes", pre + "#participantes", "Participantes"], ["exercicios", pre + "#exercicios", "Plano Anual das empresas"], ["acoes", pre + "#acoes", "Ações"], ["avaliacoes", pre + "#avaliacoes", "Avaliações"]]
+    : [["painel", "painel.html", "Início"], ["exercicio", "exercicio.html", "Plano Anual"], ["visita", "visita.html", "Ações"], ["cronograma", "cronograma.html", "Cronograma"], ["palestrantes", "palestrantes.html", "Palestrantes"], ["local", "local.html", "Local"], ["avaliacao", "avaliacao.html", "Avaliação"]];
   const nav = cls => `<nav class="${cls}" aria-label="Navegação principal">${links.map(([k, h, t]) =>
     `<a class="nl"${k === page ? ' aria-current="page"' : ""} href="${h}">${t}</a>`).join("")}${page === "admin" || page === "cliente" ? "" : `<a class="nl nl-admin hide" href="admin.html">Administração</a>`}</nav>`;
 
