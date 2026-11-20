@@ -90,7 +90,7 @@ ${nav("subnav")}`;
   });
 
   // IA de consulta: ícone fixo nas páginas do participante
-  if (page !== "admin" && page !== "cliente") { const s = document.createElement("script"); s.type = "module"; s.src = "consulta.js"; document.head.appendChild(s); }
+  if (page !== "admin" && page !== "cliente" && page !== "avaliacao") { const s = document.createElement("script"); s.type = "module"; s.src = "consulta.js"; document.head.appendChild(s); }
 
   window.TC_UI = { mostrarAdmin() { document.querySelectorAll(".nl-admin").forEach(a => a.classList.remove("hide")); } };
 
