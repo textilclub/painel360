@@ -13,36 +13,57 @@
 <link rel="stylesheet" href="style.css">
 <script src="config.js"></script>
 <style>
-  .av{max-width:760px;margin:0 auto;padding:28px 0 120px}
-  .av h1{font-size:clamp(2rem,1.3rem + 3vw,3rem);letter-spacing:-.035em;margin:8px 0 10px}
-  .av .sub{font-size:17px;line-height:1.55;color:var(--ink-2);max-width:56ch}
-  .bloco{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px 20px;margin-top:18px}
-  .bloco.dest{border:1.5px solid var(--ink);box-shadow:5px 5px 0 var(--gold)}
-  .bloco h2{font:700 clamp(1.15rem,1rem + .6vw,1.4rem)/1.25 var(--f-display);letter-spacing:-.02em}
-  .bloco .tag{font:700 11px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-ink);margin-bottom:6px;display:block}
-  .q{margin-top:16px}
-  .q > label,.q > .lb{display:block;font:600 15.5px var(--f-body);margin-bottom:8px}
-  .q small{font-weight:500;color:var(--muted)}
-  .q textarea{width:100%;min-height:96px;resize:vertical;border:1.5px solid var(--line-2);border-radius:12px;padding:12px 14px;font:16px/1.5 var(--f-body);background:#fff;color:var(--ink)}
-  .q textarea:focus{outline:none;border-color:var(--gold)}
-  .estrelas{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-  .estrelas button{width:48px;height:48px;border:0;background:none;padding:0;cursor:pointer;display:grid;place-items:center;border-radius:10px}
-  .estrelas button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-  .estrelas svg{width:38px;height:38px;fill:#E4DCCB;stroke:#C9BFA9;stroke-width:1;transition:transform .12s,fill .12s}
-  .estrelas button.on svg{fill:#D4A82F;stroke:#9C7A1C}
-  .estrelas button:hover svg{transform:scale(1.08)}
-  .estrelas .rot{margin-left:8px;font:600 14px var(--f-body);color:var(--gold-ink);min-width:90px}
-  .pal{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:start}
-  .pal img,.pal .ini{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--ink);background:var(--paper-2)}
-  .pal .ini{display:grid;place-items:center;font:700 20px var(--f-display);color:var(--gold-ink)}
-  .pal .q{margin-top:10px}
-  .opc{font:600 11px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-left:6px}
-  .barra{position:fixed;left:0;right:0;bottom:0;z-index:20;background:linear-gradient(transparent,var(--paper) 30%);padding:18px 16px calc(14px + env(safe-area-inset-bottom))}
-  .barra .in{max-width:760px;margin:0 auto;display:flex;gap:12px;align-items:center}
-  .barra .btn{flex:1;min-height:54px;font-size:17px}
-  .barra .st{font-size:13.5px;color:var(--muted);min-width:110px;text-align:right}
+  .av{max-width:680px;margin:0 auto;padding:22px clamp(18px,5vw,24px) 170px;box-sizing:border-box;min-height:calc(100vh - 80px)}
+  .av .eyebrow{margin-bottom:4px}
+  .prog{display:flex;align-items:center;gap:12px;margin:6px 0 26px}
+  .prog .tr{flex:1;height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+  .prog .tr i{display:block;height:100%;width:0;background:var(--gold);border-radius:99px;transition:width .35s cubic-bezier(.2,.8,.2,1)}
+  .prog .n{font:600 13.5px var(--f-body);color:var(--muted);white-space:nowrap}
+  .passo{display:none;animation:entra .32s cubic-bezier(.2,.8,.2,1)}
+  .passo.on{display:block}
+  .passo.volta{animation-name:entraV}
+  @keyframes entra{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+  @keyframes entraV{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){.passo{animation:none}}
+  .num-p{font:700 13px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-ink);display:flex;align-items:center;gap:8px}
+  .passo h1,.passo h2{font:700 clamp(1.6rem,1.15rem + 2.2vw,2.35rem)/1.15 var(--f-display);letter-spacing:-.03em;margin:10px 0 10px}
+  .passo .sub{font-size:16.5px;line-height:1.55;color:var(--ink-2);max-width:54ch}
   .obrig{color:#B42318}
-  .ok-box{display:none;text-align:center;padding:30px 20px}
+  .q{margin-top:22px}
+  .q > label{display:block;font:600 15px var(--f-body);margin-bottom:8px;color:var(--ink-2)}
+  .opc{font:600 11px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-left:6px}
+  textarea{width:100%;min-height:150px;resize:vertical;border:1.5px solid var(--line-2);border-radius:14px;padding:14px 16px;font:17px/1.55 var(--f-body);background:#fff;color:var(--ink)}
+  textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,168,47,.2)}
+  .estrelas{display:grid;grid-template-columns:repeat(5,minmax(0,56px));gap:clamp(2px,1.5vw,8px);align-items:center;margin-top:18px}
+  .estrelas button{width:100%;aspect-ratio:1;min-height:48px;border:0;background:none;padding:0;cursor:pointer;display:grid;place-items:center;border-radius:12px}
+  .estrelas button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .estrelas svg{width:82%;height:82%;fill:#E4DCCB;stroke:#C9BFA9;stroke-width:1;transition:transform .12s,fill .12s}
+  .estrelas button.on svg{fill:#D4A82F;stroke:#9C7A1C}
+  .estrelas button:hover svg{transform:scale(1.1)}
+  .estrelas .rot{grid-column:1/-1;margin-top:6px;font:600 15px var(--f-body);color:var(--gold-ink);min-height:22px}
+  .pal{display:flex;gap:14px;align-items:center;margin-top:6px}
+  @media (max-width:520px){.pal img,.pal .ini{width:60px!important;height:60px!important}.passo h1,.passo h2{font-size:1.55rem}.barra #bVolta{padding:0 14px}}
+  .pal img,.pal .ini{width:76px;height:76px;border-radius:50%;object-fit:cover;border:2px solid var(--ink);background:var(--paper-2);flex:none}
+  .pal .ini{display:grid;place-items:center;font:700 22px var(--f-display);color:var(--gold-ink)}
+  .pal h2{margin:0}
+  .naoviu{margin-top:14px;background:none;border:1px dashed var(--line-2);border-radius:999px;padding:10px 16px;min-height:44px;font:600 14px var(--f-body);color:var(--muted);cursor:pointer}
+  .naoviu[aria-pressed="true"]{border-style:solid;border-color:var(--ink);color:var(--ink);background:var(--paper-2)}
+  .aut{display:flex;gap:12px;align-items:flex-start;margin-top:18px;font:500 15px/1.45 var(--f-body);color:var(--ink-2);cursor:pointer}
+  .aut input{width:22px;height:22px;margin-top:1px;accent-color:#B8912F;flex:none}
+  .erro{margin-top:14px;color:#B42318;font:600 14.5px var(--f-body);min-height:20px}
+  .resumo{list-style:none;margin-top:20px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);overflow:hidden}
+  .resumo li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--line);font-size:15px}
+  .resumo li:first-child{border-top:0}
+  .resumo button{background:none;border:0;color:var(--gold-ink);font:600 14px var(--f-body);text-decoration:underline;cursor:pointer;min-height:40px;padding:0 4px}
+  .resumo .v{margin-left:auto;color:#B8912F;letter-spacing:2px;white-space:nowrap}
+  .barra{position:fixed;left:0;right:0;bottom:0;z-index:20;background:linear-gradient(rgba(250,248,243,0),var(--paper) 28%);padding:22px 16px calc(14px + env(safe-area-inset-bottom))}
+  .barra .in{max-width:680px;margin:0 auto;display:flex;gap:10px;align-items:center}
+  .barra .btn{min-height:56px;font-size:17px}
+  .barra #bProx{flex:1}
+  .barra #bVolta{flex:none;width:auto;padding:0 18px}
+  .barra .dica{max-width:680px;margin:8px auto 0;font-size:12.5px;color:var(--muted);text-align:center}
+  .bloco{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px 20px}
+  .ok-box{display:none;text-align:center;padding:40px 20px}
   .ok-box.on{display:block}
   .ok-box h2{font:800 clamp(1.6rem,1.2rem + 2vw,2.4rem) var(--f-display);letter-spacing:-.03em;margin:10px 0}
   .ok-box p{font-size:16.5px;color:var(--ink-2);line-height:1.55}
@@ -52,34 +73,21 @@
 <script src="ui.js" data-page="avaliacao"></script>
 <main class="wrap">
 <div class="av">
-  <div class="eyebrow">Imersão Método Confecção 360°</div>
-  <h1>Avalie a imersão</h1>
-  <p class="sub">Leva 3 minutos. Toque nas estrelas (1 = ruim, 5 = excelente). Os comentários sobre cada palestrante são opcionais. Você pode voltar e mudar até o fim do evento.</p>
-
   <div id="form">
-    <section class="bloco dest">
-      <span class="tag">A imersão</span>
-      <h2>O que achou da imersão?</h2>
-      <div class="q"><div class="estrelas" data-k="geral" role="radiogroup" aria-label="Nota da imersão"></div></div>
-      <div class="q"><label for="leva">O que você leva de mais importante? <span class="obrig">*</span></label><textarea id="leva" placeholder="A decisão, a ideia ou a conta que mais mudou a sua visão da empresa"></textarea></div>
-      <div class="q"><label for="dep">Deixe o seu depoimento <span class="obrig">*</span></label><textarea id="dep" placeholder="Como foi viver esses três dias? Conte com as suas palavras."></textarea></div>
-      <div class="q"><label class="lb" style="display:flex;gap:10px;align-items:flex-start;font-weight:500;font-size:14.5px;color:var(--ink-2)"><input type="checkbox" id="autoriza" style="width:20px;height:20px;margin-top:2px;accent-color:#B8912F"> Autorizo a Têxtil Club a usar o meu depoimento, com meu nome e empresa, na divulgação de próximas edições.</label></div>
-    </section>
-
-    <h2 style="font:700 1.35rem var(--f-display);margin:34px 0 0;letter-spacing:-.02em">E os palestrantes?</h2>
-    <p class="sub" style="font-size:15.5px;margin-top:6px">Dê uma nota ao conteúdo de cada um. Se quiser, deixe um comentário.</p>
-    <div id="pals"></div>
+    <div class="eyebrow">Avaliação da Imersão Método Confecção 360°</div>
+    <div class="prog" aria-hidden="true"><div class="tr"><i id="pbar"></i></div><span class="n" id="pnum"></span></div>
+    <div id="passos"></div>
+    <p class="erro" id="erro" role="alert"></p>
   </div>
-
   <div class="ok-box" id="okBox">
-    <div style="font-size:44px">★</div>
+    <div style="font-size:48px;color:#D4A82F">★</div>
     <h2>Obrigado pela sua avaliação!</h2>
     <p>Ela ajuda a Têxtil Club a fazer a próxima imersão ainda melhor.</p>
-    <button class="btn ghost" type="button" id="bEditar" style="margin-top:18px">Revisar minhas respostas</button>
+    <button class="btn ghost" type="button" id="bEditar" style="margin-top:18px;width:auto">Revisar minhas respostas</button>
   </div>
 </div>
 </main>
-<div class="barra" id="barra"><div class="in"><button class="btn" type="button" id="bEnviar">Enviar avaliação</button><span class="st" id="st"></span></div></div>
+<div class="barra" id="barra"><div class="in"><button class="btn ghost" type="button" id="bVolta" aria-label="Voltar">← Voltar</button><button class="btn" type="button" id="bProx">Continuar</button></div><p class="dica" id="dica"></p></div>
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
@@ -102,43 +110,92 @@ if (!eu || eu.status !== "aprovado") { $("form").innerHTML = `<div class="bloco"
 const { data: reg } = await sb.from("atividades").select("dados,status").eq("participante_id", eu.id).eq("tipo", TIPO).maybeSingle();
 const D = Object.assign({ notas: {}, coment: {}, leva: "", dep: "", autoriza: false }, reg?.dados || {});
 
-$("pals").innerHTML = PALESTRANTES.map(([k, nome, foto]) => `<section class="bloco"><div class="pal">
-  ${foto ? `<img src="${foto}" alt="" onerror="this.outerHTML='<div class=ini>${nome.split(" ").filter(w => !/^pr\.?$/i.test(w)).map(w => w[0]).slice(0, 2).join("")}</div>'">` : `<div class="ini">${nome.split(" ").filter(w => !/^pr\.?$/i.test(w)).map(w => w[0]).slice(0, 2).join("")}</div>`}
-  <div><h2>O que achou do conteúdo de ${esc(nome)}?</h2>
-    <div class="q"><div class="estrelas" data-k="${k}" role="radiogroup" aria-label="Nota para ${esc(nome)}"></div></div>
-    <div class="q"><label for="c_${k}">Quer deixar um comentário? <span class="opc">opcional</span></label><textarea id="c_${k}" data-c="${k}" style="min-height:70px" placeholder="O que mais marcou, o que pode melhorar"></textarea></div></div>
-  </div></section>`).join("");
+D.naoviu = D.naoviu || {};
+const ini = n => n.split(" ").filter(w => !/^pr\.?$/i.test(w)).map(w => w[0]).slice(0, 2).join("");
+const foto = (f, n) => f ? `<img src="${f}" alt="" onerror="this.outerHTML='<div class=ini>${ini(n)}</div>'">` : `<div class="ini">${ini(n)}</div>`;
+const PASSOS = [
+  { id: "geral", tipo: "nota", html: `<div class="num-p">A imersão</div><h1>De 1 a 5, o que você achou da imersão?</h1><p class="sub">Toque nas estrelas. 1 = ruim, 5 = excelente.</p><div class="estrelas" data-k="geral" role="radiogroup" aria-label="Nota da imersão"></div>` },
+  { id: "leva", tipo: "texto", html: `<div class="num-p">A imersão</div><h2>O que você leva de mais importante? <span class="obrig">*</span></h2><p class="sub">A decisão, a ideia ou a conta que mais mudou a sua visão da empresa.</p><div class="q"><textarea id="leva" data-t="leva" placeholder="Escreva aqui…"></textarea></div>` },
+  { id: "dep", tipo: "texto", html: `<div class="num-p">A imersão</div><h2>Deixe o seu depoimento <span class="obrig">*</span></h2><p class="sub">Como foi viver esses dias? Conte com as suas palavras.</p><div class="q"><textarea id="dep" data-t="dep" placeholder="Escreva aqui…"></textarea></div><label class="aut"><input type="checkbox" id="autoriza"> Autorizo a Têxtil Club a usar o meu depoimento, com meu nome e empresa, na divulgação de próximas edições.</label>` },
+  ...PALESTRANTES.map(([k, nome, f]) => ({ id: k, tipo: "pal", nome, html: `<div class="num-p">Palestrantes</div><div class="pal">${foto(f, nome)}<h2>O que achou do conteúdo de ${esc(nome)}?</h2></div><div class="estrelas" data-k="${k}" role="radiogroup" aria-label="Nota para ${esc(nome)}"></div><button type="button" class="naoviu" data-nv="${k}" aria-pressed="false">Não assisti a essa palestra</button><div class="q"><label for="c_${k}">Quer deixar um comentário? <span class="opc">opcional</span></label><textarea id="c_${k}" data-c="${k}" style="min-height:90px" placeholder="O que mais marcou, o que pode melhorar"></textarea></div>` })),
+  { id: "fim", tipo: "fim", html: `<div class="num-p">Último passo</div><h2>Tudo certo? Confira e envie.</h2><p class="sub">Toque em "mudar" para corrigir qualquer resposta.</p><ul class="resumo" id="resumo"></ul>` }
+];
+$("passos").innerHTML = PASSOS.map((p, i) => `<section class="passo" data-i="${i}">${p.html}</section>`).join("");
+
+const respondido = p => p.tipo === "nota" ? !!D.notas[p.id] : p.tipo === "texto" ? !!String(D[p.id] || "").trim() : p.tipo === "pal" ? (!!D.notas[p.id] || !!D.naoviu[p.id]) : true;
+const falta = p => p.tipo === "nota" ? "Escolha uma nota de 1 a 5 para continuar." : p.tipo === "texto" ? "Escreva sua resposta para continuar." : "Dê uma nota ou marque “Não assisti a essa palestra”.";
 
 function estrelas(el){
   const k = el.dataset.k, v = +D.notas[k] || 0;
   el.innerHTML = [1, 2, 3, 4, 5].map(n => `<button type="button" role="radio" aria-checked="${v === n}" aria-label="${n} estrela${n > 1 ? "s" : ""} · ${ROT[n]}" data-n="${n}" class="${n <= v ? "on" : ""}">${STAR}</button>`).join("") + `<span class="rot">${v ? ROT[v] : ""}</span>`;
-  el.querySelectorAll("button").forEach(b => b.onclick = () => { D.notas[k] = +b.dataset.n; estrelas(el); salvar(); });
+  el.querySelectorAll("button").forEach(b => b.onclick = () => {
+    D.notas[k] = +b.dataset.n; if (D.naoviu[k]) { delete D.naoviu[k]; nv(k); }
+    estrelas(el); salvar(); $("erro").textContent = "";
+    if (PASSOS[atual].tipo === "nota") setTimeout(() => ir(atual + 1), 380);
+  });
 }
+function nv(k){ const b = document.querySelector(`[data-nv="${k}"]`); if (b) b.setAttribute("aria-pressed", !!D.naoviu[k]); }
 document.querySelectorAll(".estrelas").forEach(estrelas);
-$("leva").value = D.leva; $("dep").value = D.dep; $("autoriza").checked = !!D.autoriza;
+document.querySelectorAll("[data-nv]").forEach(b => { nv(b.dataset.nv); b.onclick = () => { const k = b.dataset.nv; D.naoviu[k] = !D.naoviu[k]; if (D.naoviu[k]) { delete D.notas[k]; estrelas(document.querySelector(`.estrelas[data-k="${k}"]`)); } nv(k); salvar(); $("erro").textContent = ""; }; });
+document.querySelectorAll("[data-t]").forEach(t => { t.value = D[t.dataset.t] || ""; t.oninput = () => { D[t.dataset.t] = t.value; salvar(); $("erro").textContent = ""; }; });
 document.querySelectorAll("[data-c]").forEach(t => { t.value = D.coment[t.dataset.c] || ""; t.oninput = () => { D.coment[t.dataset.c] = t.value; salvar(); }; });
-$("leva").oninput = () => { D.leva = $("leva").value; salvar(); };
-$("dep").oninput = () => { D.dep = $("dep").value; salvar(); };
-$("autoriza").onchange = () => { D.autoriza = $("autoriza").checked; salvar(); };
+$("autoriza").checked = !!D.autoriza; $("autoriza").onchange = () => { D.autoriza = $("autoriza").checked; salvar(); };
+
+let atual = 0;
+function resumo(){
+  const est = n => "★".repeat(n) + "☆".repeat(5 - n);
+  $("resumo").innerHTML = PASSOS.slice(0, -1).map((p, i) => {
+    const nome = p.tipo === "pal" ? p.nome : p.id === "geral" ? "Nota da imersão" : p.id === "leva" ? "O que leva de mais importante" : "Depoimento";
+    const v = p.tipo === "texto" ? (String(D[p.id] || "").trim() ? "✓ respondido" : "—") : D.naoviu[p.id] ? "não assistiu" : D.notas[p.id] ? est(D.notas[p.id]) : "—";
+    return `<li><span>${esc(nome)}</span><span class="v">${v}</span><button type="button" data-ir="${i}">mudar</button></li>`;
+  }).join("");
+  $("resumo").querySelectorAll("[data-ir]").forEach(b => b.onclick = () => ir(+b.dataset.ir));
+}
+function ir(i){
+  i = Math.max(0, Math.min(PASSOS.length - 1, i));
+  // não deixa pular passo obrigatório
+  for (let j = 0; j < i; j++) if (!respondido(PASSOS[j])) { i = j; break; }
+  const volta = i < atual; atual = i;
+  document.querySelectorAll(".passo").forEach(s => { const on = +s.dataset.i === i; s.classList.toggle("on", on); s.classList.toggle("volta", on && volta); });
+  const p = PASSOS[i], tot = PASSOS.length;
+  $("pbar").style.width = Math.round(i / (tot - 1) * 100) + "%";
+  $("pnum").textContent = p.tipo === "fim" ? "Revisão" : `${i + 1} de ${tot - 1}`;
+  $("bVolta").hidden = i === 0;
+  $("bProx").textContent = p.tipo === "fim" ? (enviado ? "Atualizar avaliação" : "Enviar avaliação") : "Continuar";
+  $("dica").textContent = p.tipo === "texto" || p.tipo === "pal" ? "Dica: Ctrl + Enter também continua" : "";
+  $("erro").textContent = "";
+  if (p.tipo === "fim") resumo();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  const t = document.querySelector(`.passo[data-i="${i}"] textarea[data-t]`); if (t && matchMedia("(min-width:700px)").matches) setTimeout(() => t.focus({ preventScroll: true }), 340);
+}
+async function avancar(){
+  const p = PASSOS[atual];
+  if (!respondido(p)) { $("erro").textContent = falta(p); return; }
+  if (p.tipo !== "fim") return ir(atual + 1);
+  const pend = PASSOS.findIndex(q => !respondido(q)); if (pend >= 0) return ir(pend);
+  clearTimeout(tmr); $("bProx").disabled = true; $("bProx").textContent = "Enviando…";
+  const e = await gravar("concluido"); $("bProx").disabled = false;
+  if (e) { $("erro").textContent = "Não enviou. Verifique a internet e tente de novo."; $("bProx").textContent = "Enviar avaliação"; return; }
+  enviado = true; mostrarOk(true);
+}
+$("bProx").onclick = avancar;
+$("bVolta").onclick = () => ir(atual - 1);
+document.addEventListener("keydown", e => {
+  if ($("barra").hidden) return;
+  if (e.key === "Enter" && (e.ctrlKey || e.metaKey || e.target.tagName !== "TEXTAREA") && e.target.tagName !== "BUTTON") { e.preventDefault(); avancar(); }
+});
 
 let tmr, enviado = reg?.status === "concluido";
 async function gravar(status){
   const { error } = await sb.from("atividades").upsert({ participante_id: eu.id, tipo: TIPO, empresa_id: eu.empresa_id, status, dados: { ...D, enviado_em: status === "concluido" ? new Date().toISOString() : D.enviado_em }, atualizado_em: new Date().toISOString() });
   return error;
 }
-function salvar(){ clearTimeout(tmr); $("st").textContent = "Salvando…"; tmr = setTimeout(async () => { const e = await gravar(enviado ? "concluido" : "rascunho"); $("st").textContent = e ? "Não salvou: verifique a internet" : "Rascunho salvo"; }, 700); }
+function salvar(){ clearTimeout(tmr); tmr = setTimeout(async () => { const e = await gravar(enviado ? "concluido" : "rascunho"); if (e) $("erro").textContent = "Não salvou: verifique a internet"; }, 700); }
 function mostrarOk(on){ $("form").hidden = on; $("okBox").classList.toggle("on", on); $("barra").hidden = on; window.scrollTo(0, 0); }
-$("bEnviar").onclick = async () => {
-  const falta = [];
-  if (!D.notas.geral) falta.push("a nota da imersão"); if (!String(D.leva).trim()) falta.push("o que você leva de mais importante"); if (!String(D.dep).trim()) falta.push("o seu depoimento");
-  if (falta.length) { $("st").textContent = "Falta: " + falta.join(", "); $("st").style.color = "#B42318"; return; }
-  $("st").style.color = ""; clearTimeout(tmr); $("bEnviar").disabled = true; $("st").textContent = "Enviando…";
-  const e = await gravar("concluido"); $("bEnviar").disabled = false;
-  if (e) { $("st").textContent = "Não enviou: tente de novo"; return; }
-  enviado = true; mostrarOk(true);
-};
-$("bEditar").onclick = () => mostrarOk(false);
-if (enviado) { mostrarOk(true); $("bEnviar").textContent = "Atualizar avaliação"; }
+$("bEditar").onclick = () => { mostrarOk(false); ir(PASSOS.length - 1); };
+const primeiro = PASSOS.findIndex(q => !respondido(q));
+ir(primeiro < 0 ? PASSOS.length - 1 : primeiro);
+if (enviado) mostrarOk(true);
 </script>
 </body>
 </html>
